@@ -34,7 +34,7 @@
 
 Cyanea Labs is a Cargo workspace of 18 crates covering the core primitives of computational biology — sequence analysis, alignment, genomic intervals, statistics, machine learning, cheminformatics, structural biology, phylogenetics, metagenomics, epigenomics, proteomics, and network/pathway biology. Everything compiles to native, WebAssembly, and Python (via PyO3), with an Elixir NIF bridge for the Cyanea platform.
 
-4,150+ tests. Zero `unsafe`. No heavyweight C/C++ dependencies in the core path.
+3,700+ tests. Zero `unsafe`. No heavyweight C/C++ dependencies in the core path.
 
 ## Quick Start
 

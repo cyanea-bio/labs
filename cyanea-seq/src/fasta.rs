@@ -31,12 +31,16 @@ pub fn parse_fasta_stats(path: impl AsRef<Path>) -> Result<FastaStats> {
         sequence_count += 1;
         total_bases += seq.len() as u64;
 
-        for &base in seq.iter() {
-            match base {
-                b'G' | b'g' | b'C' | b'c' => gc_count += 1,
-                _ => {}
-            }
-        }
+        // Branchless GC count. Folding ASCII case with `b | 0x20` maps both G/g to `g`
+        // and C/c to `c` (no other bytes collide onto those), so two equality compares
+        // suffice. This autovectorizes to SIMD — far faster than a per-byte match.
+        gc_count += seq
+            .iter()
+            .map(|&base| {
+                let folded = base | 0x20;
+                u64::from((folded == b'g') | (folded == b'c'))
+            })
+            .sum::<u64>();
     }
 
     let gc_content = if total_bases > 0 {
