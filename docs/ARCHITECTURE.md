@@ -274,7 +274,7 @@ CyaneaError
 | cyanea-network | 87 | 2 | 89 |
 | cyanea-wasm | 223 | 1 | 224 |
 | cyanea-datasets | 56 | 1 | 57 |
-| **Total** | | | **4,150+** |
+| **Total** | | | **3,786** |
 
 Test data is always inline (strings, vecs) -- no external fixture files. Tests needing the filesystem use the `tempfile` crate.
 

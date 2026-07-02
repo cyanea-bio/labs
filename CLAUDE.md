@@ -1,6 +1,6 @@
 # Cyanea Labs
 
-Rust bioinformatics ecosystem — 18 crates, 4150+ tests, targeting native, WASM, Python, and Elixir NIFs.
+Rust bioinformatics ecosystem — 18 crates, 3,700+ tests, targeting native, WASM, Python, and Elixir NIFs.
 
 ## Workspace
 
