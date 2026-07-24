@@ -141,6 +141,7 @@ cargo check -p cyanea-native   # Check only (can't link without BEAM)
 - GitHub Actions CI: check, test, clippy, fmt, doc, WASM, Python (`.github/workflows/ci.yml`)
 - Continuous benchmarking: Criterion on PRs with baseline comparison (`.github/workflows/bench.yml`)
 
-## What's Not Done
+## Publishing
 
-- **Publishing**: Not yet on crates.io, PyPI, or npm (metadata ready, workflows pending)
+- **crates.io**: 11 crates published at 0.1.0 (core, seq, io, align, omics, stats, ml, chem, struct, phylo, gpu). 5 publishable crates not yet published (meta, epi, proteomics, network, datasets). `cyanea-py`/`cyanea-wasm` are `publish = false` (target PyPI / npm). Release via Trusted Publishing — see [docs/PUBLISHING.md](docs/PUBLISHING.md) and `.github/workflows/release.yml`.
+- **PyPI / npm**: not yet published.
