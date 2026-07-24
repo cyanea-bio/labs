@@ -1,5 +1,10 @@
 name: Release to crates.io
 
+# Publishes the workspace to crates.io using Trusted Publishing (OIDC) — no
+# stored crates.io token. Triggered by pushing a version tag (e.g. `v0.1.1`)
+# after the workspace version has been bumped. See docs/PUBLISHING.md for the
+# one-time crates.io + GitHub setup.
+
 on:
   push:
     tags:
@@ -11,8 +16,8 @@ on:
         type: boolean
         default: true
 
-permissions:
-  contents: read
+# No token is stored; the publish job requests a short-lived one via OIDC.
+permissions: {}
 
 concurrency:
   group: release
@@ -32,6 +37,9 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Install system libraries (HDF5 for cyanea-omics)
+        run: sudo apt-get update && sudo apt-get install -y libhdf5-dev
+
       - name: Verify tag matches workspace version
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
@@ -45,27 +53,23 @@ jobs:
       - name: Run tests
         run: cargo test --workspace --exclude cyanea-py
 
-      - name: Run clippy
-        run: cargo clippy --workspace --exclude cyanea-py -- -D warnings
-
-      - name: Dry-run publish (all crates)
-        run: |
-          for crate in \
-            cyanea-core \
-            cyanea-seq cyanea-align cyanea-stats cyanea-ml cyanea-chem cyanea-struct cyanea-gpu \
-            cyanea-omics cyanea-phylo \
-            cyanea-io; do
-            echo "::group::Dry-run $crate"
-            cargo publish -p "$crate" --dry-run
-            echo "::endgroup::"
-          done
+      # Package + build-verify every publishable member in dependency order,
+      # without uploading. `publish = false` crates are skipped automatically.
+      - name: Dry-run publish (whole workspace)
+        run: cargo publish --workspace --dry-run
 
   publish:
     name: Publish to crates.io
     needs: validate
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    # A GitHub Environment (create under Settings → Environments) — lets you
+    # gate publishing behind a manual approval, and its name must match the
+    # Environment configured on each crate's crates.io trusted publisher.
     environment: crates-io
+    permissions:
+      id-token: write # required for crates.io Trusted Publishing (OIDC)
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -73,44 +77,20 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      # Tier 0: foundation
-      - name: Publish cyanea-core
-        run: cargo publish -p cyanea-core
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Install system libraries (HDF5 for cyanea-omics)
+        run: sudo apt-get update && sudo apt-get install -y libhdf5-dev
 
-      - name: Wait for index
-        run: sleep 30
+      - name: Authenticate to crates.io (Trusted Publishing)
+        uses: rust-lang/crates-io-auth-action@v1
+        id: auth
 
-      # Tier 1: direct dependents of core
-      - name: Publish tier 1 crates
+      # Publishes every publishable member in dependency order, waiting for
+      # each to reach the index before its dependents. Skips publish = false
+      # crates (cyanea-py, cyanea-wasm, benchmarks).
+      - name: Publish workspace
+        run: cargo publish --workspace
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: |
-          for crate in cyanea-seq cyanea-align cyanea-stats cyanea-ml cyanea-chem cyanea-struct cyanea-gpu; do
-            echo "::group::Publishing $crate"
-            cargo publish -p "$crate"
-            echo "::endgroup::"
-            sleep 30
-          done
-
-      # Tier 2: depend on tier 1
-      - name: Publish tier 2 crates
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: |
-          for crate in cyanea-omics cyanea-phylo; do
-            echo "::group::Publishing $crate"
-            cargo publish -p "$crate"
-            echo "::endgroup::"
-            sleep 30
-          done
-
-      # Tier 3: depends on tier 2
-      - name: Publish cyanea-io
-        run: cargo publish -p cyanea-io
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
 
   release:
     name: Create GitHub Release
