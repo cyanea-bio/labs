@@ -328,7 +328,7 @@ pub fn alpha_rarefaction(
 ///
 /// For each depth `n` in `steps`, estimates the expected number of species
 /// using the hypergeometric formula:
-/// E[S_n] = S - Σ C(N - N_i, n) / C(N, n)
+/// `E[S_n] = S - Σ C(N - N_i, n) / C(N, n)`
 ///
 /// Uses log-space binomial coefficients for numerical stability with large N.
 ///

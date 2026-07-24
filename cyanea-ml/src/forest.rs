@@ -1,6 +1,6 @@
 //! Random forest classifier.
 //!
-//! Implements a bagged ensemble of [`DecisionTree`](crate::tree::DecisionTree)
+//! Implements a bagged ensemble of [`DecisionTree`]
 //! classifiers with bootstrap sampling and feature bagging. Suitable for
 //! small-to-medium biological datasets (expression matrices, k-mer profiles).
 //!

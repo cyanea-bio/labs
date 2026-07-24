@@ -1,6 +1,6 @@
 //! Statistical wrappers with JSON input/output.
 //!
-//! Types like [`DescriptiveStats`] and [`TestResult`] do not derive `Serialize`,
+//! Types like `DescriptiveStats` and `TestResult` do not derive `Serialize`,
 //! so we provide thin wrappers (`Js*` types) that mirror their fields and add
 //! `#[derive(Serialize)]`.
 

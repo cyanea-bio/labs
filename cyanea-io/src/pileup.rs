@@ -525,7 +525,7 @@ pub fn depth_stats(pileup: &Pileup) -> DepthStats {
 /// Call simple SNPs from a pileup.
 ///
 /// For each position with sufficient depth, finds the most common non-reference,
-/// non-deletion base. Emits a [`Variant`] if the alternate allele meets the
+/// non-deletion base. Emits a `Variant` if the alternate allele meets the
 /// frequency and count thresholds.
 ///
 /// Quality is estimated as `-10 * log10(1 - alt_freq)`, capped at 99.

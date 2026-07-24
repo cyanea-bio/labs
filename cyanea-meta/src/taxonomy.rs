@@ -3,9 +3,9 @@
 //! Provides:
 //! - [`TaxonomyDB`] — in-memory taxonomy tree with LCA support
 //! - [`TaxonNode`] — taxonomy nodes with rank, name, parent links
-//! - [`classify_sequence`] — k-mer based LCA classification (Kraken-style)
-//! - [`get_lineage`] — full lineage from taxid to root
-//! - [`lca`] — lowest common ancestor of multiple taxa
+//! - `classify_sequence` — k-mer based LCA classification (Kraken-style)
+//! - `get_lineage` — full lineage from taxid to root
+//! - `lca` — lowest common ancestor of multiple taxa
 
 use std::collections::{BTreeMap, HashMap};
 use crate::error::{MetaError, Result};

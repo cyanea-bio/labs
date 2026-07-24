@@ -28,7 +28,7 @@ pub struct ChromatinState {
 pub struct ChromHMMModel {
     /// Chromatin states.
     pub states: Vec<ChromatinState>,
-    /// Transition matrix: [from_state][to_state].
+    /// Transition matrix: `[from_state][to_state]`.
     pub transition_matrix: Vec<Vec<f64>>,
     /// Histone marks used in the model.
     pub marks: Vec<String>,

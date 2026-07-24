@@ -7,7 +7,7 @@
 //! - Latent time (pseudotime from velocity dynamics)
 //!
 //! Unlike [`crate::sc_trajectory::rna_velocity`], this module works
-//! with standalone matrices rather than [`AnnData`] objects.
+//! with standalone matrices rather than `AnnData` objects.
 
 use cyanea_core::{CyaneaError, Result};
 

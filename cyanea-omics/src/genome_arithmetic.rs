@@ -1,7 +1,7 @@
 //! BEDTools-style genome arithmetic on genomic intervals.
 //!
 //! All functions operate on slices of [`GenomicInterval`] for flexibility —
-//! works with raw vecs, BED parse output, or [`IntervalSet::intervals()`].
+//! works with raw vecs, BED parse output, or `IntervalSet::intervals()`.
 //! Coordinates are 0-based, half-open `[start, end)`.
 
 use std::collections::BTreeMap;

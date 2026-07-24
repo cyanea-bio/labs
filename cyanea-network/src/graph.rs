@@ -373,7 +373,7 @@ impl Graph {
         }
     }
 
-    /// Return the adjacency matrix as a Vec<Vec<f64>> with consistent node ordering.
+    /// Return the adjacency matrix as a `Vec<Vec<f64>>` with consistent node ordering.
     /// Returns (node_id_order, matrix).
     pub fn adjacency_matrix(&self) -> (Vec<String>, Vec<Vec<f64>>) {
         let mut ids: Vec<String> = self.nodes.keys().cloned().collect();

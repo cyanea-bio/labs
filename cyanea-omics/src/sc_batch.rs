@@ -1,7 +1,7 @@
 //! Enhanced batch effect correction and integration metrics.
 //!
 //! This module provides standalone batch correction methods that work directly
-//! on matrices, independent of [`AnnData`]. It complements [`crate::sc_integrate`]
+//! on matrices, independent of `AnnData`. It complements [`crate::sc_integrate`]
 //! with additional tools and evaluation metrics.
 //!
 //! Methods:

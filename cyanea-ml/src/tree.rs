@@ -35,7 +35,7 @@ pub(crate) enum TreeNode {
 
 /// A decision tree classifier.
 ///
-/// The tree is stored as a flat arena of [`TreeNode`] values, with index 0
+/// The tree is stored as a flat arena of `TreeNode` values, with index 0
 /// as the root. This avoids recursive `Box` allocations and keeps the
 /// structure cache-friendly.
 #[derive(Debug, Clone)]

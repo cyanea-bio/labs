@@ -71,7 +71,7 @@ impl Graph {
 
     /// Build an undirected graph from a correlation matrix with a threshold.
     ///
-    /// Adds an edge between nodes i and j if |correlation[i][j]| ≥ threshold.
+    /// Adds an edge between nodes i and j if `|correlation[i][j]|` ≥ threshold.
     /// Edge weight is the absolute correlation.
     pub fn from_correlation_matrix(matrix: &[Vec<f64>], threshold: f64) -> Self {
         let n = matrix.len();
