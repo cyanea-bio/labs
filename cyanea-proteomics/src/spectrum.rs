@@ -104,20 +104,32 @@ impl MassSpectrum {
     ///
     /// Peaks are sorted by m/z. TIC, base peak intensity, and base peak m/z
     /// are computed automatically.
-    pub fn new(id: impl Into<String>, ms_level: MsLevel, retention_time: f64, mut peaks: Vec<Peak>) -> Result<Self> {
+    pub fn new(
+        id: impl Into<String>,
+        ms_level: MsLevel,
+        retention_time: f64,
+        mut peaks: Vec<Peak>,
+    ) -> Result<Self> {
         if peaks.is_empty() {
-            return Err(ProteomicsError::Spectrum("spectrum must have at least one peak".into()));
+            return Err(ProteomicsError::Spectrum(
+                "spectrum must have at least one peak".into(),
+            ));
         }
         for p in &peaks {
             if p.mz < 0.0 || p.intensity < 0.0 {
-                return Err(ProteomicsError::Spectrum("negative m/z or intensity".into()));
+                return Err(ProteomicsError::Spectrum(
+                    "negative m/z or intensity".into(),
+                ));
             }
         }
 
         peaks.sort_by(|a, b| a.mz.partial_cmp(&b.mz).unwrap_or(std::cmp::Ordering::Equal));
 
         let tic: f64 = peaks.iter().map(|p| p.intensity).sum();
-        let base = peaks.iter().max_by(|a, b| a.intensity.partial_cmp(&b.intensity).unwrap()).unwrap();
+        let base = peaks
+            .iter()
+            .max_by(|a, b| a.intensity.partial_cmp(&b.intensity).unwrap())
+            .unwrap();
 
         Ok(Self {
             id: id.into(),
@@ -175,11 +187,17 @@ impl MassSpectrum {
         }
         let mut by_intensity: Vec<usize> = (0..self.peaks.len()).collect();
         by_intensity.sort_by(|&a, &b| {
-            self.peaks[b].intensity.partial_cmp(&self.peaks[a].intensity).unwrap()
+            self.peaks[b]
+                .intensity
+                .partial_cmp(&self.peaks[a].intensity)
+                .unwrap()
         });
         by_intensity.truncate(n);
         by_intensity.sort();
-        self.peaks = by_intensity.into_iter().map(|i| self.peaks[i].clone()).collect();
+        self.peaks = by_intensity
+            .into_iter()
+            .map(|i| self.peaks[i].clone())
+            .collect();
         self.recalculate_stats();
     }
 
@@ -228,7 +246,11 @@ impl MassSpectrum {
 
     fn recalculate_stats(&mut self) {
         self.tic = self.peaks.iter().map(|p| p.intensity).sum();
-        if let Some(base) = self.peaks.iter().max_by(|a, b| a.intensity.partial_cmp(&b.intensity).unwrap()) {
+        if let Some(base) = self
+            .peaks
+            .iter()
+            .max_by(|a, b| a.intensity.partial_cmp(&b.intensity).unwrap())
+        {
             self.base_peak_intensity = base.intensity;
             self.base_peak_mz = base.mz;
         }
@@ -329,7 +351,9 @@ mod tests {
     use super::*;
 
     fn make_peaks(data: &[(f64, f64)]) -> Vec<Peak> {
-        data.iter().map(|&(mz, intensity)| Peak { mz, intensity }).collect()
+        data.iter()
+            .map(|&(mz, intensity)| Peak { mz, intensity })
+            .collect()
     }
 
     #[test]
@@ -384,7 +408,12 @@ mod tests {
 
     #[test]
     fn test_top_n() {
-        let peaks = make_peaks(&[(100.0, 300.0), (200.0, 100.0), (300.0, 500.0), (400.0, 200.0)]);
+        let peaks = make_peaks(&[
+            (100.0, 300.0),
+            (200.0, 100.0),
+            (300.0, 500.0),
+            (400.0, 200.0),
+        ]);
         let mut spec = MassSpectrum::new("scan1", MsLevel::Ms1, 0.0, peaks).unwrap();
         spec.top_n(2);
         assert_eq!(spec.num_peaks(), 2);
@@ -412,7 +441,12 @@ mod tests {
 
     #[test]
     fn test_deisotope() {
-        let peaks = make_peaks(&[(100.0, 1000.0), (100.5, 300.0), (101.0, 100.0), (200.0, 500.0)]);
+        let peaks = make_peaks(&[
+            (100.0, 1000.0),
+            (100.5, 300.0),
+            (101.0, 100.0),
+            (200.0, 500.0),
+        ]);
         let mut spec = MassSpectrum::new("scan1", MsLevel::Ms2, 0.0, peaks).unwrap();
         spec.deisotope(1.1);
         assert_eq!(spec.num_peaks(), 2);
@@ -450,9 +484,27 @@ mod tests {
 
     #[test]
     fn test_run_stats() {
-        let ms1 = MassSpectrum::new("s1", MsLevel::Ms1, 10.0, make_peaks(&[(100.0, 1000.0)])).unwrap();
-        let ms2a = MassSpectrum::new("s2", MsLevel::Ms2, 15.0, make_peaks(&[(100.0, 500.0), (200.0, 300.0)])).unwrap();
-        let ms2b = MassSpectrum::new("s3", MsLevel::Ms2, 20.0, make_peaks(&[(100.0, 200.0), (200.0, 300.0), (300.0, 100.0), (400.0, 50.0)])).unwrap();
+        let ms1 =
+            MassSpectrum::new("s1", MsLevel::Ms1, 10.0, make_peaks(&[(100.0, 1000.0)])).unwrap();
+        let ms2a = MassSpectrum::new(
+            "s2",
+            MsLevel::Ms2,
+            15.0,
+            make_peaks(&[(100.0, 500.0), (200.0, 300.0)]),
+        )
+        .unwrap();
+        let ms2b = MassSpectrum::new(
+            "s3",
+            MsLevel::Ms2,
+            20.0,
+            make_peaks(&[
+                (100.0, 200.0),
+                (200.0, 300.0),
+                (300.0, 100.0),
+                (400.0, 50.0),
+            ]),
+        )
+        .unwrap();
 
         let stats = run_stats(&[ms1, ms2a, ms2b]).unwrap();
         assert_eq!(stats.total_spectra, 3);

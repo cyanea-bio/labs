@@ -50,7 +50,6 @@ impl LcgRng {
     fn next_bounded(&mut self, bound: u64) -> u64 {
         self.next_u64() % bound
     }
-
 }
 
 /// Shuffle a slice in-place using Fisher-Yates.
@@ -168,7 +167,11 @@ fn mse(targets: &[f64], indices: &[usize]) -> f64 {
     }
     let n = indices.len() as f64;
     let mean = indices.iter().map(|&i| targets[i]).sum::<f64>() / n;
-    indices.iter().map(|&i| (targets[i] - mean).powi(2)).sum::<f64>() / n
+    indices
+        .iter()
+        .map(|&i| (targets[i] - mean).powi(2))
+        .sum::<f64>()
+        / n
 }
 
 /// Compute the mean of target values at the given indices.
@@ -204,7 +207,10 @@ fn build_reg_tree(
 
     // Check if all targets are the same
     let first_target = targets[indices[0]];
-    if indices.iter().all(|&i| (targets[i] - first_target).abs() < 1e-15) {
+    if indices
+        .iter()
+        .all(|&i| (targets[i] - first_target).abs() < 1e-15)
+    {
         let idx = nodes.len();
         nodes.push(RegTreeNode::Leaf {
             value: leaf_value,
@@ -214,9 +220,14 @@ fn build_reg_tree(
     }
 
     // Find best split
-    if let Some((best_feature, best_threshold, best_decrease)) =
-        find_best_mse_split(data, n_features, targets, indices, candidate_features, min_samples_leaf)
-    {
+    if let Some((best_feature, best_threshold, best_decrease)) = find_best_mse_split(
+        data,
+        n_features,
+        targets,
+        indices,
+        candidate_features,
+        min_samples_leaf,
+    ) {
         let (left_indices, right_indices) =
             partition(data, n_features, indices, best_feature, best_threshold);
 
@@ -387,10 +398,7 @@ fn sigmoid(x: f64) -> f64 {
 
 fn softmax(raw_scores: &[f64]) -> Vec<f64> {
     // Log-sum-exp trick for numerical stability
-    let max_val = raw_scores
-        .iter()
-        .copied()
-        .fold(f64::NEG_INFINITY, f64::max);
+    let max_val = raw_scores.iter().copied().fold(f64::NEG_INFINITY, f64::max);
     let exps: Vec<f64> = raw_scores.iter().map(|&s| (s - max_val).exp()).collect();
     let sum: f64 = exps.iter().sum();
     exps.iter().map(|&e| e / sum).collect()
@@ -452,9 +460,7 @@ impl Default for GbdtConfig {
 
 fn validate_config(config: &GbdtConfig) -> Result<()> {
     if config.n_estimators == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "n_estimators must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_estimators must be > 0".into()));
     }
     if config.learning_rate <= 0.0 {
         return Err(CyaneaError::InvalidInput(
@@ -584,8 +590,7 @@ impl GradientBoostedTrees {
                 .collect();
 
             // Subsample rows
-            let sub_count =
-                ((train_idx.len() as f64 * config.subsample).round() as usize).max(1);
+            let sub_count = ((train_idx.len() as f64 * config.subsample).round() as usize).max(1);
             let sub_indices = if config.subsample < 1.0 {
                 subsample_indices(&mut rng, train_idx.len(), sub_count)
             } else {
@@ -623,8 +628,7 @@ impl GradientBoostedTrees {
                 // Update val predictions
                 for (j, &vi) in val_idx.iter().enumerate() {
                     let row = &data[vi * n_features..(vi + 1) * n_features];
-                    f_val[j] +=
-                        config.learning_rate * trees.last().unwrap().predict(row);
+                    f_val[j] += config.learning_rate * trees.last().unwrap().predict(row);
                 }
 
                 // MSE on validation
@@ -701,11 +705,7 @@ impl GradientBoostedTrees {
         }
     }
 
-    fn fit_single_class(
-        n_features: usize,
-        class: usize,
-        config: &GbdtConfig,
-    ) -> Result<Self> {
+    fn fit_single_class(n_features: usize, class: usize, config: &GbdtConfig) -> Result<Self> {
         // All samples are the same class — no trees needed
         let n_classes = class + 1;
         let mut initial = vec![f64::NEG_INFINITY; n_classes];
@@ -743,8 +743,7 @@ impl GradientBoostedTrees {
         };
 
         // F_0 = log(p / (1-p)) where p = mean(y_train)
-        let p0 = train_idx.iter().map(|&i| labels[i] as f64).sum::<f64>()
-            / train_idx.len() as f64;
+        let p0 = train_idx.iter().map(|&i| labels[i] as f64).sum::<f64>() / train_idx.len() as f64;
         let p0 = p0.clamp(1e-8, 1.0 - 1e-8);
         let f0 = (p0 / (1.0 - p0)).ln();
         let initial_prediction = vec![f0];
@@ -765,8 +764,7 @@ impl GradientBoostedTrees {
                 .map(|(j, &i)| labels[i] as f64 - sigmoid(f_train[j]))
                 .collect();
 
-            let sub_count =
-                ((train_idx.len() as f64 * config.subsample).round() as usize).max(1);
+            let sub_count = ((train_idx.len() as f64 * config.subsample).round() as usize).max(1);
             let sub_indices = if config.subsample < 1.0 {
                 subsample_indices(&mut rng, train_idx.len(), sub_count)
             } else {
@@ -788,14 +786,7 @@ impl GradientBoostedTrees {
             );
 
             // Newton-Raphson leaf correction
-            apply_binary_leaf_correction(
-                &mut tree,
-                data,
-                n_features,
-                &f_train,
-                labels,
-                &train_idx,
-            );
+            apply_binary_leaf_correction(&mut tree, data, n_features, &f_train, labels, &train_idx);
 
             // Update predictions
             for (j, &ti) in train_idx.iter().enumerate() {
@@ -809,8 +800,7 @@ impl GradientBoostedTrees {
             if config.early_stopping_rounds.is_some() {
                 for (j, &vi) in val_idx.iter().enumerate() {
                     let row = &data[vi * n_features..(vi + 1) * n_features];
-                    f_val[j] +=
-                        config.learning_rate * trees.last().unwrap().predict(row);
+                    f_val[j] += config.learning_rate * trees.last().unwrap().predict(row);
                 }
 
                 let val_loss: f64 = val_idx
@@ -883,10 +873,7 @@ impl GradientBoostedTrees {
             .iter()
             .map(|_| initial_prediction.clone())
             .collect();
-        let mut f_val: Vec<Vec<f64>> = val_idx
-            .iter()
-            .map(|_| initial_prediction.clone())
-            .collect();
+        let mut f_val: Vec<Vec<f64>> = val_idx.iter().map(|_| initial_prediction.clone()).collect();
 
         let mut trees = Vec::new(); // K trees per round
         let mut best_val_loss = f64::INFINITY;
@@ -933,12 +920,7 @@ impl GradientBoostedTrees {
 
                 // Newton-Raphson multiclass leaf correction
                 apply_multiclass_leaf_correction(
-                    &mut tree,
-                    data,
-                    n_features,
-                    &residuals,
-                    &train_idx,
-                    n_classes,
+                    &mut tree, data, n_features, &residuals, &train_idx, n_classes,
                 );
 
                 // Update training scores for class k
@@ -955,8 +937,7 @@ impl GradientBoostedTrees {
             // Early stopping
             if config.early_stopping_rounds.is_some() {
                 // Update val scores for all classes in this round
-                let round_trees =
-                    &trees[trees.len() - n_classes..];
+                let round_trees = &trees[trees.len() - n_classes..];
                 for (j, &vi) in val_idx.iter().enumerate() {
                     let row = &data[vi * n_features..(vi + 1) * n_features];
                     for (k, tree) in round_trees.iter().enumerate() {
@@ -1051,7 +1032,11 @@ impl GradientBoostedTrees {
             Mode::Regression => 0,
             Mode::BinaryClassification => {
                 let f = self.predict(sample);
-                if sigmoid(f) >= 0.5 { 1 } else { 0 }
+                if sigmoid(f) >= 0.5 {
+                    1
+                } else {
+                    0
+                }
             }
             Mode::MulticlassClassification => {
                 let scores = self.raw_scores(sample);
@@ -1179,8 +1164,7 @@ impl GradientBoostedTrees {
                 let mut col_indices: Vec<usize> = (0..n_samples).collect();
                 shuffle_indices(&mut rng, &mut col_indices);
                 for i in 0..n_samples {
-                    permuted_data[i * n_features + feat] =
-                        data[col_indices[i] * n_features + feat];
+                    permuted_data[i * n_features + feat] = data[col_indices[i] * n_features + feat];
                 }
 
                 let preds = self.predict_batch(&permuted_data, n_features);
@@ -1244,8 +1228,7 @@ impl GradientBoostedTrees {
                 let mut col_indices: Vec<usize> = (0..n_samples).collect();
                 shuffle_indices(&mut rng, &mut col_indices);
                 for i in 0..n_samples {
-                    permuted_data[i * n_features + feat] =
-                        data[col_indices[i] * n_features + feat];
+                    permuted_data[i * n_features + feat] = data[col_indices[i] * n_features + feat];
                 }
 
                 let preds = self.predict_class_batch(&permuted_data, n_features);
@@ -1515,18 +1498,10 @@ mod tests {
 
         // Test on a few points
         let pred = model.predict(&[5.0]);
-        assert!(
-            (pred - 11.0).abs() < 2.0,
-            "expected ~11.0, got {}",
-            pred
-        );
+        assert!((pred - 11.0).abs() < 2.0, "expected ~11.0, got {}", pred);
 
         let pred = model.predict(&[10.0]);
-        assert!(
-            (pred - 21.0).abs() < 3.0,
-            "expected ~21.0, got {}",
-            pred
-        );
+        assert!((pred - 21.0).abs() < 3.0, "expected ~21.0, got {}", pred);
     }
 
     #[test]
@@ -1539,11 +1514,7 @@ mod tests {
         };
         let model = GradientBoostedTrees::fit_regression(&data, 1, &targets, &config).unwrap();
         let pred = model.predict(&[99.0]);
-        assert!(
-            (pred - 7.0).abs() < 0.01,
-            "expected ~7.0, got {}",
-            pred
-        );
+        assert!((pred - 7.0).abs() < 0.01, "expected ~7.0, got {}", pred);
     }
 
     #[test]
@@ -1689,11 +1660,7 @@ mod tests {
         };
         let model = GradientBoostedTrees::fit_regression(&data, 1, &targets, &config).unwrap();
         let pred = model.predict(&[5.0]);
-        assert!(
-            (pred - 10.0).abs() < 0.5,
-            "expected ~10.0, got {}",
-            pred
-        );
+        assert!((pred - 10.0).abs() < 0.5, "expected ~10.0, got {}", pred);
     }
 
     // ── Binary Classification ───────────────────────────────────
@@ -1715,19 +1682,18 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
         assert!(!model.is_regression());
         assert_eq!(model.n_classes(), 2);
 
         let preds = model.predict_class_batch(&data, 2);
-        let correct = preds.iter().zip(labels.iter()).filter(|(&p, &l)| p == l).count();
+        let correct = preds
+            .iter()
+            .zip(labels.iter())
+            .filter(|(&p, &l)| p == l)
+            .count();
         let accuracy = correct as f64 / labels.len() as f64;
-        assert!(
-            accuracy > 0.9,
-            "accuracy {:.2} too low",
-            accuracy
-        );
+        assert!(accuracy > 0.9, "accuracy {:.2} too low", accuracy);
     }
 
     #[test]
@@ -1740,8 +1706,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
 
         for i in 0..6 {
             let sample = &data[i..i + 1];
@@ -1750,7 +1715,11 @@ mod tests {
             assert_eq!(proba.len(), 2);
             // Class should match argmax of proba
             let argmax = if proba[1] >= proba[0] { 1 } else { 0 };
-            assert_eq!(cls, argmax, "class {} != argmax {} for sample {}", cls, argmax, i);
+            assert_eq!(
+                cls, argmax,
+                "class {} != argmax {} for sample {}",
+                cls, argmax, i
+            );
         }
     }
 
@@ -1763,8 +1732,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
 
         let batch = model.predict_class_batch(&data, 1);
         for i in 0..4 {
@@ -1782,8 +1750,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
 
         for i in 0..4 {
             let proba = model.predict_proba(&data[i..i + 1]);
@@ -1812,16 +1779,11 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
         let fi = model.feature_importance();
         assert_eq!(fi.len(), 2);
         let sum: f64 = fi.iter().sum();
-        assert!(
-            (sum - 1.0).abs() < 1e-10,
-            "fi sum {} != 1.0",
-            sum
-        );
+        assert!((sum - 1.0).abs() < 1e-10, "fi sum {} != 1.0", sum);
     }
 
     #[test]
@@ -1841,8 +1803,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
         assert!(
             model.n_estimators() < 500,
             "expected early stopping, got {} rounds",
@@ -1858,8 +1819,7 @@ mod tests {
             n_estimators: 5,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
         assert!(!model.is_regression());
         assert_eq!(model.n_classes(), 2);
         assert_eq!(model.n_features(), 1);
@@ -1871,8 +1831,7 @@ mod tests {
         let data = vec![1.0, 2.0, 3.0];
         let labels = vec![0, 0, 0];
         let config = GbdtConfig::default();
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 1, &labels, &config).unwrap();
         assert_eq!(model.predict_class(&[1.0]), 0);
     }
 
@@ -1908,12 +1867,15 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
         assert_eq!(model.n_classes(), 3);
 
         let preds = model.predict_class_batch(&data, 2);
-        let correct = preds.iter().zip(labels.iter()).filter(|(&p, &l)| p == l).count();
+        let correct = preds
+            .iter()
+            .zip(labels.iter())
+            .filter(|(&p, &l)| p == l)
+            .count();
         let accuracy = correct as f64 / labels.len() as f64;
         assert!(
             accuracy > 0.9,
@@ -1931,8 +1893,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
 
         for i in 0..3 {
             let proba = model.predict_proba(&data[i * 2..(i + 1) * 2]);
@@ -1956,8 +1917,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
 
         for i in 0..3 {
             let sample = &data[i * 2..(i + 1) * 2];
@@ -1982,8 +1942,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
 
         let batch = model.predict_proba_batch(&data, 2);
         assert_eq!(batch.len(), 3 * 3); // 3 samples * 3 classes
@@ -2010,8 +1969,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
         let fi = model.feature_importance();
         assert_eq!(fi.len(), 2);
         let sum: f64 = fi.iter().sum();
@@ -2125,8 +2083,7 @@ mod tests {
             seed: 42,
             ..Default::default()
         };
-        let model =
-            GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
+        let model = GradientBoostedTrees::fit_classification(&data, 2, &labels, &config).unwrap();
         let pi = model.permutation_importance_classification(&data, 2, &labels, 5, 123);
         assert!(
             pi[0] > pi[1],
@@ -2154,12 +2111,7 @@ mod tests {
         let preds2 = model2.predict_batch(&data, 1);
         assert_eq!(preds1.len(), preds2.len());
         for (a, b) in preds1.iter().zip(preds2.iter()) {
-            assert!(
-                (a - b).abs() < 1e-12,
-                "predictions differ: {} vs {}",
-                a,
-                b
-            );
+            assert!((a - b).abs() < 1e-12, "predictions differ: {} vs {}", a, b);
         }
     }
 }

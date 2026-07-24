@@ -439,7 +439,8 @@ pub fn detect_sv_breakpoints(
     cluster_distance: u64,
 ) -> Vec<SvBreakpoint> {
     // Collect all evidence.
-    let mut evidence: Vec<SvEvidence> = Vec::with_capacity(discordant_pairs.len() + split_reads.len());
+    let mut evidence: Vec<SvEvidence> =
+        Vec::with_capacity(discordant_pairs.len() + split_reads.len());
 
     for (c1, p1, c2, p2) in discordant_pairs {
         evidence.push(SvEvidence {
@@ -739,7 +740,7 @@ mod tests {
         let n = 40;
         let positions: Vec<u64> = (0..n).map(|i| i as u64 * 1000).collect();
         let mut bafs = vec![0.5; n]; // heterozygous
-        // LOH region: BAF near 0.0 or 1.0.
+                                     // LOH region: BAF near 0.0 or 1.0.
         for i in 20..n {
             bafs[i] = 0.95;
         }
@@ -780,9 +781,8 @@ mod tests {
             ("chr1".into(), 1010, "chr1".into(), 5010),
             ("chr1".into(), 1020, "chr1".into(), 5020),
         ];
-        let split: Vec<(String, u64, String, u64)> = vec![
-            ("chr1".into(), 1005, "chr1".into(), 5005),
-        ];
+        let split: Vec<(String, u64, String, u64)> =
+            vec![("chr1".into(), 1005, "chr1".into(), 5005)];
 
         let bps = detect_sv_breakpoints(&discordant, &split, 100);
 
@@ -800,9 +800,8 @@ mod tests {
             ("chr1".into(), 1000, "chr5".into(), 2000),
             ("chr1".into(), 1010, "chr5".into(), 2010),
         ];
-        let split: Vec<(String, u64, String, u64)> = vec![
-            ("chr1".into(), 1005, "chr5".into(), 2005),
-        ];
+        let split: Vec<(String, u64, String, u64)> =
+            vec![("chr1".into(), 1005, "chr5".into(), 2005)];
 
         let bps = detect_sv_breakpoints(&discordant, &split, 100);
 

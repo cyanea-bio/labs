@@ -1,6 +1,6 @@
 //! Integration tests for peak calling functionality.
 
-use cyanea_epi::peaks::{call_peaks, call_broad_peaks, PeakCallParams, PeakSet, Peak};
+use cyanea_epi::peaks::{call_broad_peaks, call_peaks, Peak, PeakCallParams, PeakSet};
 
 #[test]
 fn test_peak_calling_synthetic_data() {
@@ -92,19 +92,17 @@ fn test_peak_set_operations() {
         },
     ];
 
-    let peaks2 = vec![
-        Peak {
-            chrom: "chr1".to_string(),
-            start: 200,
-            end: 400,
-            summit: 300,
-            score: 8.0,
-            p_value: 0.01,
-            q_value: 0.05,
-            fold_enrichment: 2.0,
-            name: Some("peak3".to_string()),
-        },
-    ];
+    let peaks2 = vec![Peak {
+        chrom: "chr1".to_string(),
+        start: 200,
+        end: 400,
+        summit: 300,
+        score: 8.0,
+        p_value: 0.01,
+        q_value: 0.05,
+        fold_enrichment: 2.0,
+        name: Some("peak3".to_string()),
+    }];
 
     let peakset1 = PeakSet::new(peaks1);
     let peakset2 = PeakSet::new(peaks2);

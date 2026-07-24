@@ -142,12 +142,7 @@ impl Pwm {
     /// Scan a sequence for motif matches above a score threshold.
     ///
     /// Checks both forward and reverse complement strands.
-    pub fn scan(
-        &self,
-        seq: &[u8],
-        background: &[f64; 4],
-        threshold: f64,
-    ) -> Vec<MotifMatch> {
+    pub fn scan(&self, seq: &[u8], background: &[f64; 4], threshold: f64) -> Vec<MotifMatch> {
         let mut matches = Vec::new();
         if seq.len() < self.length {
             return matches;
@@ -371,7 +366,13 @@ fn em_one_motif(
 
                     let exp_scores: Vec<f64> = scores
                         .iter()
-                        .map(|&s| if s.is_finite() { (s - max_score).exp() } else { 0.0 })
+                        .map(|&s| {
+                            if s.is_finite() {
+                                (s - max_score).exp()
+                            } else {
+                                0.0
+                            }
+                        })
                         .collect();
                     let sum_exp: f64 = exp_scores.iter().sum();
                     if sum_exp <= 0.0 {
@@ -520,7 +521,10 @@ mod tests {
             .collect();
         assert!(!fwd_matches.is_empty());
         // Best forward match should be at position 3.
-        let best = fwd_matches.iter().max_by(|a, b| a.score.partial_cmp(&b.score).unwrap()).unwrap();
+        let best = fwd_matches
+            .iter()
+            .max_by(|a, b| a.score.partial_cmp(&b.score).unwrap())
+            .unwrap();
         assert_eq!(best.position, 3);
     }
 

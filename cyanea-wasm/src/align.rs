@@ -5,10 +5,12 @@
 
 use serde::Deserialize;
 
-use cyanea_align::{align, AlignmentMode, AlignmentResult, ScoringMatrix, ScoringScheme, SubstitutionMatrix};
 use cyanea_align::msa;
 use cyanea_align::poa::{PoaGraph, PoaScoring};
-use cyanea_align::simd::{banded_nw, banded_sw, banded_semi_global};
+use cyanea_align::simd::{banded_nw, banded_semi_global, banded_sw};
+use cyanea_align::{
+    align, AlignmentMode, AlignmentResult, ScoringMatrix, ScoringScheme, SubstitutionMatrix,
+};
 use cyanea_core::CyaneaError;
 
 use crate::error::{wasm_err, wasm_ok, wasm_result};
@@ -514,7 +516,10 @@ mod tests {
     fn invalid_mode() {
         let json = align_dna("ACGT", "ACGT", "foobar");
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert!(v["error"].as_str().unwrap().contains("unknown alignment mode"));
+        assert!(v["error"]
+            .as_str()
+            .unwrap()
+            .contains("unknown alignment mode"));
     }
 
     #[test]
@@ -528,7 +533,10 @@ mod tests {
     fn invalid_matrix() {
         let json = align_protein("HEAG", "PAWH", "global", "unknown");
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert!(v["error"].as_str().unwrap().contains("unknown substitution matrix"));
+        assert!(v["error"]
+            .as_str()
+            .unwrap()
+            .contains("unknown substitution matrix"));
     }
 
     #[test]
@@ -596,10 +604,10 @@ mod tests {
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let s = &v["ok"];
         assert_eq!(s["reference_consumed"], 14); // M(10) + D(4)
-        assert_eq!(s["query_consumed"], 15);     // M(10) + I(3) + S(2)
-        assert_eq!(s["alignment_columns"], 17);  // M(10) + I(3) + D(4)
-        assert_eq!(s["gap_count"], 2);           // I, D
-        assert_eq!(s["gap_bases"], 7);           // 3 + 4
+        assert_eq!(s["query_consumed"], 15); // M(10) + I(3) + S(2)
+        assert_eq!(s["alignment_columns"], 17); // M(10) + I(3) + D(4)
+        assert_eq!(s["gap_count"], 2); // I, D
+        assert_eq!(s["gap_bases"], 7); // 3 + 4
         assert_eq!(s["soft_clipped"], 2);
         assert_eq!(s["hard_clipped"], 5);
     }
@@ -609,11 +617,17 @@ mod tests {
         let json = cigar_to_alignment("3=1I2=1D1=", "ACGTACG", "ACGACGA");
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let aq: Vec<u8> = v["ok"]["aligned_query"]
-            .as_array().unwrap().iter()
-            .map(|x| x.as_u64().unwrap() as u8).collect();
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_u64().unwrap() as u8)
+            .collect();
         let at: Vec<u8> = v["ok"]["aligned_target"]
-            .as_array().unwrap().iter()
-            .map(|x| x.as_u64().unwrap() as u8).collect();
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|x| x.as_u64().unwrap() as u8)
+            .collect();
         assert_eq!(aq, b"ACGTAC-G");
         assert_eq!(at, b"ACG-ACGA");
     }

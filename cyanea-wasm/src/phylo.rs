@@ -6,13 +6,13 @@ use serde::{Deserialize, Serialize};
 
 use cyanea_ml::DistanceMatrix;
 use cyanea_phylo::compare::{robinson_foulds, robinson_foulds_normalized};
+use cyanea_phylo::construct::{neighbor_joining, upgma};
 use cyanea_phylo::distance::{jukes_cantor, kimura_2p, p_distance};
 use cyanea_phylo::newick;
 use cyanea_phylo::nexus;
 use cyanea_phylo::simulation;
 use cyanea_phylo::subst_model::{Hky85Model, Jc69Model};
 use cyanea_phylo::tree::PhyloTree;
-use cyanea_phylo::construct::{neighbor_joining, upgma};
 
 use crate::error::{wasm_err, wasm_ok};
 
@@ -277,7 +277,12 @@ pub fn write_nexus(taxa_json: &str, trees_json: &str) -> String {
     for ti in &tree_inputs {
         let tree = match newick::parse(&ti.newick) {
             Ok(t) => t,
-            Err(e) => return wasm_err(format!("failed to parse newick for tree '{}': {e}", ti.name)),
+            Err(e) => {
+                return wasm_err(format!(
+                    "failed to parse newick for tree '{}': {e}",
+                    ti.name
+                ))
+            }
         };
         parsed_trees.push((ti.name.clone(), tree));
     }
@@ -366,7 +371,8 @@ pub fn simulate_coalescent_growth(
     growth_rate: f64,
     seed: u64,
 ) -> String {
-    let tree = match simulation::simulate_coalescent_growth(n_samples, pop_size, growth_rate, seed) {
+    let tree = match simulation::simulate_coalescent_growth(n_samples, pop_size, growth_rate, seed)
+    {
         Ok(t) => t,
         Err(e) => return wasm_err(e),
     };
@@ -464,7 +470,10 @@ mod tests {
     fn evolutionary_distance_invalid_model() {
         let json = evolutionary_distance("ACGT", "ACGT", "foobar");
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert!(v["error"].as_str().unwrap().contains("unknown distance model"));
+        assert!(v["error"]
+            .as_str()
+            .unwrap()
+            .contains("unknown distance model"));
     }
 
     #[test]

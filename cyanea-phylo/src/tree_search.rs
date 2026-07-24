@@ -34,11 +34,7 @@ impl Default for AnnealingConfig {
 /// Detaches the subtree at `prune` from its parent, reconnects parent's
 /// remaining child to grandparent, then reattaches the pruned subtree
 /// at the edge leading to `regraft`.
-pub fn spr_move(
-    tree: &PhyloTree,
-    prune: NodeId,
-    regraft: NodeId,
-) -> Result<PhyloTree> {
+pub fn spr_move(tree: &PhyloTree, prune: NodeId, regraft: NodeId) -> Result<PhyloTree> {
     let n = tree.node_count();
     if prune >= n || regraft >= n {
         return Err(CyaneaError::InvalidInput("node id out of range".into()));
@@ -47,12 +43,12 @@ pub fn spr_move(
         return Err(CyaneaError::InvalidInput("cannot prune root".into()));
     }
 
-    let prune_node = tree.get_node(prune).ok_or_else(|| {
-        CyaneaError::InvalidInput("prune node not found".into())
-    })?;
-    let parent_id = prune_node.parent.ok_or_else(|| {
-        CyaneaError::InvalidInput("prune node has no parent".into())
-    })?;
+    let prune_node = tree
+        .get_node(prune)
+        .ok_or_else(|| CyaneaError::InvalidInput("prune node not found".into()))?;
+    let parent_id = prune_node
+        .parent
+        .ok_or_else(|| CyaneaError::InvalidInput("prune node has no parent".into()))?;
 
     if parent_id == regraft || prune == regraft {
         return Ok(tree.clone()); // No-op
@@ -202,7 +198,11 @@ pub fn tbr_move(
     // then regraft the result at reconnect_a.
     // Simplified: just do two SPR moves in sequence.
     // First, detach the child side and regraft.
-    let child = if node_a.children.contains(&bb) { bb } else { ba };
+    let child = if node_a.children.contains(&bb) {
+        bb
+    } else {
+        ba
+    };
     let parent = if child == bb { ba } else { bb };
 
     // First SPR: prune the child subtree and regraft at reconnect_b
@@ -216,8 +216,7 @@ pub fn tbr_move(
     if reconnect_b != child && reconnect_b < intermediate.node_count() {
         // Find the corresponding node - since SPR may have renumbered,
         // we try the move and fall back to just the first SPR.
-        spr_move(&intermediate, reconnect_b, child)
-            .or(Ok(intermediate))
+        spr_move(&intermediate, reconnect_b, child).or(Ok(intermediate))
     } else {
         Ok(intermediate)
     }
@@ -261,8 +260,7 @@ pub fn parsimony_ratchet(
         let candidate = nni_search_generic(&best_tree, &rw_refs, model, None)?;
 
         // Evaluate on original data.
-        let candidate_ll =
-            generic_tree_likelihood(&candidate, sequences, model, None)?;
+        let candidate_ll = generic_tree_likelihood(&candidate, sequences, model, None)?;
         if candidate_ll > best_ll {
             best_tree = candidate;
             best_ll = candidate_ll;
@@ -327,10 +325,8 @@ pub fn stochastic_nni(
         let nephew_idx = (next_rand() as usize) % child.children.len();
         let nephew_id = child.children[nephew_idx];
 
-        if let Ok(swapped) = nni_swap(&current_tree, parent_id, child_id, sibling_id, nephew_id)
-        {
-            if let Ok(new_ll) = generic_tree_likelihood(&swapped, sequences, model, None)
-            {
+        if let Ok(swapped) = nni_swap(&current_tree, parent_id, child_id, sibling_id, nephew_id) {
+            if let Ok(new_ll) = generic_tree_likelihood(&swapped, sequences, model, None) {
                 let delta = new_ll - current_ll;
                 let accept = if delta > 0.0 {
                     true
@@ -444,9 +440,7 @@ pub fn nni_search_generic(
                 if let Ok(swapped) =
                     nni_swap(&best_tree, parent_id, child_id, sibling_id, nephew_id)
                 {
-                    if let Ok(ll) =
-                        generic_tree_likelihood(&swapped, sequences, model, gamma)
-                    {
+                    if let Ok(ll) = generic_tree_likelihood(&swapped, sequences, model, gamma) {
                         if ll > best_ll {
                             best_tree = swapped;
                             best_ll = ll;
@@ -541,10 +535,7 @@ mod tests {
     use crate::subst_model::Jc69Model;
 
     fn test_tree_5() -> PhyloTree {
-        PhyloTree::from_newick(
-            "(((A:0.1,B:0.1):0.1,C:0.1):0.1,(D:0.1,E:0.1):0.1);",
-        )
-        .unwrap()
+        PhyloTree::from_newick("(((A:0.1,B:0.1):0.1,C:0.1):0.1,(D:0.1,E:0.1):0.1);").unwrap()
     }
 
     fn test_seqs_5() -> Vec<Vec<u8>> {
@@ -608,7 +599,8 @@ mod tests {
         assert!(
             ll_after >= ll_before - 1e-8,
             "SPR should not decrease likelihood: {} -> {}",
-            ll_before, ll_after
+            ll_before,
+            ll_after
         );
     }
 
@@ -646,7 +638,8 @@ mod tests {
         assert!(
             ll_after >= ll_before - 1e-6,
             "ratchet should not worsen: {} -> {}",
-            ll_before, ll_after
+            ll_before,
+            ll_after
         );
     }
 

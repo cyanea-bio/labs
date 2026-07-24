@@ -102,7 +102,11 @@ impl SmartsPattern {
             adjacency[bond.atom1].push((bond.atom2, bi));
             adjacency[bond.atom2].push((bond.atom1, bi));
         }
-        SmartsPattern { atoms, bonds, adjacency }
+        SmartsPattern {
+            atoms,
+            bonds,
+            adjacency,
+        }
     }
 
     /// Return all atoms that have an atom-atom map number, as (atom_index, map_number) pairs.
@@ -209,7 +213,10 @@ impl<'a> SmartsParser<'a> {
                 }
                 Some(b'*') => {
                     self.advance();
-                    let atom = SmartsAtom { expr: AtomExpr::Prim(AtomPrimitive::Wildcard), atom_map: None };
+                    let atom = SmartsAtom {
+                        expr: AtomExpr::Prim(AtomPrimitive::Wildcard),
+                        atom_map: None,
+                    };
                     let idx = self.atoms.len();
                     self.atoms.push(atom);
                     self.add_bond_to_prev(idx);
@@ -299,7 +306,10 @@ impl<'a> SmartsParser<'a> {
             AtomExpr::Prim(AtomPrimitive::AtomicNum(atomic_num))
         };
 
-        let atom = SmartsAtom { expr, atom_map: None };
+        let atom = SmartsAtom {
+            expr,
+            atom_map: None,
+        };
         let idx = self.atoms.len();
         self.atoms.push(atom);
         self.add_bond_to_prev(idx);
@@ -314,7 +324,9 @@ impl<'a> SmartsParser<'a> {
         if self.peek() == Some(b'$') {
             self.advance(); // consume '$'
             if self.advance() != Some(b'(') {
-                return Err(CyaneaError::Parse("expected '(' after '$' in SMARTS".into()));
+                return Err(CyaneaError::Parse(
+                    "expected '(' after '$' in SMARTS".into(),
+                ));
             }
             // Find matching ')'
             let start = self.pos;
@@ -330,7 +342,9 @@ impl<'a> SmartsParser<'a> {
                 }
             }
             if depth != 0 {
-                return Err(CyaneaError::Parse("unmatched '(' in recursive SMARTS".into()));
+                return Err(CyaneaError::Parse(
+                    "unmatched '(' in recursive SMARTS".into(),
+                ));
             }
             let inner = std::str::from_utf8(&self.input[start..self.pos])
                 .map_err(|_| CyaneaError::Parse("invalid UTF-8 in recursive SMARTS".into()))?;
@@ -339,10 +353,15 @@ impl<'a> SmartsParser<'a> {
             let sub_pattern = parse_smarts(inner)?;
 
             if self.advance() != Some(b']') {
-                return Err(CyaneaError::Parse("expected ']' after recursive SMARTS".into()));
+                return Err(CyaneaError::Parse(
+                    "expected ']' after recursive SMARTS".into(),
+                ));
             }
 
-            let atom = SmartsAtom { expr: AtomExpr::Recursive(sub_pattern), atom_map: None };
+            let atom = SmartsAtom {
+                expr: AtomExpr::Recursive(sub_pattern),
+                atom_map: None,
+            };
             let idx = self.atoms.len();
             self.atoms.push(atom);
             self.add_bond_to_prev(idx);
@@ -363,7 +382,9 @@ impl<'a> SmartsParser<'a> {
         };
 
         if self.advance() != Some(b']') {
-            return Err(CyaneaError::Parse("expected ']' in SMARTS bracket atom".into()));
+            return Err(CyaneaError::Parse(
+                "expected ']' in SMARTS bracket atom".into(),
+            ));
         }
 
         let atom = SmartsAtom { expr, atom_map };
@@ -439,7 +460,8 @@ impl<'a> SmartsParser<'a> {
                 self.advance();
                 // Check if followed by lowercase letter -> element symbol like Al, As, Ag
                 if let Some(next) = self.peek() {
-                    if next == b'l' || next == b's' || next == b'g' || next == b'r' || next == b'u' {
+                    if next == b'l' || next == b's' || next == b'g' || next == b'r' || next == b'u'
+                    {
                         // This is an element symbol, not the aliphatic primitive
                         // But in SMARTS context, plain 'A' means aliphatic
                         // Element symbols inside brackets need to be distinguished
@@ -519,7 +541,12 @@ impl<'a> SmartsParser<'a> {
 
         // Try two-letter elements
         let (symbol, atomic_num) = if let Some(next) = self.peek() {
-            if next.is_ascii_lowercase() && next != b',' && next != b'&' && next != b']' && next != b'!' {
+            if next.is_ascii_lowercase()
+                && next != b','
+                && next != b'&'
+                && next != b']'
+                && next != b'!'
+            {
                 let two = format!("{}{}", upper as char, next as char);
                 if let Some(num) = symbol_to_atomic_num(&two) {
                     self.advance();
@@ -588,14 +615,16 @@ impl<'a> SmartsParser<'a> {
     }
 
     fn parse_two_digit_ring(&mut self) -> Result<u16> {
-        let d1 = self.advance().ok_or_else(|| {
-            CyaneaError::Parse("expected digit after '%' in SMARTS".into())
-        })?;
+        let d1 = self
+            .advance()
+            .ok_or_else(|| CyaneaError::Parse("expected digit after '%' in SMARTS".into()))?;
         let d2 = self.advance().ok_or_else(|| {
             CyaneaError::Parse("expected second digit after '%' in SMARTS".into())
         })?;
         if !d1.is_ascii_digit() || !d2.is_ascii_digit() {
-            return Err(CyaneaError::Parse("invalid ring closure after '%' in SMARTS".into()));
+            return Err(CyaneaError::Parse(
+                "invalid ring closure after '%' in SMARTS".into(),
+            ));
         }
         Ok((d1 - b'0') as u16 * 10 + (d2 - b'0') as u16)
     }
@@ -606,10 +635,19 @@ impl<'a> SmartsParser<'a> {
         })?;
 
         if let Some((open_atom, open_bond)) = self.ring_closures.remove(&ring_num) {
-            let expr = self.pending_bond.take().or(open_bond).unwrap_or(BondExpr::Any);
-            self.bonds.push(SmartsBond { atom1: open_atom, atom2: current, expr });
+            let expr = self
+                .pending_bond
+                .take()
+                .or(open_bond)
+                .unwrap_or(BondExpr::Any);
+            self.bonds.push(SmartsBond {
+                atom1: open_atom,
+                atom2: current,
+                expr,
+            });
         } else {
-            self.ring_closures.insert(ring_num, (current, self.pending_bond.take()));
+            self.ring_closures
+                .insert(ring_num, (current, self.pending_bond.take()));
         }
         Ok(())
     }
@@ -617,7 +655,11 @@ impl<'a> SmartsParser<'a> {
     fn add_bond_to_prev(&mut self, atom_idx: usize) {
         if let Some(prev) = self.prev_atom {
             let expr = self.pending_bond.take().unwrap_or(BondExpr::Any);
-            self.bonds.push(SmartsBond { atom1: prev, atom2: atom_idx, expr });
+            self.bonds.push(SmartsBond {
+                atom1: prev,
+                atom2: atom_idx,
+                expr,
+            });
         }
         self.pending_bond = None;
     }
@@ -637,31 +679,82 @@ impl<'a> SmartsParser<'a> {
 fn is_organic_smarts(ch: u8) -> bool {
     matches!(
         ch,
-        b'B' | b'C' | b'N' | b'O' | b'P' | b'S' | b'F' | b'I'
-            | b'b' | b'c' | b'n' | b'o' | b'p' | b's'
+        b'B' | b'C'
+            | b'N'
+            | b'O'
+            | b'P'
+            | b'S'
+            | b'F'
+            | b'I'
+            | b'b'
+            | b'c'
+            | b'n'
+            | b'o'
+            | b'p'
+            | b's'
     )
 }
 
 fn is_atom_prim_start(ch: u8) -> bool {
     matches!(
         ch,
-        b'#' | b'a' | b'A' | b'D' | b'H' | b'h' | b'R' | b'r'
-            | b'X' | b'v' | b'*' | b'+' | b'-' | b'!'
+        b'#' | b'a'
+            | b'A'
+            | b'D'
+            | b'H'
+            | b'h'
+            | b'R'
+            | b'r'
+            | b'X'
+            | b'v'
+            | b'*'
+            | b'+'
+            | b'-'
+            | b'!'
     ) || ch.is_ascii_alphabetic()
 }
 
 fn symbol_to_atomic_num(symbol: &str) -> Option<u8> {
     match symbol {
-        "H" => Some(1), "He" => Some(2), "Li" => Some(3), "Be" => Some(4),
-        "B" => Some(5), "C" => Some(6), "N" => Some(7), "O" => Some(8),
-        "F" => Some(9), "Ne" => Some(10), "Na" => Some(11), "Mg" => Some(12),
-        "Al" => Some(13), "Si" => Some(14), "P" => Some(15), "S" => Some(16),
-        "Cl" => Some(17), "Ar" => Some(18), "K" => Some(19), "Ca" => Some(20),
-        "Sc" => Some(21), "Ti" => Some(22), "V" => Some(23), "Cr" => Some(24),
-        "Mn" => Some(25), "Fe" => Some(26), "Co" => Some(27), "Ni" => Some(28),
-        "Cu" => Some(29), "Zn" => Some(30), "Ga" => Some(31), "Ge" => Some(32),
-        "As" => Some(33), "Se" => Some(34), "Br" => Some(35), "Kr" => Some(36),
-        "Rb" => Some(37), "Sr" => Some(38), "I" => Some(53),
+        "H" => Some(1),
+        "He" => Some(2),
+        "Li" => Some(3),
+        "Be" => Some(4),
+        "B" => Some(5),
+        "C" => Some(6),
+        "N" => Some(7),
+        "O" => Some(8),
+        "F" => Some(9),
+        "Ne" => Some(10),
+        "Na" => Some(11),
+        "Mg" => Some(12),
+        "Al" => Some(13),
+        "Si" => Some(14),
+        "P" => Some(15),
+        "S" => Some(16),
+        "Cl" => Some(17),
+        "Ar" => Some(18),
+        "K" => Some(19),
+        "Ca" => Some(20),
+        "Sc" => Some(21),
+        "Ti" => Some(22),
+        "V" => Some(23),
+        "Cr" => Some(24),
+        "Mn" => Some(25),
+        "Fe" => Some(26),
+        "Co" => Some(27),
+        "Ni" => Some(28),
+        "Cu" => Some(29),
+        "Zn" => Some(30),
+        "Ga" => Some(31),
+        "Ge" => Some(32),
+        "As" => Some(33),
+        "Se" => Some(34),
+        "Br" => Some(35),
+        "Kr" => Some(36),
+        "Rb" => Some(37),
+        "Sr" => Some(38),
+        "I" => Some(53),
         _ => None,
     }
 }
@@ -757,15 +850,21 @@ fn eval_atom_expr(
 ) -> bool {
     match expr {
         AtomExpr::Prim(prim) => eval_atom_prim(prim, mol, atom_idx, ring_membership, ring_sizes),
-        AtomExpr::And(terms) => terms.iter().all(|t| eval_atom_expr(t, mol, atom_idx, ring_membership, ring_sizes, rings)),
-        AtomExpr::Or(terms) => terms.iter().any(|t| eval_atom_expr(t, mol, atom_idx, ring_membership, ring_sizes, rings)),
-        AtomExpr::Not(inner) => !eval_atom_expr(inner, mol, atom_idx, ring_membership, ring_sizes, rings),
+        AtomExpr::And(terms) => terms
+            .iter()
+            .all(|t| eval_atom_expr(t, mol, atom_idx, ring_membership, ring_sizes, rings)),
+        AtomExpr::Or(terms) => terms
+            .iter()
+            .any(|t| eval_atom_expr(t, mol, atom_idx, ring_membership, ring_sizes, rings)),
+        AtomExpr::Not(inner) => {
+            !eval_atom_expr(inner, mol, atom_idx, ring_membership, ring_sizes, rings)
+        }
         AtomExpr::Recursive(sub_pattern) => {
             // Check if any match of sub_pattern includes this atom as its first atom
             let sub_matches = smarts_find_all(mol, sub_pattern);
-            sub_matches.iter().any(|m| {
-                m.atom_mapping.first().map(|&(_, t)| t) == Some(atom_idx)
-            })
+            sub_matches
+                .iter()
+                .any(|m| m.atom_mapping.first().map(|&(_, t)| t) == Some(atom_idx))
         }
     }
 }
@@ -823,8 +922,12 @@ fn eval_bond_expr(
         BondExpr::Ring => ring_bond_set.contains(&bond_idx),
         BondExpr::Any => true,
         BondExpr::Not(inner) => !eval_bond_expr(inner, mol, bond_idx, ring_bond_set),
-        BondExpr::And(terms) => terms.iter().all(|t| eval_bond_expr(t, mol, bond_idx, ring_bond_set)),
-        BondExpr::Or(terms) => terms.iter().any(|t| eval_bond_expr(t, mol, bond_idx, ring_bond_set)),
+        BondExpr::And(terms) => terms
+            .iter()
+            .all(|t| eval_bond_expr(t, mol, bond_idx, ring_bond_set)),
+        BondExpr::Or(terms) => terms
+            .iter()
+            .any(|t| eval_bond_expr(t, mol, bond_idx, ring_bond_set)),
     }
 }
 
@@ -888,7 +991,9 @@ impl<'a> SmartsVf2State<'a> {
                 .enumerate()
                 .map(|(p, t)| (p, t.unwrap()))
                 .collect();
-            self.matches.push(SubstructureMatch { atom_mapping: mapping });
+            self.matches.push(SubstructureMatch {
+                atom_mapping: mapping,
+            });
             return;
         }
 
@@ -921,9 +1026,7 @@ impl<'a> SmartsVf2State<'a> {
 
         for &(p_neighbor, _) in &self.pattern.adjacency[pattern_atom] {
             if let Some(t_mapped) = self.core_pattern[p_neighbor] {
-                let t_neighbors: Vec<usize> = self
-                    .target
-                    .adjacency[t_mapped]
+                let t_neighbors: Vec<usize> = self.target.adjacency[t_mapped]
                     .iter()
                     .map(|&(n, _)| n)
                     .filter(|&n| self.core_target[n].is_none())

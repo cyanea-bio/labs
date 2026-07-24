@@ -110,31 +110,19 @@ pub enum Consequence {
         codon_pos: u64,
     },
     /// Premature stop codon (stop-gain).
-    Nonsense {
-        ref_aa: u8,
-        codon_pos: u64,
-    },
+    Nonsense { ref_aa: u8, codon_pos: u64 },
     /// Substitution producing the same amino acid.
-    Synonymous {
-        aa: u8,
-        codon_pos: u64,
-    },
+    Synonymous { aa: u8, codon_pos: u64 },
     /// Insertion or deletion whose length is not a multiple of 3.
-    Frameshift {
-        codon_pos: u64,
-    },
+    Frameshift { codon_pos: u64 },
     /// Insertion or deletion whose length is a multiple of 3.
-    InFrame {
-        codon_pos: u64,
-    },
+    InFrame { codon_pos: u64 },
     /// Variant falls in the 5' untranslated region.
     FivePrimeUtr,
     /// Variant falls in the 3' untranslated region.
     ThreePrimeUtr,
     /// Variant at a splice site (within `splice_window` of an exon boundary).
-    SpliceSite {
-        donor: bool,
-    },
+    SpliceSite { donor: bool },
     /// Variant falls within an intron (not at a splice site).
     Intronic,
     /// Variant is upstream of the gene.
@@ -144,13 +132,9 @@ pub enum Consequence {
     /// Variant affects a non-coding gene.
     NonCoding,
     /// Disruption of the initiator methionine.
-    StartLoss {
-        ref_aa: u8,
-    },
+    StartLoss { ref_aa: u8 },
     /// Loss of the natural stop codon.
-    StopLoss {
-        ref_aa: u8,
-    },
+    StopLoss { ref_aa: u8 },
 }
 
 /// A predicted effect of a variant on a specific transcript.
@@ -421,11 +405,7 @@ pub fn annotate_variants(
         let intervals: Vec<Interval<usize>> = gene_list
             .iter()
             .map(|&(idx, gene)| {
-                Interval::new(
-                    gene.start.saturating_sub(max_ext),
-                    gene.end + max_ext,
-                    idx,
-                )
+                Interval::new(gene.start.saturating_sub(max_ext), gene.end + max_ext, idx)
             })
             .collect();
         chrom_trees.insert(chrom, IntervalTree::from_unsorted(intervals));
@@ -473,11 +453,18 @@ pub fn score_splice_disruption(
             if i < exons_sorted.len() - 1 {
                 let donor_start = exon.end.saturating_sub(3);
                 let donor_end = exon.end + 6;
-                if pos0 >= donor_start && pos0 < donor_end && (donor_end as usize) <= reference_seq.len() {
-                    let window_ref: Vec<u8> = reference_seq[donor_start as usize..donor_end as usize].to_vec();
+                if pos0 >= donor_start
+                    && pos0 < donor_end
+                    && (donor_end as usize) <= reference_seq.len()
+                {
+                    let window_ref: Vec<u8> =
+                        reference_seq[donor_start as usize..donor_end as usize].to_vec();
                     let mut window_alt = window_ref.clone();
                     let offset = (pos0 - donor_start) as usize;
-                    if offset < window_alt.len() && variant.alt_alleles[0].len() == 1 && variant.ref_allele.len() == 1 {
+                    if offset < window_alt.len()
+                        && variant.alt_alleles[0].len() == 1
+                        && variant.ref_allele.len() == 1
+                    {
                         window_alt[offset] = variant.alt_alleles[0][0];
                     }
 
@@ -509,11 +496,16 @@ pub fn score_splice_disruption(
             if i > 0 {
                 let acc_start = exon.start.saturating_sub(20);
                 let acc_end = exon.start + 3;
-                if pos0 >= acc_start && pos0 < acc_end && (acc_end as usize) <= reference_seq.len() {
-                    let window_ref: Vec<u8> = reference_seq[acc_start as usize..acc_end as usize].to_vec();
+                if pos0 >= acc_start && pos0 < acc_end && (acc_end as usize) <= reference_seq.len()
+                {
+                    let window_ref: Vec<u8> =
+                        reference_seq[acc_start as usize..acc_end as usize].to_vec();
                     let mut window_alt = window_ref.clone();
                     let offset = (pos0 - acc_start) as usize;
-                    if offset < window_alt.len() && variant.alt_alleles[0].len() == 1 && variant.ref_allele.len() == 1 {
+                    if offset < window_alt.len()
+                        && variant.alt_alleles[0].len() == 1
+                        && variant.ref_allele.len() == 1
+                    {
                         window_alt[offset] = variant.alt_alleles[0][0];
                     }
 
@@ -787,10 +779,7 @@ fn annotate_transcript(
             gene_name: gene.gene_name.clone(),
             transcript_id: tx.transcript_id.clone(),
             consequence,
-            hgvs_c: Some(format!(
-                "c.{}del",
-                cds_pos_1based,
-            )),
+            hgvs_c: Some(format!("c.{}del", cds_pos_1based,)),
             hgvs_p: None,
             codon_change: None,
             cds_position: Some(cds_pos_1based),
@@ -850,9 +839,7 @@ fn annotate_transcript(
     };
     let hgvs_c = Some(format!(
         "c.{}{}>{}",
-        cds_pos_1based,
-        hgvs_c_ref as char,
-        hgvs_c_alt as char,
+        cds_pos_1based, hgvs_c_ref as char, hgvs_c_alt as char,
     ));
 
     // Classify the consequence
@@ -880,9 +867,7 @@ fn annotate_transcript(
 
     // HGVS protein notation
     let hgvs_p = match &consequence {
-        Consequence::Missense {
-            ref_aa, alt_aa, ..
-        } => Some(format!(
+        Consequence::Missense { ref_aa, alt_aa, .. } => Some(format!(
             "p.{}{}{}",
             aa_three_letter(*ref_aa),
             codon_pos_1based,
@@ -894,16 +879,11 @@ fn annotate_transcript(
             codon_pos_1based,
             aa_three_letter(b'*'),
         )),
-        Consequence::Synonymous { aa, .. } => Some(format!(
-            "p.{}{}=",
-            aa_three_letter(*aa),
-            codon_pos_1based,
-        )),
+        Consequence::Synonymous { aa, .. } => {
+            Some(format!("p.{}{}=", aa_three_letter(*aa), codon_pos_1based,))
+        }
         Consequence::StartLoss { .. } => Some("p.Met1?".to_string()),
-        Consequence::StopLoss { .. } => Some(format!(
-            "p.Ter{}?ext",
-            codon_pos_1based,
-        )),
+        Consequence::StopLoss { .. } => Some(format!("p.Ter{}?ext", codon_pos_1based,)),
         _ => None,
     };
 
@@ -958,8 +938,8 @@ fn build_codon_from_cds(
         } else {
             0
         };
-        let take = (target_end - (collected + skip).max(codon_start_offset))
-            .min(exon_cds_len - skip);
+        let take =
+            (target_end - (collected + skip).max(codon_start_offset)).min(exon_cds_len - skip);
 
         if strand.is_reverse() {
             // Reverse strand: read bases from right to left and complement
@@ -992,7 +972,6 @@ fn build_codon_from_cds(
     cds_bases.truncate(3);
     cds_bases
 }
-
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -1158,7 +1137,7 @@ mod tests {
         alt_codon[0] = b'G'; // same
         alt_codon[1] = b'A'; // change T>A at offset 1
         alt_codon[2] = b'G'; // same
-        // GAG = Glu
+                             // GAG = Glu
 
         let ref_aa = translate_codon(&ref_codon);
         let alt_aa = translate_codon(&alt_codon);
@@ -1199,11 +1178,24 @@ mod tests {
         // Verify Synonymous classification
         let codon_pos = 5u64;
         let consequence = if ref_aa == alt_aa {
-            Consequence::Synonymous { aa: ref_aa, codon_pos }
+            Consequence::Synonymous {
+                aa: ref_aa,
+                codon_pos,
+            }
         } else {
-            Consequence::Missense { ref_aa, alt_aa, codon_pos }
+            Consequence::Missense {
+                ref_aa,
+                alt_aa,
+                codon_pos,
+            }
         };
-        assert!(matches!(consequence, Consequence::Synonymous { aa: b'L', codon_pos: 5 }));
+        assert!(matches!(
+            consequence,
+            Consequence::Synonymous {
+                aa: b'L',
+                codon_pos: 5
+            }
+        ));
     }
 
     // TEST 3: Nonsense (stop-gain)
@@ -1221,7 +1213,13 @@ mod tests {
             ref_aa,
             codon_pos: 10,
         };
-        assert!(matches!(consequence, Consequence::Nonsense { ref_aa: b'Q', codon_pos: 10 }));
+        assert!(matches!(
+            consequence,
+            Consequence::Nonsense {
+                ref_aa: b'Q',
+                codon_pos: 10
+            }
+        ));
     }
 
     // TEST 4: 1bp deletion -> Frameshift
@@ -1232,7 +1230,10 @@ mod tests {
         let v = Variant::new("chr1", 105, vec![b'A', b'T'], vec![vec![b'A']]).unwrap();
         let effects = annotate_one(&v, &gene);
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0].consequence, Consequence::Frameshift { .. }));
+        assert!(matches!(
+            effects[0].consequence,
+            Consequence::Frameshift { .. }
+        ));
     }
 
     // TEST 5: 3bp deletion -> InFrame
@@ -1243,7 +1244,10 @@ mod tests {
         let v = Variant::new("chr1", 105, vec![b'A', b'T', b'G', b'C'], vec![vec![b'A']]).unwrap();
         let effects = annotate_one(&v, &gene);
         assert_eq!(effects.len(), 1);
-        assert!(matches!(effects[0].consequence, Consequence::InFrame { .. }));
+        assert!(matches!(
+            effects[0].consequence,
+            Consequence::InFrame { .. }
+        ));
     }
 
     // TEST 6: Start-loss
@@ -1259,9 +1263,16 @@ mod tests {
         let consequence = if codon_pos_0based == 0 && ref_aa == b'M' {
             Consequence::StartLoss { ref_aa }
         } else {
-            Consequence::Missense { ref_aa, alt_aa, codon_pos: 1 }
+            Consequence::Missense {
+                ref_aa,
+                alt_aa,
+                codon_pos: 1,
+            }
         };
-        assert!(matches!(consequence, Consequence::StartLoss { ref_aa: b'M' }));
+        assert!(matches!(
+            consequence,
+            Consequence::StartLoss { ref_aa: b'M' }
+        ));
     }
 
     // TEST 7: Stop-loss
@@ -1275,9 +1286,16 @@ mod tests {
         let consequence = if ref_aa == b'*' && alt_aa != b'*' {
             Consequence::StopLoss { ref_aa }
         } else {
-            Consequence::Missense { ref_aa, alt_aa, codon_pos: 101 }
+            Consequence::Missense {
+                ref_aa,
+                alt_aa,
+                codon_pos: 101,
+            }
         };
-        assert!(matches!(consequence, Consequence::StopLoss { ref_aa: b'*' }));
+        assert!(matches!(
+            consequence,
+            Consequence::StopLoss { ref_aa: b'*' }
+        ));
     }
 
     // TEST 8: 5'UTR variant
@@ -1403,7 +1421,10 @@ mod tests {
         let v4 = Variant::new("chr2", 5051, vec![b'A'], vec![vec![b'G']]).unwrap();
         let effects4 = annotate_one(&v4, &gene);
         assert_eq!(effects4.len(), 1);
-        assert!(matches!(effects4[0].consequence, Consequence::ThreePrimeUtr));
+        assert!(matches!(
+            effects4[0].consequence,
+            Consequence::ThreePrimeUtr
+        ));
     }
 
     // TEST 16: HGVS coding notation
@@ -1434,12 +1455,7 @@ mod tests {
         assert_eq!(hgvs_p, "p.Val600Glu");
 
         // Nonsense
-        let hgvs_nonsense = format!(
-            "p.{}{}{}",
-            aa_three_letter(b'Q'),
-            42,
-            aa_three_letter(b'*'),
-        );
+        let hgvs_nonsense = format!("p.{}{}{}", aa_three_letter(b'Q'), 42, aa_three_letter(b'*'),);
         assert_eq!(hgvs_nonsense, "p.Gln42Ter");
 
         // Synonymous
@@ -1467,21 +1483,17 @@ mod tests {
         let effects = annotate_variants(&variants, &genes, &AnnotationConfig::default());
 
         // Variant 1 should match gene2
-        let v1_effects: Vec<_> = effects
-            .iter()
-            .filter(|e| e.gene_name == "SIMPLE")
-            .collect();
+        let v1_effects: Vec<_> = effects.iter().filter(|e| e.gene_name == "SIMPLE").collect();
         assert!(!v1_effects.is_empty());
 
         // Variant 2 should match gene1 — but variant 1 also hits gene1's
         // extended region so we check that at least one TEST1 effect is FivePrimeUtr.
-        let v2_effects: Vec<_> = effects
-            .iter()
-            .filter(|e| e.gene_name == "TEST1")
-            .collect();
+        let v2_effects: Vec<_> = effects.iter().filter(|e| e.gene_name == "TEST1").collect();
         assert!(!v2_effects.is_empty());
         assert!(
-            v2_effects.iter().any(|e| matches!(e.consequence, Consequence::FivePrimeUtr)),
+            v2_effects
+                .iter()
+                .any(|e| matches!(e.consequence, Consequence::FivePrimeUtr)),
             "expected at least one FivePrimeUtr for TEST1"
         );
 
@@ -1642,7 +1654,10 @@ mod tests {
         let donor_score = &scores[0];
         assert!(donor_score.is_canonical);
         assert!(donor_score.disrupts_consensus);
-        assert!(donor_score.delta_score < 0.0, "disrupting GT should lower score");
+        assert!(
+            donor_score.delta_score < 0.0,
+            "disrupting GT should lower score"
+        );
     }
 
     #[test]
@@ -1656,7 +1671,7 @@ mod tests {
     #[test]
     fn test_variant_far_from_gene_no_effect() {
         let gene = test_gene_forward(); // chr1:1000-2000
-        // Position 100000 is far beyond upstream/downstream distance (5000)
+                                        // Position 100000 is far beyond upstream/downstream distance (5000)
         let v = Variant::new("chr1", 100001, vec![b'A'], vec![vec![b'G']]).unwrap();
         let effects = annotate_one(&v, &gene);
         assert!(effects.is_empty());

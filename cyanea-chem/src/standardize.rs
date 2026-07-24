@@ -116,8 +116,14 @@ pub fn largest_fragment(mol: &Molecule) -> Molecule {
     let best = components
         .iter()
         .max_by(|a, b| {
-            let ha = a.iter().filter(|&&i| mol.atoms[i].atomic_number != 1).count();
-            let hb = b.iter().filter(|&&i| mol.atoms[i].atomic_number != 1).count();
+            let ha = a
+                .iter()
+                .filter(|&&i| mol.atoms[i].atomic_number != 1)
+                .count();
+            let hb = b
+                .iter()
+                .filter(|&&i| mol.atoms[i].atomic_number != 1)
+                .count();
             ha.cmp(&hb).then_with(|| {
                 let fa = extract_fragment(mol, a);
                 let fb = extract_fragment(mol, b);
@@ -169,7 +175,11 @@ pub fn strip_salts(mol: &Molecule) -> Molecule {
     // Multiple organic fragments remain — return the largest
     let best = organic
         .iter()
-        .max_by_key(|comp| comp.iter().filter(|&&i| mol.atoms[i].atomic_number != 1).count())
+        .max_by_key(|comp| {
+            comp.iter()
+                .filter(|&&i| mol.atoms[i].atomic_number != 1)
+                .count()
+        })
         .unwrap();
     extract_fragment(mol, best)
 }
@@ -178,7 +188,9 @@ fn is_salt_fragment(mol: &Molecule, component: &[usize]) -> bool {
     // Single atom salts
     if component.len() == 1 {
         let atom = &mol.atoms[component[0]];
-        return SALT_ATOMS.iter().any(|&(an, ch)| atom.atomic_number == an && atom.formal_charge == ch);
+        return SALT_ATOMS
+            .iter()
+            .any(|&(an, ch)| atom.atomic_number == an && atom.formal_charge == ch);
     }
 
     // Small fragments (≤ 3 atoms) that are all inorganic
@@ -195,7 +207,10 @@ fn is_salt_fragment(mol: &Molecule, component: &[usize]) -> bool {
 
     // Acetate, TFA, and other small counterion fragments
     if component.len() <= 4 {
-        let heavy_count = component.iter().filter(|&&i| mol.atoms[i].atomic_number != 1).count();
+        let heavy_count = component
+            .iter()
+            .filter(|&&i| mol.atoms[i].atomic_number != 1)
+            .count();
         if heavy_count <= 3 {
             let has_negative = component.iter().any(|&i| mol.atoms[i].formal_charge < 0);
             let no_carbon = component.iter().all(|&i| mol.atoms[i].atomic_number != 6);
@@ -297,11 +312,26 @@ struct TautomerTransform {
 fn get_tautomer_transforms() -> Vec<TautomerTransform> {
     vec![
         // Keto-enol: C(=O)-C-H ↔ C(-OH)=C
-        TautomerTransform { donor: (6, 1), acceptor: 8, bond_before: BondOrder::Single, bond_after: BondOrder::Double },
+        TautomerTransform {
+            donor: (6, 1),
+            acceptor: 8,
+            bond_before: BondOrder::Single,
+            bond_after: BondOrder::Double,
+        },
         // Amide-imidic acid: C(=O)-N-H ↔ C(-OH)=N
-        TautomerTransform { donor: (7, 1), acceptor: 8, bond_before: BondOrder::Single, bond_after: BondOrder::Double },
+        TautomerTransform {
+            donor: (7, 1),
+            acceptor: 8,
+            bond_before: BondOrder::Single,
+            bond_after: BondOrder::Double,
+        },
         // 1,3-proton shift N: N-C=N-H ↔ N=C-N (acceptor N)
-        TautomerTransform { donor: (7, 1), acceptor: 7, bond_before: BondOrder::Single, bond_after: BondOrder::Double },
+        TautomerTransform {
+            donor: (7, 1),
+            acceptor: 7,
+            bond_before: BondOrder::Single,
+            bond_after: BondOrder::Double,
+        },
     ]
 }
 
@@ -318,9 +348,15 @@ fn apply_tautomer_transform(mol: &Molecule, transform: &TautomerTransform) -> Op
             }
 
             for &(acceptor, bj) in &mol.adjacency[middle] {
-                if acceptor == i { continue; }
-                if mol.atoms[acceptor].atomic_number != transform.acceptor { continue; }
-                if mol.bonds[bj].order != transform.bond_after { continue; }
+                if acceptor == i {
+                    continue;
+                }
+                if mol.atoms[acceptor].atomic_number != transform.acceptor {
+                    continue;
+                }
+                if mol.bonds[bj].order != transform.bond_after {
+                    continue;
+                }
 
                 // Can do the reverse transform: move H from donor to get new tautomer
                 let mut new_atoms = mol.atoms.clone();
@@ -342,7 +378,11 @@ fn tautomer_score(mol: &Molecule) -> i64 {
     let mut score: i64 = 0;
 
     // Prefer fewer charges
-    let total_charge: i64 = mol.atoms.iter().map(|a| a.formal_charge.unsigned_abs() as i64).sum();
+    let total_charge: i64 = mol
+        .atoms
+        .iter()
+        .map(|a| a.formal_charge.unsigned_abs() as i64)
+        .sum();
     score -= total_charge * 10;
 
     // Prefer more aromatic atoms
@@ -355,8 +395,7 @@ fn tautomer_score(mol: &Molecule) -> i64 {
         .iter()
         .filter(|b| {
             b.order == BondOrder::Double
-                && (mol.atoms[b.atom1].atomic_number == 8
-                    || mol.atoms[b.atom2].atomic_number == 8)
+                && (mol.atoms[b.atom1].atomic_number == 8 || mol.atoms[b.atom2].atomic_number == 8)
         })
         .count() as i64;
     score += carbonyl_count * 3;
@@ -435,11 +474,7 @@ mod tests {
         let result = neutralize(&mol);
         // The nitrogen should have reduced charge
         let n_atom = result.atoms.iter().find(|a| a.atomic_number == 7).unwrap();
-        assert!(
-            n_atom.formal_charge < 1,
-            "charge={}",
-            n_atom.formal_charge
-        );
+        assert!(n_atom.formal_charge < 1, "charge={}", n_atom.formal_charge);
     }
 
     #[test]

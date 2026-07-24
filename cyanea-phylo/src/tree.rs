@@ -163,7 +163,11 @@ impl PhyloTree {
             if children.is_empty() {
                 return 0;
             }
-            children.iter().map(|&c| 1 + dfs(tree, c)).max().unwrap_or(0)
+            children
+                .iter()
+                .map(|&c| 1 + dfs(tree, c))
+                .max()
+                .unwrap_or(0)
         }
         dfs(self, self.root)
     }
@@ -258,10 +262,7 @@ impl PhyloTree {
 
     /// Sum of all branch lengths in the tree.
     pub fn total_branch_length(&self) -> f64 {
-        self.nodes
-            .iter()
-            .filter_map(|n| n.branch_length)
-            .sum()
+        self.nodes.iter().filter_map(|n| n.branch_length).sum()
     }
 
     /// Reroot the tree on the edge leading to `node_id`.
@@ -939,7 +940,10 @@ mod tests {
         let names = tree.subtree_leaf_names(1); // AB clade
         assert_eq!(
             names,
-            ["A", "B"].iter().map(|s| s.to_string()).collect::<std::collections::BTreeSet<_>>()
+            ["A", "B"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<std::collections::BTreeSet<_>>()
         );
     }
 
@@ -978,8 +982,7 @@ mod tests {
     #[test]
     fn midpoint_root_balanced() {
         // Balanced tree: midpoint should keep it balanced.
-        let tree =
-            PhyloTree::from_newick("((A:1.0,B:1.0):1.0,(C:1.0,D:1.0):1.0);").unwrap();
+        let tree = PhyloTree::from_newick("((A:1.0,B:1.0):1.0,(C:1.0,D:1.0):1.0);").unwrap();
         let rooted = tree.midpoint_root().unwrap();
         assert_eq!(rooted.leaf_count(), 4);
         let orig_bl = tree.total_branch_length();
@@ -995,8 +998,7 @@ mod tests {
     #[test]
     fn extract_subtree_correct_leaves() {
         let tree =
-            PhyloTree::from_newick("(((A:0.1,B:0.2):0.3,C:0.4):0.5,(D:0.6,E:0.7):0.8);")
-                .unwrap();
+            PhyloTree::from_newick("(((A:0.1,B:0.2):0.3,C:0.4):0.5,(D:0.6,E:0.7):0.8);").unwrap();
         let sub = tree.extract_subtree(&["A", "B", "C"]).unwrap();
         let mut names = sub.leaf_names();
         names.sort();
@@ -1006,8 +1008,7 @@ mod tests {
     #[test]
     fn extract_subtree_preserves_topology() {
         let tree =
-            PhyloTree::from_newick("(((A:0.1,B:0.2):0.3,C:0.4):0.5,(D:0.6,E:0.7):0.8);")
-                .unwrap();
+            PhyloTree::from_newick("(((A:0.1,B:0.2):0.3,C:0.4):0.5,(D:0.6,E:0.7):0.8);").unwrap();
         let sub = tree.extract_subtree(&["D", "E"]).unwrap();
         assert_eq!(sub.leaf_count(), 2);
         let mut names = sub.leaf_names();

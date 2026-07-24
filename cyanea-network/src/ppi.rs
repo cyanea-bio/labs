@@ -71,10 +71,7 @@ impl PpiEvidence {
 /// Build a PPI graph from evidence data with a confidence threshold.
 ///
 /// Only interactions with combined_score >= threshold are included.
-pub fn build_ppi_network(
-    evidence: &[PpiEvidence],
-    threshold: f64,
-) -> Result<Graph> {
+pub fn build_ppi_network(evidence: &[PpiEvidence], threshold: f64) -> Result<Graph> {
     let mut graph = Graph::new(GraphType::Undirected);
     let mut seen_nodes = std::collections::HashSet::new();
 
@@ -90,8 +87,7 @@ pub fn build_ppi_network(
             }
         }
 
-        let edge = Edge::weighted(&ev.protein_a, &ev.protein_b, score)
-            .with_type("ppi");
+        let edge = Edge::weighted(&ev.protein_a, &ev.protein_b, score).with_type("ppi");
         graph.add_edge_struct(edge)?;
     }
 
@@ -117,7 +113,11 @@ pub fn network_propagation(
     max_iter: usize,
     tolerance: f64,
 ) -> Result<HashMap<String, f64>> {
-    let ids: Vec<String> = graph.node_ids().into_iter().map(|s| s.to_string()).collect();
+    let ids: Vec<String> = graph
+        .node_ids()
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
     let n = ids.len();
 
     if n == 0 {
@@ -127,7 +127,10 @@ pub fn network_propagation(
     // Normalize seed scores
     let seed_sum: f64 = seeds.values().sum();
     let seed_vec: HashMap<String, f64> = if seed_sum > 0.0 {
-        seeds.iter().map(|(k, v)| (k.clone(), v / seed_sum)).collect()
+        seeds
+            .iter()
+            .map(|(k, v)| (k.clone(), v / seed_sum))
+            .collect()
     } else {
         HashMap::new()
     };
@@ -140,8 +143,11 @@ pub fn network_propagation(
 
     // Build normalized adjacency
     let (sorted_ids, matrix) = graph.adjacency_matrix();
-    let id_to_idx: HashMap<&str, usize> =
-        sorted_ids.iter().enumerate().map(|(i, s)| (s.as_str(), i)).collect();
+    let id_to_idx: HashMap<&str, usize> = sorted_ids
+        .iter()
+        .enumerate()
+        .map(|(i, s)| (s.as_str(), i))
+        .collect();
 
     // Row-normalize
     let mut norm_matrix = vec![vec![0.0; n]; n];
@@ -212,7 +218,11 @@ pub fn hub_bottleneck_analysis(
     degree_percentile: f64,
     betweenness_percentile: f64,
 ) -> Result<HubBottleneckResult> {
-    let ids: Vec<String> = graph.node_ids().into_iter().map(|s| s.to_string()).collect();
+    let ids: Vec<String> = graph
+        .node_ids()
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
 
     let degrees: HashMap<String, usize> = ids
         .iter()
@@ -300,7 +310,11 @@ pub fn neighborhood_similarity(graph: &Graph, node_a: &str, node_b: &str) -> Res
 ///
 /// Returns (node_a, node_b, Jaccard similarity) tuples sorted by score descending.
 pub fn predict_interactions(graph: &Graph, top_k: usize) -> Result<Vec<(String, String, f64)>> {
-    let ids: Vec<String> = graph.node_ids().into_iter().map(|s| s.to_string()).collect();
+    let ids: Vec<String> = graph
+        .node_ids()
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
     let mut predictions = Vec::new();
 
     for i in 0..ids.len() {
@@ -396,8 +410,9 @@ mod tests {
         graph.add_edge("A", "B", 1.0).unwrap();
         graph.add_edge("B", "C", 1.0).unwrap();
 
-        let seeds: HashMap<String, f64> =
-            vec![("A".into(), 1.0), ("C".into(), 1.0)].into_iter().collect();
+        let seeds: HashMap<String, f64> = vec![("A".into(), 1.0), ("C".into(), 1.0)]
+            .into_iter()
+            .collect();
         let scores = network_propagation(&graph, &seeds, 0.3, 100, 1e-8).unwrap();
 
         // B is between both seeds, should receive propagated signal
@@ -451,8 +466,13 @@ mod tests {
         let preds = predict_interactions(&g, 5).unwrap();
         // A-B and C-D should both be predicted (shared neighbors)
         assert!(!preds.is_empty());
-        let pairs: Vec<(&str, &str)> = preds.iter().map(|(a, b, _)| (a.as_str(), b.as_str())).collect();
-        let has_ab = pairs.iter().any(|&(a, b)| (a == "A" && b == "B") || (a == "B" && b == "A"));
+        let pairs: Vec<(&str, &str)> = preds
+            .iter()
+            .map(|(a, b, _)| (a.as_str(), b.as_str()))
+            .collect();
+        let has_ab = pairs
+            .iter()
+            .any(|&(a, b)| (a == "A" && b == "B") || (a == "B" && b == "A"));
         assert!(has_ab, "A-B should be predicted");
     }
 }

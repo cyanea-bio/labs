@@ -261,7 +261,9 @@ mod np {
         let r = cyanea_ml::umap(&data, n_features, &config).into_pyresult()?;
         let ns = r.n_samples;
         let nc = r.n_components;
-        Ok(PyArray1::from_vec(py, r.embedding).reshape([ns, nc]).unwrap())
+        Ok(PyArray1::from_vec(py, r.embedding)
+            .reshape([ns, nc])
+            .unwrap())
     }
 
     /// PCA transformed data as a NumPy 2D array (n_samples × n_components).
@@ -280,7 +282,9 @@ mod np {
         let r = cyanea_ml::pca(&data, n_features, &config).into_pyresult()?;
         let ns = data.len() / n_features;
         let nc = r.n_components;
-        Ok(PyArray1::from_vec(py, r.transformed).reshape([ns, nc]).unwrap())
+        Ok(PyArray1::from_vec(py, r.transformed)
+            .reshape([ns, nc])
+            .unwrap())
     }
 
     /// t-SNE embedding as a NumPy 2D array (n_samples × n_components).
@@ -306,7 +310,9 @@ mod np {
         let r = cyanea_ml::tsne(&data, n_features, &config).into_pyresult()?;
         let ns = r.n_samples;
         let nc = r.n_components;
-        Ok(PyArray1::from_vec(py, r.embedding).reshape([ns, nc]).unwrap())
+        Ok(PyArray1::from_vec(py, r.embedding)
+            .reshape([ns, nc])
+            .unwrap())
     }
 }
 
@@ -511,7 +517,12 @@ impl DecisionTree {
     /// Fit a decision tree classifier.
     #[new]
     #[pyo3(signature = (data, n_features, labels, max_depth=10))]
-    fn new(data: Vec<f64>, n_features: usize, labels: Vec<usize>, max_depth: usize) -> PyResult<Self> {
+    fn new(
+        data: Vec<f64>,
+        n_features: usize,
+        labels: Vec<usize>,
+        max_depth: usize,
+    ) -> PyResult<Self> {
         let inner =
             cyanea_ml::DecisionTree::fit(&data, n_features, &labels, max_depth).into_pyresult()?;
         Ok(Self { inner })
@@ -603,9 +614,8 @@ impl HmmModel {
         transition: Vec<f64>,
         emission: Vec<f64>,
     ) -> PyResult<Self> {
-        let inner =
-            cyanea_ml::HmmModel::new(n_states, n_symbols, initial, transition, emission)
-                .into_pyresult()?;
+        let inner = cyanea_ml::HmmModel::new(n_states, n_symbols, initial, transition, emission)
+            .into_pyresult()?;
         Ok(Self { inner })
     }
 
@@ -707,10 +717,9 @@ impl GradientBoostedTrees {
             seed,
             ..Default::default()
         };
-        let inner = cyanea_ml::GradientBoostedTrees::fit_regression(
-            &data, n_features, &targets, &config,
-        )
-        .into_pyresult()?;
+        let inner =
+            cyanea_ml::GradientBoostedTrees::fit_regression(&data, n_features, &targets, &config)
+                .into_pyresult()?;
         Ok(Self { inner })
     }
 
@@ -781,8 +790,7 @@ struct PyConfusionMatrix {
 /// Compute a confusion matrix from actual and predicted labels.
 #[pyfunction]
 fn confusion_matrix(actual: Vec<usize>, predicted: Vec<usize>) -> PyResult<PyConfusionMatrix> {
-    let cm =
-        cyanea_ml::ConfusionMatrix::from_labels(&actual, &predicted, None).into_pyresult()?;
+    let cm = cyanea_ml::ConfusionMatrix::from_labels(&actual, &predicted, None).into_pyresult()?;
     let nc = cm.n_classes;
     let mut matrix = Vec::with_capacity(nc);
     for i in 0..nc {
@@ -866,8 +874,7 @@ fn cross_validate_kfold(
             max_features: None,
             seed,
         };
-        let forest =
-            cyanea_ml::RandomForest::fit(&train_data, n_features, &train_labels, &config)?;
+        let forest = cyanea_ml::RandomForest::fit(&train_data, n_features, &train_labels, &config)?;
 
         // Evaluate on test fold
         let correct: usize = test_idx
@@ -899,8 +906,7 @@ fn cross_validate_kfold(
 #[pyfunction]
 #[pyo3(signature = (data, n_features, threshold=0.0))]
 fn variance_threshold(data: Vec<f64>, n_features: usize, threshold: f64) -> PyResult<Vec<usize>> {
-    let result =
-        cyanea_ml::variance_threshold(&data, n_features, threshold).into_pyresult()?;
+    let result = cyanea_ml::variance_threshold(&data, n_features, threshold).into_pyresult()?;
     Ok(result.selected)
 }
 

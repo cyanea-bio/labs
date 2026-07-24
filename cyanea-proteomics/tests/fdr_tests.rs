@@ -1,7 +1,7 @@
 use cyanea_proteomics::fdr::*;
-use cyanea_proteomics::search::Psm;
-use cyanea_proteomics::mztab::{write_mztab_psms, write_mztab_proteins};
+use cyanea_proteomics::mztab::{write_mztab_proteins, write_mztab_psms};
 use cyanea_proteomics::protein::ProteinGroup;
+use cyanea_proteomics::search::Psm;
 
 fn make_psm(id: &str, seq: &str, score: f64) -> Psm {
     Psm {
@@ -32,7 +32,10 @@ fn test_fdr_with_realistic_distribution() {
         .map(|i| make_psm(&format!("d{}", i), &format!("DEC{}", i), 5.0 + i as f64))
         .collect();
 
-    let config = FdrConfig { threshold: 0.01, ..Default::default() };
+    let config = FdrConfig {
+        threshold: 0.01,
+        ..Default::default()
+    };
     let results = estimate_fdr(&targets, &decoys, &config).unwrap();
 
     // High-scoring targets should pass
@@ -51,11 +54,23 @@ fn test_fdr_with_realistic_distribution() {
 #[test]
 fn test_fdr_stringency_levels() {
     let targets: Vec<Psm> = (0..50)
-        .map(|i| make_psm(&format!("t{}", i), &format!("PEP{}", i), 10.0 + i as f64 * 2.0))
+        .map(|i| {
+            make_psm(
+                &format!("t{}", i),
+                &format!("PEP{}", i),
+                10.0 + i as f64 * 2.0,
+            )
+        })
         .collect();
 
     let decoys: Vec<Psm> = (0..10)
-        .map(|i| make_psm(&format!("d{}", i), &format!("DEC{}", i), 5.0 + i as f64 * 3.0))
+        .map(|i| {
+            make_psm(
+                &format!("d{}", i),
+                &format!("DEC{}", i),
+                5.0 + i as f64 * 3.0,
+            )
+        })
         .collect();
 
     let passing_1 = filter_fdr(&targets, &decoys, 0.01).unwrap();
@@ -90,11 +105,12 @@ fn test_mztab_output_from_fdr() {
         make_psm("s1", "PEPTIDEK", 50.0),
         make_psm("s2", "SEQUENCER", 40.0),
     ];
-    let decoys = vec![
-        make_psm("d1", "REVKDITP", 20.0),
-    ];
+    let decoys = vec![make_psm("d1", "REVKDITP", 20.0)];
 
-    let config = FdrConfig { threshold: 0.05, ..Default::default() };
+    let config = FdrConfig {
+        threshold: 0.05,
+        ..Default::default()
+    };
     let fdr_results = estimate_fdr(&targets, &decoys, &config).unwrap();
 
     let mztab = write_mztab_psms(&fdr_results);
@@ -103,17 +119,15 @@ fn test_mztab_output_from_fdr() {
     assert!(mztab.contains("SEQUENCER"));
 
     // Test protein mzTab output
-    let groups = vec![
-        ProteinGroup {
-            accessions: vec!["P12345".into()],
-            unique_peptides: vec!["PEPTIDEK".into(), "SEQUENCER".into()],
-            shared_peptides: vec![],
-            psm_count: 2,
-            best_score: 50.0,
-            coverage: 0.45,
-            is_decoy: false,
-        },
-    ];
+    let groups = vec![ProteinGroup {
+        accessions: vec!["P12345".into()],
+        unique_peptides: vec!["PEPTIDEK".into(), "SEQUENCER".into()],
+        shared_peptides: vec![],
+        psm_count: 2,
+        best_score: 50.0,
+        coverage: 0.45,
+        is_decoy: false,
+    }];
 
     let prot_mztab = write_mztab_proteins(&groups, None);
     assert!(prot_mztab.contains("PRT\tP12345"));
@@ -130,7 +144,10 @@ fn test_all_decoys_below_targets() {
         .map(|i| make_psm(&format!("d{}", i), &format!("DEC{}", i), 1.0 + i as f64))
         .collect();
 
-    let config = FdrConfig { threshold: 0.01, ..Default::default() };
+    let config = FdrConfig {
+        threshold: 0.01,
+        ..Default::default()
+    };
     let results = estimate_fdr(&targets, &decoys, &config).unwrap();
 
     // All targets should pass since all decoys are below

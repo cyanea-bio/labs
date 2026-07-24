@@ -282,8 +282,14 @@ fn parse_field_def(line: &str, prefix: &str) -> Result<FieldDef> {
         .get("ID")
         .ok_or_else(|| CyaneaError::Parse(format!("{} missing ID", prefix.trim_end_matches('='))))?
         .to_string();
-    let number = fields.get("Number").cloned().unwrap_or_else(|| ".".to_string());
-    let field_type = fields.get("Type").cloned().unwrap_or_else(|| "String".to_string());
+    let number = fields
+        .get("Number")
+        .cloned()
+        .unwrap_or_else(|| ".".to_string());
+    let field_type = fields
+        .get("Type")
+        .cloned()
+        .unwrap_or_else(|| "String".to_string());
     let description = fields
         .get("Description")
         .map(|s| s.trim_matches('"').to_string())
@@ -354,7 +360,9 @@ mod tests {
         h.add_sample("SAMPLE1");
         h.add_sample("SAMPLE2");
         let s = h.to_vcf_string();
-        assert!(s.contains("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE1\tSAMPLE2\n"));
+        assert!(
+            s.contains("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE1\tSAMPLE2\n")
+        );
     }
 
     #[test]
@@ -469,7 +477,10 @@ mod tests {
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO
 ";
         let h = VcfHeader::parse(text).unwrap();
-        assert_eq!(h.info_fields[0].description, "Allele Frequency, for each ALT allele");
+        assert_eq!(
+            h.info_fields[0].description,
+            "Allele Frequency, for each ALT allele"
+        );
     }
 
     #[test]

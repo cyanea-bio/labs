@@ -186,8 +186,8 @@ fn std_dev_f64(values: &[f64], mean: f64) -> f64 {
     if values.len() < 2 {
         return 0.0;
     }
-    let variance: f64 = values.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>()
-        / values.len() as f64;
+    let variance: f64 =
+        values.iter().map(|v| (v - mean) * (v - mean)).sum::<f64>() / values.len() as f64;
     variance.sqrt()
 }
 

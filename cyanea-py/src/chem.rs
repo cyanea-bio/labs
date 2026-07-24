@@ -309,7 +309,9 @@ fn minimize(
         method: cyanea_chem::MinimizeMethod::SteepestDescent,
     };
     let result = match force_field {
-        "mmff94" | "MMFF94" => cyanea_chem::mmff94_minimize(&mol, &conf, &min_config).into_pyresult()?,
+        "mmff94" | "MMFF94" => {
+            cyanea_chem::mmff94_minimize(&mol, &conf, &min_config).into_pyresult()?
+        }
         _ => cyanea_chem::uff_minimize(&mol, &conf, &min_config).into_pyresult()?,
     };
     Ok(PyMinimizeResult {
@@ -331,22 +333,31 @@ fn apply_reaction(smiles: &str, smirks: &str) -> PyResult<Vec<PyReactionProduct>
     let mol = cyanea_chem::parse_smiles(smiles).into_pyresult()?;
     let rxn = cyanea_chem::parse_reaction(smirks).into_pyresult()?;
     let products = cyanea_chem::apply_reaction(&mol, &rxn).into_pyresult()?;
-    Ok(products.iter().map(|p| PyReactionProduct {
-        smiles: p.smiles.clone(),
-    }).collect())
+    Ok(products
+        .iter()
+        .map(|p| PyReactionProduct {
+            smiles: p.smiles.clone(),
+        })
+        .collect())
 }
 
 /// Enumerate reactions from multiple reactant sets.
 #[pyfunction]
-fn enumerate_reactions(reactant_smiles: Vec<Vec<String>>, smirks: &str) -> PyResult<Vec<PyReactionProduct>> {
+fn enumerate_reactions(
+    reactant_smiles: Vec<Vec<String>>,
+    smirks: &str,
+) -> PyResult<Vec<PyReactionProduct>> {
     let reactant_sets: Vec<Vec<&str>> = reactant_smiles
         .iter()
         .map(|set| set.iter().map(|s| s.as_str()).collect())
         .collect();
     let products = cyanea_chem::enumerate_reactions(&reactant_sets, smirks).into_pyresult()?;
-    Ok(products.iter().map(|p| PyReactionProduct {
-        smiles: p.smiles.clone(),
-    }).collect())
+    Ok(products
+        .iter()
+        .map(|p| PyReactionProduct {
+            smiles: p.smiles.clone(),
+        })
+        .collect())
 }
 
 /// Find retrosynthetic disconnections for a target molecule.
@@ -354,11 +365,14 @@ fn enumerate_reactions(reactant_smiles: Vec<Vec<String>>, smirks: &str) -> PyRes
 fn retrosynthetic_disconnect(smiles: &str) -> PyResult<Vec<PyDisconnection>> {
     let mol = cyanea_chem::parse_smiles(smiles).into_pyresult()?;
     let disconnections = cyanea_chem::retrosynthetic_disconnections(&mol);
-    Ok(disconnections.iter().map(|d| PyDisconnection {
-        transform_name: d.transform_name.clone(),
-        smirks: d.smirks.clone(),
-        precursors: d.precursors.clone(),
-    }).collect())
+    Ok(disconnections
+        .iter()
+        .map(|d| PyDisconnection {
+            transform_name: d.transform_name.clone(),
+            smirks: d.smirks.clone(),
+            precursors: d.precursors.clone(),
+        })
+        .collect())
 }
 
 /// Compute atom-atom mapping between reactant and product SMILES.

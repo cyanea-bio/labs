@@ -8,8 +8,8 @@
 use std::ffi::c_void;
 
 use metal_rs::{
-    Buffer as MtlBuffer, CommandQueue, CompileOptions, ComputePipelineState, Device, MTLSize,
-    MTLResourceOptions,
+    Buffer as MtlBuffer, CommandQueue, CompileOptions, ComputePipelineState, Device,
+    MTLResourceOptions, MTLSize,
 };
 
 use cyanea_core::{CyaneaError, Result};
@@ -66,15 +66,14 @@ impl MetalBackend {
             .new_library_with_source(shaders::MATMUL_MSL, &opts)
             .map_err(|e| CyaneaError::Other(format!("Metal matmul shader compile: {e}")))?;
 
-        let make_pipeline =
-            |lib: &metal_rs::Library, name: &str| -> Result<ComputePipelineState> {
-                let func = lib
-                    .get_function(name, None)
-                    .map_err(|e| CyaneaError::Other(format!("Metal function '{name}': {e}")))?;
-                device
-                    .new_compute_pipeline_state_with_function(&func)
-                    .map_err(|e| CyaneaError::Other(format!("Metal pipeline '{name}': {e}")))
-            };
+        let make_pipeline = |lib: &metal_rs::Library, name: &str| -> Result<ComputePipelineState> {
+            let func = lib
+                .get_function(name, None)
+                .map_err(|e| CyaneaError::Other(format!("Metal function '{name}': {e}")))?;
+            device
+                .new_compute_pipeline_state_with_function(&func)
+                .map_err(|e| CyaneaError::Other(format!("Metal pipeline '{name}': {e}")))
+        };
 
         let pipelines = MetalPipelines {
             reduce_sum: make_pipeline(&reduce_lib, "reduce_sum")?,
@@ -198,8 +197,10 @@ impl Backend for MetalBackend {
             name: self.device.name().to_string(),
             kind: BackendKind::Metal,
             total_memory: self.device.recommended_max_working_set_size(),
-            max_parallelism: self.pipelines.reduce_sum.max_total_threads_per_threadgroup()
-                as usize,
+            max_parallelism: self
+                .pipelines
+                .reduce_sum
+                .max_total_threads_per_threadgroup() as usize,
         }
     }
 

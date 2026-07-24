@@ -11,9 +11,18 @@ pub fn primate_newick() -> &'static str {
 /// Primate species names matching the Newick tree.
 pub fn primate_species() -> Vec<&'static str> {
     vec![
-        "Human", "Chimpanzee", "Gorilla", "Orangutan", "Gibbon", "Siamang",
-        "Rhesus", "Baboon", "Vervet", "Capuchin",
-        "Mouse_Lemur", "Ring_tailed_Lemur",
+        "Human",
+        "Chimpanzee",
+        "Gorilla",
+        "Orangutan",
+        "Gibbon",
+        "Siamang",
+        "Rhesus",
+        "Baboon",
+        "Vervet",
+        "Capuchin",
+        "Mouse_Lemur",
+        "Ring_tailed_Lemur",
     ]
 }
 
@@ -22,12 +31,30 @@ pub fn primate_species() -> Vec<&'static str> {
 /// 6 primates — enough for demo tree building.
 pub fn cytochrome_b_primates() -> Vec<(&'static str, &'static [u8])> {
     vec![
-        ("Human",      b"MTNIRKSHPLFKIINHSFIDLPAPSNISAWWNFGSLLGICLIIQITTGLFLAMHYSPDAST"),
-        ("Chimpanzee", b"MTNIRKSHPLFKIINHSFIDLPAPSNISAWWNFGSLLGICLIIQITTGLFLAMHYSPDAST"),
-        ("Gorilla",    b"MTNIRKSHPLFKIINHSFIDLPAPSNISSWWNFGSLLGICLIIQIATGLFLAMHYSPDAST"),
-        ("Orangutan",  b"MTNIRKSHPLFKIINHAFIDLPAPSNISSWWNFGSLLGICLIIQILTGLFLAMHYSPDAST"),
-        ("Rhesus",     b"MTNIRKSHPLLKIINHSFIDLPAPSNISAWWNFGSLLGICLIVQILTGLFLAMHYSPDAST"),
-        ("Mouse_Lemur",b"MTNIRKSHPLMKIINHSFIDLPAPSNISTWWNFGSLLGICLIAQIATGLFLAMHYTPDTST"),
+        (
+            "Human",
+            b"MTNIRKSHPLFKIINHSFIDLPAPSNISAWWNFGSLLGICLIIQITTGLFLAMHYSPDAST",
+        ),
+        (
+            "Chimpanzee",
+            b"MTNIRKSHPLFKIINHSFIDLPAPSNISAWWNFGSLLGICLIIQITTGLFLAMHYSPDAST",
+        ),
+        (
+            "Gorilla",
+            b"MTNIRKSHPLFKIINHSFIDLPAPSNISSWWNFGSLLGICLIIQIATGLFLAMHYSPDAST",
+        ),
+        (
+            "Orangutan",
+            b"MTNIRKSHPLFKIINHAFIDLPAPSNISSWWNFGSLLGICLIIQILTGLFLAMHYSPDAST",
+        ),
+        (
+            "Rhesus",
+            b"MTNIRKSHPLLKIINHSFIDLPAPSNISAWWNFGSLLGICLIVQILTGLFLAMHYSPDAST",
+        ),
+        (
+            "Mouse_Lemur",
+            b"MTNIRKSHPLMKIINHSFIDLPAPSNISTWWNFGSLLGICLIAQIATGLFLAMHYTPDTST",
+        ),
     ]
 }
 
@@ -35,7 +62,14 @@ pub fn cytochrome_b_primates() -> Vec<(&'static str, &'static [u8])> {
 ///
 /// Returns (species_names, distance_matrix).
 pub fn primate_distance_matrix() -> (Vec<&'static str>, Vec<Vec<f64>>) {
-    let names = vec!["Human", "Chimpanzee", "Gorilla", "Orangutan", "Rhesus", "Mouse_Lemur"];
+    let names = vec![
+        "Human",
+        "Chimpanzee",
+        "Gorilla",
+        "Orangutan",
+        "Rhesus",
+        "Mouse_Lemur",
+    ];
     let matrix = vec![
         vec![0.000, 0.012, 0.018, 0.032, 0.058, 0.165],
         vec![0.012, 0.000, 0.019, 0.033, 0.059, 0.166],

@@ -4,9 +4,15 @@ use cyanea_proteomics::spectrum::*;
 
 fn make_spectrum_from_peptide(peptide: &Peptide, charge: i32) -> MassSpectrum {
     let ions = fragment_ions(peptide, 1);
-    let peaks: Vec<Peak> = ions.iter()
-        .filter(|i| i.neutral_loss.is_none() && (i.ion_type == IonType::B || i.ion_type == IonType::Y))
-        .map(|i| Peak { mz: i.mz, intensity: 1000.0 })
+    let peaks: Vec<Peak> = ions
+        .iter()
+        .filter(|i| {
+            i.neutral_loss.is_none() && (i.ion_type == IonType::B || i.ion_type == IonType::Y)
+        })
+        .map(|i| Peak {
+            mz: i.mz,
+            intensity: 1000.0,
+        })
         .collect();
 
     MassSpectrum::new("test", MsLevel::Ms2, 100.0, peaks)
@@ -37,7 +43,8 @@ fn test_full_search_pipeline() {
     assert!(peptides.len() >= 2);
 
     // Create spectra matching the peptides
-    let spectra: Vec<MassSpectrum> = peptides.iter()
+    let spectra: Vec<MassSpectrum> = peptides
+        .iter()
         .enumerate()
         .map(|(i, p)| {
             let mut s = make_spectrum_from_peptide(p, 2);
@@ -86,7 +93,8 @@ fn test_decoy_generation() {
 #[test]
 fn test_search_with_modifications() {
     let mut pep = Peptide::new(b"PEPTCIDE").unwrap();
-    pep.add_modification(4, Modification::Carbamidomethyl).unwrap();
+    pep.add_modification(4, Modification::Carbamidomethyl)
+        .unwrap();
 
     let spec = make_spectrum_from_peptide(&pep, 2);
     let config = SearchConfig {

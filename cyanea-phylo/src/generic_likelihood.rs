@@ -41,7 +41,9 @@ pub fn site_likelihoods(
     if sequences.len() != n_leaves {
         return Err(CyaneaError::InvalidInput(format!(
             "expected {} sequences for {} leaves, got {}",
-            n_leaves, n_leaves, sequences.len()
+            n_leaves,
+            n_leaves,
+            sequences.len()
         )));
     }
     if sequences.is_empty() {
@@ -100,8 +102,7 @@ pub fn site_likelihoods(
     let n_cats = rates.len();
 
     // Precompute transition probability matrices for each (node, rate_category).
-    let mut trans_probs: Vec<Vec<Option<Vec<Vec<f64>>>>> =
-        vec![vec![None; n_cats]; n_nodes];
+    let mut trans_probs: Vec<Vec<Option<Vec<Vec<f64>>>>> = vec![vec![None; n_cats]; n_nodes];
     for id in 0..n_nodes {
         if let Some(node) = tree.get_node(id) {
             if let Some(bl) = node.branch_length {
@@ -227,8 +228,7 @@ mod tests {
         let refs: Vec<&[u8]> = seqs.iter().map(|s| s.as_slice()).collect();
 
         let model = Jc69Model::new();
-        let generic_ll =
-            generic_tree_likelihood(&tree, &refs, &model, None).unwrap();
+        let generic_ll = generic_tree_likelihood(&tree, &refs, &model, None).unwrap();
         let original_ll =
             crate::likelihood::tree_likelihood(&tree, &refs, jc69_probability).unwrap();
 
@@ -251,16 +251,13 @@ mod tests {
         ];
         let refs: Vec<&[u8]> = seqs.iter().map(|s| s.as_slice()).collect();
 
-        let params = crate::models::GtrParams::new(
-            [1.0, 2.0, 1.0, 1.0, 2.0, 1.0],
-            [0.3, 0.2, 0.2, 0.3],
-        )
-        .unwrap();
+        let params =
+            crate::models::GtrParams::new([1.0, 2.0, 1.0, 1.0, 2.0, 1.0], [0.3, 0.2, 0.2, 0.3])
+                .unwrap();
         let gamma = GammaRates::new(0.5, 4).unwrap();
 
         let gtr_model = crate::subst_model::GtrModel::new(params.clone());
-        let generic_ll =
-            generic_tree_likelihood(&tree, &refs, &gtr_model, Some(&gamma)).unwrap();
+        let generic_ll = generic_tree_likelihood(&tree, &refs, &gtr_model, Some(&gamma)).unwrap();
 
         let prob_fn = params.probability_fn();
         let original_ll = crate::likelihood::tree_likelihood_gtr(

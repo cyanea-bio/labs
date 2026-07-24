@@ -10,7 +10,7 @@ use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-use cyanea_core::{CyaneaError, ContentAddressable, Sequence, Summarizable};
+use cyanea_core::{ContentAddressable, CyaneaError, Sequence, Summarizable};
 
 use crate::alphabet::Alphabet;
 
@@ -30,7 +30,11 @@ impl<A: Alphabet> ValidatedSeq<A> {
     /// Input is uppercased, then every byte is checked against the alphabet.
     /// Returns an error if any byte is not in the alphabet after uppercasing.
     pub fn new(bytes: impl AsRef<[u8]>) -> cyanea_core::Result<Self> {
-        let data: Vec<u8> = bytes.as_ref().iter().map(|b| b.to_ascii_uppercase()).collect();
+        let data: Vec<u8> = bytes
+            .as_ref()
+            .iter()
+            .map(|b| b.to_ascii_uppercase())
+            .collect();
         for (i, &b) in data.iter().enumerate() {
             if !A::is_valid(b) {
                 return Err(CyaneaError::InvalidInput(format!(
@@ -97,7 +101,12 @@ impl<A: Alphabet> Summarizable for ValidatedSeq<A> {
         let preview_len = self.data.len().min(20);
         let preview = std::str::from_utf8(&self.data[..preview_len]).unwrap_or("???");
         if self.data.len() > 20 {
-            format!("{} sequence ({} bp): {}...", A::NAME, self.data.len(), preview)
+            format!(
+                "{} sequence ({} bp): {}...",
+                A::NAME,
+                self.data.len(),
+                preview
+            )
         } else {
             format!("{} sequence ({} bp): {}", A::NAME, self.data.len(), preview)
         }
@@ -134,7 +143,10 @@ impl<A: Alphabet> Hash for ValidatedSeq<A> {
 
 #[cfg(feature = "serde")]
 impl<A: Alphabet> serde::Serialize for ValidatedSeq<A> {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
+    fn serialize<S: serde::Serializer>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error> {
         let s = std::str::from_utf8(&self.data).map_err(serde::ser::Error::custom)?;
         serializer.serialize_str(s)
     }
@@ -142,7 +154,9 @@ impl<A: Alphabet> serde::Serialize for ValidatedSeq<A> {
 
 #[cfg(feature = "serde")]
 impl<'de, A: Alphabet> serde::Deserialize<'de> for ValidatedSeq<A> {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> std::result::Result<Self, D::Error> {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
         let s = String::deserialize(deserializer)?;
         Self::new(s.as_bytes()).map_err(serde::de::Error::custom)
     }

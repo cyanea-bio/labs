@@ -98,9 +98,7 @@ impl TaxonomyTree {
         common_ancestors
             .into_iter()
             .max_by_key(|&a| self.depth(a))
-            .ok_or_else(|| {
-                CyaneaError::InvalidInput("no common ancestor found".into())
-            })
+            .ok_or_else(|| CyaneaError::InvalidInput("no common ancestor found".into()))
     }
 
     /// Get the full lineage (path to root) for a node, ordered from the node to root.
@@ -290,7 +288,7 @@ mod tests {
         // Add overlapping references for two species.
         classifier.add_reference(b"ACGTACGT", 4); // E. coli
         classifier.add_reference(b"ACGTACGT", 5); // Salmonella
-        // Query with shared sequence should resolve to LCA = Proteobacteria.
+                                                  // Query with shared sequence should resolve to LCA = Proteobacteria.
         let result = classifier.classify(b"ACGTACGT");
         assert_eq!(result, Some(2));
     }

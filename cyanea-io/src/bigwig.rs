@@ -128,7 +128,11 @@ pub fn read_bigwig_intervals(
         .find(|(name, _, _)| name == chrom)
         .map(|(_, id, _)| *id)
         .ok_or_else(|| {
-            CyaneaError::Parse(format!("{}: chromosome '{}' not found", path.display(), chrom))
+            CyaneaError::Parse(format!(
+                "{}: chromosome '{}' not found",
+                path.display(),
+                chrom
+            ))
         })?;
 
     // Read R-tree to find overlapping data blocks
@@ -177,7 +181,11 @@ pub fn read_bigbed_records(
         .find(|(name, _, _)| name == chrom)
         .map(|(_, id, _)| *id)
         .ok_or_else(|| {
-            CyaneaError::Parse(format!("{}: chromosome '{}' not found", path.display(), chrom))
+            CyaneaError::Parse(format!(
+                "{}: chromosome '{}' not found",
+                path.display(),
+                chrom
+            ))
         })?;
 
     let blocks = read_rtree_overlapping(&mut file, &header, path, chrom_id, start, end)?;
@@ -215,8 +223,12 @@ fn read_err(path: &Path, msg: &str) -> CyaneaError {
 
 fn read_bytes(file: &mut File, n: usize, path: &Path) -> Result<Vec<u8>> {
     let mut buf = vec![0u8; n];
-    file.read_exact(&mut buf)
-        .map_err(|e| CyaneaError::Io(io::Error::new(e.kind(), format!("{}: {}", path.display(), e))))?;
+    file.read_exact(&mut buf).map_err(|e| {
+        CyaneaError::Io(io::Error::new(
+            e.kind(),
+            format!("{}: {}", path.display(), e),
+        ))
+    })?;
     Ok(buf)
 }
 
@@ -260,11 +272,7 @@ fn read_f32(data: &[u8], offset: usize, big_endian: bool) -> f32 {
 // Header parsing
 // ---------------------------------------------------------------------------
 
-fn read_internal_header(
-    file: &mut File,
-    path: &Path,
-    is_bigwig: bool,
-) -> Result<InternalHeader> {
+fn read_internal_header(file: &mut File, path: &Path, is_bigwig: bool) -> Result<InternalHeader> {
     let buf = read_bytes(file, 64, path)?;
 
     let raw_magic = u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]);
@@ -284,7 +292,10 @@ fn read_internal_header(
 
     if !valid {
         let expected = if is_bigwig { "bigWig" } else { "bigBed" };
-        return Err(read_err(path, &format!("not a valid {} file (bad magic)", expected)));
+        return Err(read_err(
+            path,
+            &format!("not a valid {} file (bad magic)", expected),
+        ));
     }
 
     let version = read_u16(&buf, 4, big_endian);
@@ -328,7 +339,12 @@ fn read_total_summary(
     }
 
     file.seek(SeekFrom::Start(header.total_summary_offset))
-        .map_err(|e| CyaneaError::Io(io::Error::new(e.kind(), format!("{}: {}", path.display(), e))))?;
+        .map_err(|e| {
+            CyaneaError::Io(io::Error::new(
+                e.kind(),
+                format!("{}: {}", path.display(), e),
+            ))
+        })?;
 
     let buf = read_bytes(file, 40, path)?;
     let be = header.big_endian;
@@ -353,7 +369,12 @@ fn read_chrom_tree(
     path: &Path,
 ) -> Result<Vec<(String, u32, u32)>> {
     file.seek(SeekFrom::Start(header.chrom_tree_offset))
-        .map_err(|e| CyaneaError::Io(io::Error::new(e.kind(), format!("{}: {}", path.display(), e))))?;
+        .map_err(|e| {
+            CyaneaError::Io(io::Error::new(
+                e.kind(),
+                format!("{}: {}", path.display(), e),
+            ))
+        })?;
 
     let be = header.big_endian;
     let buf = read_bytes(file, 32, path)?;
@@ -407,8 +428,12 @@ fn read_bptree_node(
             child_offsets.push(child_offset);
         }
         for offset in child_offsets {
-            file.seek(SeekFrom::Start(offset))
-                .map_err(|e| CyaneaError::Io(io::Error::new(e.kind(), format!("{}: {}", path.display(), e))))?;
+            file.seek(SeekFrom::Start(offset)).map_err(|e| {
+                CyaneaError::Io(io::Error::new(
+                    e.kind(),
+                    format!("{}: {}", path.display(), e),
+                ))
+            })?;
             read_bptree_node(file, header, path, key_size, chroms)?;
         }
     }
@@ -431,14 +456,22 @@ fn read_rtree_overlapping(
 ) -> Result<Vec<(u64, u64)>> {
     // R-tree header immediately follows the data section
     // The index offset is stored at byte 24 of the file header
-    file.seek(SeekFrom::Start(24))
-        .map_err(|e| CyaneaError::Io(io::Error::new(e.kind(), format!("{}: {}", path.display(), e))))?;
+    file.seek(SeekFrom::Start(24)).map_err(|e| {
+        CyaneaError::Io(io::Error::new(
+            e.kind(),
+            format!("{}: {}", path.display(), e),
+        ))
+    })?;
 
     let buf = read_bytes(file, 8, path)?;
     let index_offset = read_u64(&buf, 0, header.big_endian);
 
-    file.seek(SeekFrom::Start(index_offset))
-        .map_err(|e| CyaneaError::Io(io::Error::new(e.kind(), format!("{}: {}", path.display(), e))))?;
+    file.seek(SeekFrom::Start(index_offset)).map_err(|e| {
+        CyaneaError::Io(io::Error::new(
+            e.kind(),
+            format!("{}: {}", path.display(), e),
+        ))
+    })?;
 
     let be = header.big_endian;
     let rtree_header = read_bytes(file, 48, path)?;
@@ -477,7 +510,15 @@ fn read_rtree_node(
             let data_offset = read_u64(&item, 16, be);
             let data_size = read_u64(&item, 24, be);
 
-            if overlaps(chrom_id, start, end, start_chrom_ix, start_base, end_chrom_ix, end_base) {
+            if overlaps(
+                chrom_id,
+                start,
+                end,
+                start_chrom_ix,
+                start_base,
+                end_chrom_ix,
+                end_base,
+            ) {
                 blocks.push((data_offset, data_size));
             }
         }
@@ -491,13 +532,25 @@ fn read_rtree_node(
             let end_base = read_u32(&item, 12, be);
             let child_offset = read_u64(&item, 16, be);
 
-            if overlaps(chrom_id, start, end, start_chrom_ix, start_base, end_chrom_ix, end_base) {
+            if overlaps(
+                chrom_id,
+                start,
+                end,
+                start_chrom_ix,
+                start_base,
+                end_chrom_ix,
+                end_base,
+            ) {
                 children.push(child_offset);
             }
         }
         for offset in children {
-            file.seek(SeekFrom::Start(offset))
-                .map_err(|e| CyaneaError::Io(io::Error::new(e.kind(), format!("{}: {}", path.display(), e))))?;
+            file.seek(SeekFrom::Start(offset)).map_err(|e| {
+                CyaneaError::Io(io::Error::new(
+                    e.kind(),
+                    format!("{}: {}", path.display(), e),
+                ))
+            })?;
             read_rtree_node(file, header, path, chrom_id, start, end, blocks)?;
         }
     }
@@ -507,9 +560,13 @@ fn read_rtree_node(
 
 /// Check if a query region overlaps an R-tree node's bounding box.
 fn overlaps(
-    qchrom: u32, qstart: u32, qend: u32,
-    start_chrom: u32, start_base: u32,
-    end_chrom: u32, end_base: u32,
+    qchrom: u32,
+    qstart: u32,
+    qend: u32,
+    start_chrom: u32,
+    start_base: u32,
+    end_chrom: u32,
+    end_base: u32,
 ) -> bool {
     // Query is entirely before the node
     if qchrom < start_chrom || (qchrom == start_chrom && qend <= start_base) {
@@ -533,13 +590,20 @@ fn decompress_block(
     offset: u64,
     size: u64,
 ) -> Result<Vec<u8>> {
-    file.seek(SeekFrom::Start(offset))
-        .map_err(|e| CyaneaError::Io(io::Error::new(e.kind(), format!("{}: {}", path.display(), e))))?;
+    file.seek(SeekFrom::Start(offset)).map_err(|e| {
+        CyaneaError::Io(io::Error::new(
+            e.kind(),
+            format!("{}: {}", path.display(), e),
+        ))
+    })?;
 
     let raw = read_bytes(file, size as usize, path)?;
 
     // Try zlib decompression; if it fails, assume uncompressed
-    match flate2::read::ZlibDecoder::new(&raw[..]).bytes().collect::<std::result::Result<Vec<u8>, _>>() {
+    match flate2::read::ZlibDecoder::new(&raw[..])
+        .bytes()
+        .collect::<std::result::Result<Vec<u8>, _>>()
+    {
         Ok(decompressed) if !decompressed.is_empty() => Ok(decompressed),
         _ => Ok(raw),
     }
@@ -709,7 +773,7 @@ mod test_helpers {
     /// - Data section with bedGraph items
     /// - R-tree index
     pub fn build_minimal_bigwig(
-        chroms: &[(&str, u32)], // (name, size)
+        chroms: &[(&str, u32)],             // (name, size)
         intervals: &[(u32, u32, u32, f32)], // (chrom_id, start, end, value)
     ) -> Vec<u8> {
         let mut buf = Vec::new();
@@ -721,28 +785,44 @@ mod test_helpers {
 
         // Header placeholder (64 bytes)
         let header_start = buf.len();
-        buf.extend_from_slice(&magic.to_le_bytes());       // 0: magic
-        buf.extend_from_slice(&version.to_le_bytes());      // 4: version
-        buf.extend_from_slice(&zoom_levels.to_le_bytes());  // 6: zoom levels
-        buf.extend_from_slice(&0u64.to_le_bytes());         // 8: chrom tree offset (patch later)
-        buf.extend_from_slice(&0u64.to_le_bytes());         // 16: data offset (patch later)
-        buf.extend_from_slice(&0u64.to_le_bytes());         // 24: index offset (patch later)
-        buf.extend_from_slice(&0u64.to_le_bytes());         // 32: data count (we store as u64 but spec overlaps with fieldCount etc for bigBed)
-        buf.extend_from_slice(&0u64.to_le_bytes());         // 40: auto-sql offset
-        buf.extend_from_slice(&0u64.to_le_bytes());         // 48: total summary offset (patch later)
-        buf.extend_from_slice(&0u32.to_le_bytes());         // 56: uncompress buf size
-        buf.extend_from_slice(&0u32.to_le_bytes());         // 60: reserved
+        buf.extend_from_slice(&magic.to_le_bytes()); // 0: magic
+        buf.extend_from_slice(&version.to_le_bytes()); // 4: version
+        buf.extend_from_slice(&zoom_levels.to_le_bytes()); // 6: zoom levels
+        buf.extend_from_slice(&0u64.to_le_bytes()); // 8: chrom tree offset (patch later)
+        buf.extend_from_slice(&0u64.to_le_bytes()); // 16: data offset (patch later)
+        buf.extend_from_slice(&0u64.to_le_bytes()); // 24: index offset (patch later)
+        buf.extend_from_slice(&0u64.to_le_bytes()); // 32: data count (we store as u64 but spec overlaps with fieldCount etc for bigBed)
+        buf.extend_from_slice(&0u64.to_le_bytes()); // 40: auto-sql offset
+        buf.extend_from_slice(&0u64.to_le_bytes()); // 48: total summary offset (patch later)
+        buf.extend_from_slice(&0u32.to_le_bytes()); // 56: uncompress buf size
+        buf.extend_from_slice(&0u32.to_le_bytes()); // 60: reserved
         assert_eq!(buf.len() - header_start, 64);
 
         // Total summary
         let summary_offset = buf.len() as u64;
         let bases_covered: u64 = intervals.iter().map(|i| (i.2 - i.1) as u64).sum();
-        let min_val: f64 = intervals.iter().map(|i| i.3 as f64).fold(f64::MAX, f64::min);
-        let max_val: f64 = intervals.iter().map(|i| i.3 as f64).fold(f64::MIN, f64::max);
-        let sum: f64 = intervals.iter().map(|i| i.3 as f64 * (i.2 - i.1) as f64).sum();
-        let sum_sq: f64 = intervals.iter().map(|i| (i.3 as f64).powi(2) * (i.2 - i.1) as f64).sum();
+        let min_val: f64 = intervals
+            .iter()
+            .map(|i| i.3 as f64)
+            .fold(f64::MAX, f64::min);
+        let max_val: f64 = intervals
+            .iter()
+            .map(|i| i.3 as f64)
+            .fold(f64::MIN, f64::max);
+        let sum: f64 = intervals
+            .iter()
+            .map(|i| i.3 as f64 * (i.2 - i.1) as f64)
+            .sum();
+        let sum_sq: f64 = intervals
+            .iter()
+            .map(|i| (i.3 as f64).powi(2) * (i.2 - i.1) as f64)
+            .sum();
 
-        let (min_val, max_val) = if intervals.is_empty() { (0.0, 0.0) } else { (min_val, max_val) };
+        let (min_val, max_val) = if intervals.is_empty() {
+            (0.0, 0.0)
+        } else {
+            (min_val, max_val)
+        };
 
         buf.extend_from_slice(&bases_covered.to_le_bytes());
         buf.extend_from_slice(&min_val.to_bits().to_le_bytes());
@@ -752,16 +832,21 @@ mod test_helpers {
 
         // B+ tree for chromosomes
         let chrom_tree_offset = buf.len() as u64;
-        let key_size: u32 = chroms.iter().map(|(n, _)| n.len() as u32 + 1).max().unwrap_or(8).max(8);
+        let key_size: u32 = chroms
+            .iter()
+            .map(|(n, _)| n.len() as u32 + 1)
+            .max()
+            .unwrap_or(8)
+            .max(8);
         let val_size: u32 = 8; // chrom_id(4) + chrom_size(4)
         let bptree_magic: u32 = 0x78CA_8C91;
 
-        buf.extend_from_slice(&bptree_magic.to_le_bytes());     // magic
-        buf.extend_from_slice(&256u32.to_le_bytes());            // block size
-        buf.extend_from_slice(&key_size.to_le_bytes());          // key size
-        buf.extend_from_slice(&val_size.to_le_bytes());          // val size
+        buf.extend_from_slice(&bptree_magic.to_le_bytes()); // magic
+        buf.extend_from_slice(&256u32.to_le_bytes()); // block size
+        buf.extend_from_slice(&key_size.to_le_bytes()); // key size
+        buf.extend_from_slice(&val_size.to_le_bytes()); // val size
         buf.extend_from_slice(&(chroms.len() as u64).to_le_bytes()); // item count
-        buf.extend_from_slice(&0u64.to_le_bytes());              // reserved
+        buf.extend_from_slice(&0u64.to_le_bytes()); // reserved
 
         // Leaf node
         buf.push(1); // is_leaf
@@ -774,7 +859,7 @@ mod test_helpers {
             key[..name_bytes.len()].copy_from_slice(name_bytes);
             buf.extend_from_slice(&key);
             buf.extend_from_slice(&(i as u32).to_le_bytes()); // chrom_id
-            buf.extend_from_slice(&size.to_le_bytes());         // chrom_size
+            buf.extend_from_slice(&size.to_le_bytes()); // chrom_size
         }
 
         // Data section (bedGraph format)
@@ -784,13 +869,13 @@ mod test_helpers {
             // Section header (24 bytes)
             let first = &intervals[0];
             let last = &intervals[intervals.len() - 1];
-            buf.extend_from_slice(&first.0.to_le_bytes());    // chromId
-            buf.extend_from_slice(&first.1.to_le_bytes());    // chromStart
-            buf.extend_from_slice(&last.2.to_le_bytes());     // chromEnd
-            buf.extend_from_slice(&0u32.to_le_bytes());       // itemStep (not used for bedGraph)
-            buf.extend_from_slice(&0u32.to_le_bytes());       // itemSpan (not used for bedGraph)
-            buf.push(1);                                       // type = bedGraph
-            buf.push(0);                                       // reserved
+            buf.extend_from_slice(&first.0.to_le_bytes()); // chromId
+            buf.extend_from_slice(&first.1.to_le_bytes()); // chromStart
+            buf.extend_from_slice(&last.2.to_le_bytes()); // chromEnd
+            buf.extend_from_slice(&0u32.to_le_bytes()); // itemStep (not used for bedGraph)
+            buf.extend_from_slice(&0u32.to_le_bytes()); // itemSpan (not used for bedGraph)
+            buf.push(1); // type = bedGraph
+            buf.push(0); // reserved
             buf.extend_from_slice(&(intervals.len() as u16).to_le_bytes()); // itemCount
 
             // Items
@@ -808,16 +893,16 @@ mod test_helpers {
         let index_offset = buf.len() as u64;
         let rtree_magic: u32 = 0x2468_ACE0;
 
-        buf.extend_from_slice(&rtree_magic.to_le_bytes());      // magic
-        buf.extend_from_slice(&256u32.to_le_bytes());            // block size
+        buf.extend_from_slice(&rtree_magic.to_le_bytes()); // magic
+        buf.extend_from_slice(&256u32.to_le_bytes()); // block size
         buf.extend_from_slice(&(intervals.len() as u64).to_le_bytes()); // item count
-        buf.extend_from_slice(&0u32.to_le_bytes());              // start chrom ix
-        buf.extend_from_slice(&0u32.to_le_bytes());              // start base
-        buf.extend_from_slice(&0u32.to_le_bytes());              // end chrom ix
-        buf.extend_from_slice(&0u32.to_le_bytes());              // end base
-        buf.extend_from_slice(&0u64.to_le_bytes());              // end file offset
+        buf.extend_from_slice(&0u32.to_le_bytes()); // start chrom ix
+        buf.extend_from_slice(&0u32.to_le_bytes()); // start base
+        buf.extend_from_slice(&0u32.to_le_bytes()); // end chrom ix
+        buf.extend_from_slice(&0u32.to_le_bytes()); // end base
+        buf.extend_from_slice(&0u64.to_le_bytes()); // end file offset
         buf.extend_from_slice(&(if intervals.is_empty() { 0u32 } else { 1u32 }).to_le_bytes()); // items per slot
-        buf.extend_from_slice(&0u32.to_le_bytes());              // reserved
+        buf.extend_from_slice(&0u32.to_le_bytes()); // reserved
 
         // Leaf node
         buf.push(1); // is_leaf
@@ -831,10 +916,10 @@ mod test_helpers {
             let last = &intervals[intervals.len() - 1];
             buf.extend_from_slice(&first.0.to_le_bytes()); // start chrom ix
             buf.extend_from_slice(&first.1.to_le_bytes()); // start base
-            buf.extend_from_slice(&last.0.to_le_bytes());  // end chrom ix
-            buf.extend_from_slice(&last.2.to_le_bytes());  // end base
+            buf.extend_from_slice(&last.0.to_le_bytes()); // end chrom ix
+            buf.extend_from_slice(&last.2.to_le_bytes()); // end base
             buf.extend_from_slice(&data_offset.to_le_bytes()); // data offset
-            buf.extend_from_slice(&data_size.to_le_bytes());   // data size
+            buf.extend_from_slice(&data_size.to_le_bytes()); // data size
         }
 
         // Patch header offsets
@@ -883,7 +968,12 @@ mod test_helpers {
 
         // B+ tree
         let chrom_tree_offset = buf.len() as u64;
-        let key_size: u32 = chroms.iter().map(|(n, _)| n.len() as u32 + 1).max().unwrap_or(8).max(8);
+        let key_size: u32 = chroms
+            .iter()
+            .map(|(n, _)| n.len() as u32 + 1)
+            .max()
+            .unwrap_or(8)
+            .max(8);
 
         buf.extend_from_slice(&0x78CA_8C91u32.to_le_bytes());
         buf.extend_from_slice(&256u32.to_le_bytes());
@@ -911,8 +1001,8 @@ mod test_helpers {
             buf.extend_from_slice(&rec.0.to_le_bytes()); // chrom_id
             buf.extend_from_slice(&rec.1.to_le_bytes()); // start
             buf.extend_from_slice(&rec.2.to_le_bytes()); // end
-            buf.extend_from_slice(rec.3.as_bytes());       // rest
-            buf.push(0);                                    // NUL terminator
+            buf.extend_from_slice(rec.3.as_bytes()); // rest
+            buf.push(0); // NUL terminator
         }
         let data_end = buf.len() as u64;
         let data_size = data_end - data_offset;
@@ -990,10 +1080,7 @@ mod tests {
     fn bigwig_header_parse() {
         let data = test_helpers::build_minimal_bigwig(
             &[("chr1", 248956422), ("chr2", 242193529)],
-            &[
-                (0, 100, 200, 1.5),
-                (0, 300, 400, 2.5),
-            ],
+            &[(0, 100, 200, 1.5), (0, 300, 400, 2.5)],
         );
         let file = write_test_file(&data, ".bw");
         let header = read_bigwig_header(file.path()).unwrap();
@@ -1007,10 +1094,7 @@ mod tests {
     fn bigwig_summary_stats() {
         let data = test_helpers::build_minimal_bigwig(
             &[("chr1", 1000)],
-            &[
-                (0, 0, 100, 1.0),
-                (0, 100, 200, 3.0),
-            ],
+            &[(0, 0, 100, 1.0), (0, 100, 200, 3.0)],
         );
         let file = write_test_file(&data, ".bw");
         let header = read_bigwig_header(file.path()).unwrap();
@@ -1034,10 +1118,7 @@ mod tests {
     #[test]
     fn bigwig_endianness() {
         // Build a little-endian bigWig and verify we can read it
-        let data = test_helpers::build_minimal_bigwig(
-            &[("chr1", 1000)],
-            &[(0, 50, 150, 2.0)],
-        );
+        let data = test_helpers::build_minimal_bigwig(&[("chr1", 1000)], &[(0, 50, 150, 2.0)]);
         let file = write_test_file(&data, ".bw");
         let header = read_bigwig_header(file.path()).unwrap();
         assert_eq!(header.chrom_count, 1);
@@ -1053,11 +1134,7 @@ mod tests {
     fn bigwig_region_query() {
         let data = test_helpers::build_minimal_bigwig(
             &[("chr1", 1000)],
-            &[
-                (0, 100, 200, 1.0),
-                (0, 200, 300, 2.0),
-                (0, 400, 500, 3.0),
-            ],
+            &[(0, 100, 200, 1.0), (0, 200, 300, 2.0), (0, 400, 500, 3.0)],
         );
         let file = write_test_file(&data, ".bw");
         let intervals = read_bigwig_intervals(file.path(), "chr1", 150, 350).unwrap();

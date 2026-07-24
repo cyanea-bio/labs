@@ -338,9 +338,7 @@ impl ProfileHmm {
 
         let n_cols = msa.n_columns;
         if n_cols == 0 {
-            return Err(CyaneaError::InvalidInput(
-                "MSA has no columns".into(),
-            ));
+            return Err(CyaneaError::InvalidInput("MSA has no columns".into()));
         }
 
         let alphabet = config.alphabet;
@@ -397,7 +395,8 @@ impl ProfileHmm {
         // Count transitions by walking each sequence through column classification.
         // For each sequence, at each column, determine if the sequence has a
         // residue or gap in that column, and what state that implies.
-        let mut trans_counts = vec![vec![config.transition_pseudocount; NUM_TRANSITIONS]; profile_len + 1];
+        let mut trans_counts =
+            vec![vec![config.transition_pseudocount; NUM_TRANSITIONS]; profile_len + 1];
 
         for seq in &msa.aligned {
             // Walk through columns, tracking current state
@@ -476,27 +475,33 @@ impl ProfileHmm {
         let mut transitions = vec![f64::NEG_INFINITY; (profile_len + 1) * NUM_TRANSITIONS];
         for pos in 0..=profile_len {
             // Normalize M→{M,I,D} group
-            let m_total = trans_counts[pos][TR_MM]
-                + trans_counts[pos][TR_MI]
-                + trans_counts[pos][TR_MD];
+            let m_total =
+                trans_counts[pos][TR_MM] + trans_counts[pos][TR_MI] + trans_counts[pos][TR_MD];
             if m_total > 0.0 {
-                transitions[pos * NUM_TRANSITIONS + TR_MM] = (trans_counts[pos][TR_MM] / m_total).ln();
-                transitions[pos * NUM_TRANSITIONS + TR_MI] = (trans_counts[pos][TR_MI] / m_total).ln();
-                transitions[pos * NUM_TRANSITIONS + TR_MD] = (trans_counts[pos][TR_MD] / m_total).ln();
+                transitions[pos * NUM_TRANSITIONS + TR_MM] =
+                    (trans_counts[pos][TR_MM] / m_total).ln();
+                transitions[pos * NUM_TRANSITIONS + TR_MI] =
+                    (trans_counts[pos][TR_MI] / m_total).ln();
+                transitions[pos * NUM_TRANSITIONS + TR_MD] =
+                    (trans_counts[pos][TR_MD] / m_total).ln();
             }
 
             // Normalize I→{M,I} group
             let i_total = trans_counts[pos][TR_IM] + trans_counts[pos][TR_II];
             if i_total > 0.0 {
-                transitions[pos * NUM_TRANSITIONS + TR_IM] = (trans_counts[pos][TR_IM] / i_total).ln();
-                transitions[pos * NUM_TRANSITIONS + TR_II] = (trans_counts[pos][TR_II] / i_total).ln();
+                transitions[pos * NUM_TRANSITIONS + TR_IM] =
+                    (trans_counts[pos][TR_IM] / i_total).ln();
+                transitions[pos * NUM_TRANSITIONS + TR_II] =
+                    (trans_counts[pos][TR_II] / i_total).ln();
             }
 
             // Normalize D→{M,D} group
             let d_total = trans_counts[pos][TR_DM] + trans_counts[pos][TR_DD];
             if d_total > 0.0 {
-                transitions[pos * NUM_TRANSITIONS + TR_DM] = (trans_counts[pos][TR_DM] / d_total).ln();
-                transitions[pos * NUM_TRANSITIONS + TR_DD] = (trans_counts[pos][TR_DD] / d_total).ln();
+                transitions[pos * NUM_TRANSITIONS + TR_DM] =
+                    (trans_counts[pos][TR_DM] / d_total).ln();
+                transitions[pos * NUM_TRANSITIONS + TR_DD] =
+                    (trans_counts[pos][TR_DD] / d_total).ln();
             }
         }
 
@@ -1015,9 +1020,8 @@ impl ProfileHmm {
                         val = log_sum_exp(val, to_mm);
                     }
 
-                    let to_mi = self.trans(k, TR_MI)
-                        + self.insert_emit_score(k, sym_i)
-                        + bi[idx(i + 1, k)];
+                    let to_mi =
+                        self.trans(k, TR_MI) + self.insert_emit_score(k, sym_i) + bi[idx(i + 1, k)];
                     val = log_sum_exp(val, to_mi);
 
                     if k < l {
@@ -1043,9 +1047,8 @@ impl ProfileHmm {
                         ival = log_sum_exp(ival, to_im);
                     }
 
-                    let to_ii = self.trans(k, TR_II)
-                        + self.insert_emit_score(k, sym_i)
-                        + bi[idx(i + 1, k)];
+                    let to_ii =
+                        self.trans(k, TR_II) + self.insert_emit_score(k, sym_i) + bi[idx(i + 1, k)];
                     ival = log_sum_exp(ival, to_ii);
 
                     bi[idx(i, k)] = ival;
@@ -1084,16 +1087,9 @@ impl ProfileHmm {
     /// # Errors
     ///
     /// Returns an error if `n_samples` is zero.
-    pub fn calibrate(
-        &mut self,
-        n_samples: usize,
-        seq_length: usize,
-        seed: u64,
-    ) -> Result<()> {
+    pub fn calibrate(&mut self, n_samples: usize, seq_length: usize, seed: u64) -> Result<()> {
         if n_samples == 0 {
-            return Err(CyaneaError::InvalidInput(
-                "n_samples must be > 0".into(),
-            ));
+            return Err(CyaneaError::InvalidInput("n_samples must be > 0".into()));
         }
 
         let symbols: Vec<u8> = match self.alphabet {
@@ -1101,8 +1097,8 @@ impl ProfileHmm {
             Alphabet::Rna => vec![b'A', b'C', b'G', b'U'],
             Alphabet::Protein => {
                 vec![
-                    b'A', b'R', b'N', b'D', b'C', b'Q', b'E', b'G', b'H', b'I',
-                    b'L', b'K', b'M', b'F', b'P', b'S', b'T', b'W', b'Y', b'V',
+                    b'A', b'R', b'N', b'D', b'C', b'Q', b'E', b'G', b'H', b'I', b'L', b'K', b'M',
+                    b'F', b'P', b'S', b'T', b'W', b'Y', b'V',
                 ]
             }
         };
@@ -1169,9 +1165,7 @@ impl ProfileHmm {
     /// Returns an error if `calibrate` has not been called.
     pub fn evalue(&self, score: f64, db_size: usize) -> Result<f64> {
         let gumbel = self.gumbel.as_ref().ok_or_else(|| {
-            CyaneaError::InvalidInput(
-                "must call calibrate() before computing E-values".into(),
-            )
+            CyaneaError::InvalidInput("must call calibrate() before computing E-values".into())
         })?;
 
         let evalue = db_size as f64 * (-gumbel.lambda * (score - gumbel.mu)).exp();
@@ -1326,11 +1320,7 @@ mod tests {
     fn from_msa_with_gaps() {
         // MSA with some heavily gapped columns that should become inserts
         let msa = MsaResult {
-            aligned: vec![
-                b"A-C-G".to_vec(),
-                b"A-C-G".to_vec(),
-                b"A-C-G".to_vec(),
-            ],
+            aligned: vec![b"A-C-G".to_vec(), b"A-C-G".to_vec(), b"A-C-G".to_vec()],
             n_columns: 5,
         };
         let config = ProfileHmmConfig::dna();
@@ -1366,11 +1356,11 @@ mod tests {
         let result = ProfileHmm::new(
             2,
             Alphabet::Dna,
-            vec![0.0; 2 * 4],      // match_emit: L * K
-            vec![0.0; 3 * 4],      // insert_emit: (L+1) * K
-            vec![0.0; 3 * 7],      // transitions: (L+1) * 7
-            vec![0.0; 2],          // entry: L
-            vec![0.0; 2],          // exit: L
+            vec![0.0; 2 * 4], // match_emit: L * K
+            vec![0.0; 3 * 4], // insert_emit: (L+1) * K
+            vec![0.0; 3 * 7], // transitions: (L+1) * 7
+            vec![0.0; 2],     // entry: L
+            vec![0.0; 2],     // exit: L
         );
         assert!(result.is_ok());
 
@@ -1378,12 +1368,13 @@ mod tests {
         assert!(ProfileHmm::new(
             2,
             Alphabet::Dna,
-            vec![0.0; 3],           // wrong
+            vec![0.0; 3], // wrong
             vec![0.0; 3 * 4],
             vec![0.0; 3 * 7],
             vec![0.0; 2],
             vec![0.0; 2],
-        ).is_err());
+        )
+        .is_err());
 
         // Zero profile length
         assert!(ProfileHmm::new(
@@ -1394,7 +1385,8 @@ mod tests {
             vec![0.0; 7],
             vec![],
             vec![],
-        ).is_err());
+        )
+        .is_err());
     }
 
     // ------------------------------------------------------------------

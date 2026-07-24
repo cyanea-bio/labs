@@ -3,8 +3,8 @@
 use std::ffi::c_void;
 
 use metal_rs::{
-    Buffer as MtlBuffer, CommandQueue, CompileOptions, ComputePipelineState, Device, MTLSize,
-    MTLResourceOptions,
+    Buffer as MtlBuffer, CommandQueue, CompileOptions, ComputePipelineState, Device,
+    MTLResourceOptions, MTLSize,
 };
 
 use cyanea_core::{CyaneaError, Result};
@@ -28,8 +28,8 @@ pub struct MetalAligner {
 
 impl MetalAligner {
     pub fn new() -> Result<Self> {
-        let device = Device::system_default()
-            .ok_or_else(|| CyaneaError::Other("no Metal device".into()))?;
+        let device =
+            Device::system_default().ok_or_else(|| CyaneaError::Other("no Metal device".into()))?;
         let queue = device.new_command_queue();
 
         let lib = device
@@ -147,10 +147,12 @@ impl MetalAligner {
             let end_i = end_positions[pair_idx * 2] as usize;
             let end_j = end_positions[pair_idx * 2 + 1] as usize;
             let tb_size = (index[pair_idx].query_len as usize + 1) * bandwidth;
-            let tb_slice = &traceback_data[tb_offset..tb_offset + tb_size.min(traceback_data.len() - tb_offset)];
+            let tb_slice = &traceback_data
+                [tb_offset..tb_offset + tb_size.min(traceback_data.len() - tb_offset)];
 
-            let result =
-                reconstruct_alignment(q, t, score, end_i, end_j, tb_slice, bandwidth, mode, scoring);
+            let result = reconstruct_alignment(
+                q, t, score, end_i, end_j, tb_slice, bandwidth, mode, scoring,
+            );
             results[*orig_idx] = Some(result);
             tb_offset += tb_size;
         }

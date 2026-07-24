@@ -183,9 +183,8 @@ impl<'a> SmilesParser<'a> {
             }
         };
 
-        let elem = element_by_symbol(symbol).ok_or_else(|| {
-            CyaneaError::Parse(format!("unknown element '{symbol}'"))
-        })?;
+        let elem = element_by_symbol(symbol)
+            .ok_or_else(|| CyaneaError::Parse(format!("unknown element '{symbol}'")))?;
 
         let atom = MolAtom {
             atomic_number: elem.atomic_number,
@@ -210,9 +209,9 @@ impl<'a> SmilesParser<'a> {
         let isotope = self.parse_optional_number();
 
         // Atom symbol
-        let ch = self.advance().ok_or_else(|| {
-            CyaneaError::Parse("unexpected end of SMILES in bracket atom".into())
-        })?;
+        let ch = self
+            .advance()
+            .ok_or_else(|| CyaneaError::Parse("unexpected end of SMILES in bracket atom".into()))?;
 
         let is_aromatic = ch.is_ascii_lowercase();
         let upper = ch.to_ascii_uppercase();
@@ -234,9 +233,8 @@ impl<'a> SmilesParser<'a> {
             String::from(upper as char)
         };
 
-        let elem = element_by_symbol(&symbol).ok_or_else(|| {
-            CyaneaError::Parse(format!("unknown element '{symbol}'"))
-        })?;
+        let elem = element_by_symbol(&symbol)
+            .ok_or_else(|| CyaneaError::Parse(format!("unknown element '{symbol}'")))?;
 
         // Parse stereochemistry markers: @ = counterclockwise, @@ = clockwise
         let chirality = if self.peek() == Some(b'@') {
@@ -347,26 +345,32 @@ impl<'a> SmilesParser<'a> {
                 break;
             }
         }
-        if found { Some(n) } else { None }
+        if found {
+            Some(n)
+        } else {
+            None
+        }
     }
 
     fn parse_two_digit_ring(&mut self) -> Result<u16> {
-        let d1 = self.advance().ok_or_else(|| {
-            CyaneaError::Parse("expected digit after '%'".into())
-        })?;
-        let d2 = self.advance().ok_or_else(|| {
-            CyaneaError::Parse("expected second digit after '%'".into())
-        })?;
+        let d1 = self
+            .advance()
+            .ok_or_else(|| CyaneaError::Parse("expected digit after '%'".into()))?;
+        let d2 = self
+            .advance()
+            .ok_or_else(|| CyaneaError::Parse("expected second digit after '%'".into()))?;
         if !d1.is_ascii_digit() || !d2.is_ascii_digit() {
-            return Err(CyaneaError::Parse("invalid ring closure number after '%'".into()));
+            return Err(CyaneaError::Parse(
+                "invalid ring closure number after '%'".into(),
+            ));
         }
         Ok((d1 - b'0') as u16 * 10 + (d2 - b'0') as u16)
     }
 
     fn handle_ring_closure(&mut self, ring_num: u16) -> Result<()> {
-        let current = self.prev_atom.ok_or_else(|| {
-            CyaneaError::Parse("ring closure without preceding atom".into())
-        })?;
+        let current = self
+            .prev_atom
+            .ok_or_else(|| CyaneaError::Parse("ring closure without preceding atom".into()))?;
 
         if let Some((open_atom, open_bond, open_stereo)) = self.ring_closures.remove(&ring_num) {
             // Close the ring
@@ -395,7 +399,8 @@ impl<'a> SmilesParser<'a> {
         } else {
             // Open a ring closure
             let stereo = self.pending_stereo;
-            self.ring_closures.insert(ring_num, (current, self.pending_bond.take(), stereo));
+            self.ring_closures
+                .insert(ring_num, (current, self.pending_bond.take(), stereo));
             self.pending_stereo = BondStereo::None;
         }
         Ok(())
@@ -500,16 +505,16 @@ impl<'a> SmilesParser<'a> {
 
     fn target_valence(&self, atomic_number: u8) -> Option<usize> {
         match atomic_number {
-            5 => Some(3),    // B
-            6 => Some(4),    // C
-            7 => Some(3),    // N
-            8 => Some(2),    // O
-            15 => Some(3),   // P
-            16 => Some(2),   // S
-            9 => Some(1),    // F
-            17 => Some(1),   // Cl
-            35 => Some(1),   // Br
-            53 => Some(1),   // I
+            5 => Some(3),  // B
+            6 => Some(4),  // C
+            7 => Some(3),  // N
+            8 => Some(2),  // O
+            15 => Some(3), // P
+            16 => Some(2), // S
+            9 => Some(1),  // F
+            17 => Some(1), // Cl
+            35 => Some(1), // Br
+            53 => Some(1), // I
             _ => None,
         }
     }
@@ -518,8 +523,19 @@ impl<'a> SmilesParser<'a> {
 fn is_organic_atom_start(ch: u8) -> bool {
     matches!(
         ch,
-        b'B' | b'C' | b'N' | b'O' | b'P' | b'S' | b'F' | b'I'
-            | b'b' | b'c' | b'n' | b'o' | b'p' | b's'
+        b'B' | b'C'
+            | b'N'
+            | b'O'
+            | b'P'
+            | b'S'
+            | b'F'
+            | b'I'
+            | b'b'
+            | b'c'
+            | b'n'
+            | b'o'
+            | b'p'
+            | b's'
     )
 }
 
@@ -622,8 +638,7 @@ mod proptests {
             Just("n"),
             Just("o"),
         ];
-        proptest::collection::vec(atoms, 1..=20)
-            .prop_map(|parts| parts.join(""))
+        proptest::collection::vec(atoms, 1..=20).prop_map(|parts| parts.join(""))
     }
 
     proptest! {

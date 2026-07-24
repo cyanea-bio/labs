@@ -1,6 +1,5 @@
 /// Integration tests for binning module.
-
-use cyanea_meta::binning::{tetranucleotide_frequency, bin_contigs, Contig, filter_bins};
+use cyanea_meta::binning::{bin_contigs, filter_bins, tetranucleotide_frequency, Contig};
 
 #[test]
 fn tetranucleotide_frequency_basic() {

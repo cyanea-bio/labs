@@ -38,6 +38,7 @@ pub mod fingerprint;
 pub mod forcefield;
 pub mod gasteiger;
 pub mod maccs;
+pub mod metabolomics;
 pub mod molecule;
 pub mod properties;
 pub mod reaction;
@@ -48,7 +49,6 @@ pub mod smiles;
 pub mod standardize;
 pub mod stereo;
 pub mod substructure;
-pub mod metabolomics;
 
 mod ring;
 
@@ -57,22 +57,18 @@ pub use element::{element_by_number, element_by_symbol, Element};
 pub use fingerprint::{morgan_fingerprint, tanimoto_bulk, tanimoto_similarity, Fingerprint};
 pub use maccs::maccs_fingerprint;
 pub use molecule::{Bond, BondOrder, BondStereo, Chirality, MolAtom, Molecule};
-pub use properties::{compute_properties, molecular_formula, molecular_weight, MolecularProperties};
+pub use properties::{
+    compute_properties, molecular_formula, molecular_weight, MolecularProperties,
+};
 pub use sdf::{parse_mol_v2000, parse_mol_v3000, parse_sdf};
 pub use smiles::{parse_smiles, parse_smiles_named};
 pub use stereo::{assign_ez, assign_rs};
 pub use substructure::{find_substructure_matches, has_substructure, SubstructureMatch};
 
-pub use smarts::{parse_smarts, smarts_find_all, smarts_match, SmartsPattern};
 pub use descriptors::{
-    autocorrelation_descriptors, balaban_j, bertz_ct, chi_connectivity,
-    compute_all_descriptors, estate_indices, fraction_sp3, kappa_shape_indices,
-    ring_count_details, tpsa, wiener_index, wildman_crippen_logp, zagreb_indices,
-    AutocorrelationResult, DescriptorSet, RingDetails,
-};
-pub use standardize::{
-    canonical_tautomer, largest_fragment, neutralize, standardize, strip_salts,
-    StandardizeConfig, StandardizeStep,
+    autocorrelation_descriptors, balaban_j, bertz_ct, chi_connectivity, compute_all_descriptors,
+    estate_indices, fraction_sp3, kappa_shape_indices, ring_count_details, tpsa, wiener_index,
+    wildman_crippen_logp, zagreb_indices, AutocorrelationResult, DescriptorSet, RingDetails,
 };
 pub use druglikeness::{
     brenk_filter, drug_likeness_report, lead_likeness, lipinski, pains_filter, qed, veber,
@@ -82,24 +78,29 @@ pub use scaffold::{
     generic_scaffold, maximum_common_substructure, murcko_scaffold, r_group_decomposition,
     McsResult, MurckoResult, RGroupResult,
 };
+pub use smarts::{parse_smarts, smarts_find_all, smarts_match, SmartsPattern};
+pub use standardize::{
+    canonical_tautomer, largest_fragment, neutralize, standardize, strip_salts, StandardizeConfig,
+    StandardizeStep,
+};
 
 pub use conformer::{Conformer, ConformerSet};
 pub use embed::{embed_molecule, embed_multiple, EmbedConfig, ForceFieldType};
 pub use forcefield::{
     assign_mmff94_types, assign_uff_types, mmff94_energy, mmff94_minimize, uff_energy,
-    uff_minimize, EnergyComponents, MinimizeConfig, MinimizeMethod, MinimizeResult,
-    Mmff94AtomType, UffAtomType,
+    uff_minimize, EnergyComponents, MinimizeConfig, MinimizeMethod, MinimizeResult, Mmff94AtomType,
+    UffAtomType,
 };
 pub use gasteiger::gasteiger_charges;
 pub use metabolomics::{
     calc_mz, demo_metabolic_pathways, demo_metabolite_database, isotope_cosine_score,
     isotope_pattern, match_by_mass, negative_adducts, pathway_enrichment, positive_adducts,
-    predict_rt, Adduct, IsotopePeak, MassMatch, Metabolite, MetabolicPathway, PathwayEnrichment,
+    predict_rt, Adduct, IsotopePeak, MassMatch, MetabolicPathway, Metabolite, PathwayEnrichment,
     RtPrediction,
 };
 pub use reaction::{
-    apply_reaction, atom_atom_map, enumerate_reactions, parse_reaction, retrosynthetic_disconnections,
-    AtomAtomMapping, Disconnection, Reaction, ReactionProduct,
+    apply_reaction, atom_atom_map, enumerate_reactions, parse_reaction,
+    retrosynthetic_disconnections, AtomAtomMapping, Disconnection, Reaction, ReactionProduct,
 };
 
 #[cfg(feature = "std")]

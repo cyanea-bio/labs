@@ -270,9 +270,7 @@ pub fn parse_abi_bytes(data: &[u8]) -> Result<AbiRecord> {
     // Extract quality values (PCON, tag number 1 or 2)
     let pcon_idx = find_entry(b"PCON", 2)
         .or_else(|| find_entry(b"PCON", 1))
-        .ok_or_else(|| {
-            CyaneaError::Parse("ABI: missing PCON (quality values) tag".to_string())
-        })?;
+        .ok_or_else(|| CyaneaError::Parse("ABI: missing PCON (quality values) tag".to_string()))?;
     let (pcon_offset, ref pcon_entry) = entries[pcon_idx];
     let pcon_data = get_entry_data(data, pcon_entry, pcon_offset)?;
     let quality = pcon_data[..pcon_entry.num_elements as usize].to_vec();
@@ -281,7 +279,10 @@ pub fn parse_abi_bytes(data: &[u8]) -> Result<AbiRecord> {
     let mut trace_channels: [Vec<i16>; 4] = [Vec::new(), Vec::new(), Vec::new(), Vec::new()];
     for (i, data_num) in [9i32, 10, 11, 12].iter().enumerate() {
         let idx = find_entry(b"DATA", *data_num).ok_or_else(|| {
-            CyaneaError::Parse(format!("ABI: missing DATA.{} (trace channel) tag", data_num))
+            CyaneaError::Parse(format!(
+                "ABI: missing DATA.{} (trace channel) tag",
+                data_num
+            ))
         })?;
         let (entry_offset, ref entry) = entries[idx];
         let channel_data = get_entry_data(data, entry, entry_offset)?;
@@ -307,9 +308,7 @@ pub fn parse_abi_bytes(data: &[u8]) -> Result<AbiRecord> {
     // Extract peak positions (PLOC, tag number 1 or 2)
     let ploc_idx = find_entry(b"PLOC", 2)
         .or_else(|| find_entry(b"PLOC", 1))
-        .ok_or_else(|| {
-            CyaneaError::Parse("ABI: missing PLOC (peak positions) tag".to_string())
-        })?;
+        .ok_or_else(|| CyaneaError::Parse("ABI: missing PLOC (peak positions) tag".to_string()))?;
     let (ploc_offset, ref ploc_entry) = entries[ploc_idx];
     let ploc_data = get_entry_data(data, ploc_entry, ploc_offset)?;
     let peak_positions = read_u16_array(ploc_data, ploc_entry.num_elements as usize)?;
@@ -427,8 +426,7 @@ mod tests {
         }
 
         // SMPL data (sample name)
-        buf[smpl_offset..smpl_offset + sample_name.len()]
-            .copy_from_slice(sample_name.as_bytes());
+        buf[smpl_offset..smpl_offset + sample_name.len()].copy_from_slice(sample_name.as_bytes());
 
         // --- Directory entries ---
         fn write_entry(
@@ -464,7 +462,7 @@ mod tests {
             buf[base + 10..base + 12].copy_from_slice(&1i16.to_be_bytes()); // 1 byte each
             buf[base + 12..base + 16].copy_from_slice(&4i32.to_be_bytes()); // 4 elements
             buf[base + 16..base + 20].copy_from_slice(&4i32.to_be_bytes()); // 4 bytes total
-            // Inline data: "ACGT"
+                                                                            // Inline data: "ACGT"
             buf[base + 20] = b'A';
             buf[base + 21] = b'C';
             buf[base + 22] = b'G';
@@ -473,7 +471,8 @@ mod tests {
 
         // Entry 1: PBAS (called bases)
         write_entry(
-            &mut buf, dir_offset,
+            &mut buf,
+            dir_offset,
             1,
             b"PBAS",
             2,
@@ -486,7 +485,8 @@ mod tests {
 
         // Entry 2: PCON (quality values)
         write_entry(
-            &mut buf, dir_offset,
+            &mut buf,
+            dir_offset,
             2,
             b"PCON",
             2,
@@ -501,7 +501,8 @@ mod tests {
         for ch in 0..4u32 {
             let ch_offset = data9_offset + (ch as usize) * trace_bytes;
             write_entry(
-                &mut buf, dir_offset,
+                &mut buf,
+                dir_offset,
                 3 + ch as usize,
                 b"DATA",
                 9 + ch as i32,
@@ -515,7 +516,8 @@ mod tests {
 
         // Entry 7: PLOC (peak locations)
         write_entry(
-            &mut buf, dir_offset,
+            &mut buf,
+            dir_offset,
             7,
             b"PLOC",
             2,
@@ -528,7 +530,8 @@ mod tests {
 
         // Entry 8: SMPL (sample name)
         write_entry(
-            &mut buf, dir_offset,
+            &mut buf,
+            dir_offset,
             8,
             b"SMPL",
             1,

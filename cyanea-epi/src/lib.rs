@@ -27,50 +27,48 @@
 //! assert!(pileup.coverage.contains_key("chr1"));
 //! ```
 
-pub mod error;
-pub mod peaks;
-pub mod pileup;
-pub mod motifs;
+pub mod accessibility;
 pub mod chromatin;
 pub mod differential;
+pub mod error;
+pub mod motifs;
 pub mod nucleosome;
-pub mod accessibility;
+pub mod peaks;
+pub mod pileup;
 
 // Re-export error types
 pub use error::{EpiError, Result};
 
 // Re-export peak types
-pub use peaks::{Peak, PeakCallParams, PeakSet, PeakStats, call_peaks, call_broad_peaks};
+pub use peaks::{call_broad_peaks, call_peaks, Peak, PeakCallParams, PeakSet, PeakStats};
 
 // Re-export pileup types and functions
 pub use pileup::{
-    TagPileup, build_pileup, normalize_pileup, smooth_pileup, pileup_correlation, fingerprint,
+    build_pileup, fingerprint, normalize_pileup, pileup_correlation, smooth_pileup, TagPileup,
 };
 
 // Re-export motif types and functions
 pub use motifs::{
-    Motif, MotifMatch, DiscoveryParams, discover_motifs, scan_sequence, parse_meme, write_meme,
-    compare_motifs, motif_enrichment,
+    compare_motifs, discover_motifs, motif_enrichment, parse_meme, scan_sequence, write_meme,
+    DiscoveryParams, Motif, MotifMatch,
 };
 
 // Re-export chromatin types and functions
 pub use chromatin::{
-    ChromatinState, ChromHMMModel, ChromHMMParams, ChromatinSegmentation,
-    learn_chromatin_states, segment_genome, state_enrichment,
+    learn_chromatin_states, segment_genome, state_enrichment, ChromHMMModel, ChromHMMParams,
+    ChromatinSegmentation, ChromatinState,
 };
 
 // Re-export differential types and functions
-pub use differential::{
-    DiffResult, differential_peaks, count_reads_in_peaks, ma_plot_data,
-};
+pub use differential::{count_reads_in_peaks, differential_peaks, ma_plot_data, DiffResult};
 
 // Re-export nucleosome types and functions
 pub use nucleosome::{
-    NucleosomePosition, NucleosomeParams, call_nucleosomes, nfr_score, periodicity,
+    call_nucleosomes, nfr_score, periodicity, NucleosomeParams, NucleosomePosition,
 };
 
 // Re-export accessibility types and functions
 pub use accessibility::{
-    InsertSizeMetrics, AtacQcResult, tss_enrichment, fragment_size_distribution,
-    insert_size_metrics, frip, atacqc,
+    atacqc, fragment_size_distribution, frip, insert_size_metrics, tss_enrichment, AtacQcResult,
+    InsertSizeMetrics,
 };

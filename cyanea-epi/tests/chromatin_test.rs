@@ -36,13 +36,7 @@ fn test_learn_chromatin_states_two_marks() {
 
 #[test]
 fn test_segment_genome_basic() {
-    let mark_matrix = vec![
-        vec![1, 0],
-        vec![1, 0],
-        vec![0, 1],
-        vec![0, 1],
-        vec![1, 1],
-    ];
+    let mark_matrix = vec![vec![1, 0], vec![1, 0], vec![0, 1], vec![0, 1], vec![1, 1]];
 
     let marks = vec!["H3K4me3".to_string(), "H3K27me3".to_string()];
     let params = ChromHMMParams {
@@ -157,12 +151,7 @@ fn test_consecutive_same_states_merged() {
 #[test]
 fn test_all_one_state() {
     // All bins same mark pattern
-    let mark_matrix = vec![
-        vec![1, 0],
-        vec![1, 0],
-        vec![1, 0],
-        vec![1, 0],
-    ];
+    let mark_matrix = vec![vec![1, 0], vec![1, 0], vec![1, 0], vec![1, 0]];
 
     let marks = vec!["mark1".to_string(), "mark2".to_string()];
     let params = ChromHMMParams {
@@ -192,12 +181,7 @@ fn test_empty_mark_matrix_error() {
 #[test]
 fn test_emission_learning() {
     // Marks with clear distinct patterns
-    let mark_matrix = vec![
-        vec![1, 0],
-        vec![1, 0],
-        vec![0, 1],
-        vec![0, 1],
-    ];
+    let mark_matrix = vec![vec![1, 0], vec![1, 0], vec![0, 1], vec![0, 1]];
 
     let marks = vec!["mark1".to_string(), "mark2".to_string()];
     let params = ChromHMMParams {

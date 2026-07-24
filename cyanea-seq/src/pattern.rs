@@ -261,11 +261,7 @@ pub fn bom(text: &[u8], pattern: &[u8]) -> Vec<usize> {
 /// Returns `(end_position, edit_distance)` pairs for every text position
 /// where the best alignment ending there has edit distance <= `max_dist`.
 /// Returns an empty vec if the pattern exceeds 64 characters.
-pub fn myers_bitparallel(
-    text: &[u8],
-    pattern: &[u8],
-    max_dist: usize,
-) -> Vec<(usize, usize)> {
+pub fn myers_bitparallel(text: &[u8], pattern: &[u8], max_dist: usize) -> Vec<(usize, usize)> {
     let n = text.len();
     let m = pattern.len();
     if m == 0 || m > 64 {
@@ -327,11 +323,7 @@ pub fn myers_bitparallel(
 /// Returns `(end_position, edit_distance)` pairs for every text position
 /// where a semi-global alignment of the pattern ends with edit distance
 /// <= `max_dist`.
-pub fn ukkonen(
-    text: &[u8],
-    pattern: &[u8],
-    max_dist: usize,
-) -> Vec<(usize, usize)> {
+pub fn ukkonen(text: &[u8], pattern: &[u8], max_dist: usize) -> Vec<(usize, usize)> {
     let n = text.len();
     let m = pattern.len();
     if m == 0 || n == 0 {
@@ -356,9 +348,7 @@ pub fn ukkonen(
 
         for j in 1..=m {
             let cost = if text[i - 1] == pattern[j - 1] { 0 } else { 1 };
-            curr[j] = (prev[j - 1] + cost)
-                .min(prev[j] + 1)
-                .min(curr[j - 1] + 1);
+            curr[j] = (prev[j - 1] + cost).min(prev[j] + 1).min(curr[j - 1] + 1);
             if j == m && curr[j] < col_min {
                 col_min = curr[j];
             }
@@ -622,10 +612,8 @@ mod tests {
         let exact = kmp(text, pattern);
         let approx = myers_bitparallel(text, pattern, 0);
         // Convert end positions to start positions.
-        let approx_starts: Vec<usize> = approx
-            .iter()
-            .map(|&(e, _)| e + 1 - pattern.len())
-            .collect();
+        let approx_starts: Vec<usize> =
+            approx.iter().map(|&(e, _)| e + 1 - pattern.len()).collect();
         assert_eq!(exact, approx_starts);
     }
 }

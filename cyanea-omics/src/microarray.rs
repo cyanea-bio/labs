@@ -183,8 +183,18 @@ pub fn limma_diff_expr(
         return Err(CyaneaError::InvalidInput("dimension mismatch".into()));
     }
 
-    let idx_a: Vec<usize> = groups.iter().enumerate().filter(|(_, &g)| g == 0).map(|(i, _)| i).collect();
-    let idx_b: Vec<usize> = groups.iter().enumerate().filter(|(_, &g)| g == 1).map(|(i, _)| i).collect();
+    let idx_a: Vec<usize> = groups
+        .iter()
+        .enumerate()
+        .filter(|(_, &g)| g == 0)
+        .map(|(i, _)| i)
+        .collect();
+    let idx_b: Vec<usize> = groups
+        .iter()
+        .enumerate()
+        .filter(|(_, &g)| g == 1)
+        .map(|(i, _)| i)
+        .collect();
 
     let n_a = idx_a.len() as f64;
     let n_b = idx_b.len() as f64;
@@ -209,8 +219,14 @@ pub fn limma_diff_expr(
         avg_exprs[g] = (mean_a + mean_b) / 2.0;
 
         // Pooled variance
-        let ss_a: f64 = idx_a.iter().map(|&i| (expression[g][i] - mean_a).powi(2)).sum();
-        let ss_b: f64 = idx_b.iter().map(|&i| (expression[g][i] - mean_b).powi(2)).sum();
+        let ss_a: f64 = idx_a
+            .iter()
+            .map(|&i| (expression[g][i] - mean_a).powi(2))
+            .sum();
+        let ss_b: f64 = idx_b
+            .iter()
+            .map(|&i| (expression[g][i] - mean_b).powi(2))
+            .sum();
         vars[g] = (ss_a + ss_b) / df;
     }
 
@@ -230,11 +246,7 @@ pub fn limma_diff_expr(
     let mut results = Vec::with_capacity(n_genes);
     for g in 0..n_genes {
         let se = (mod_vars[g] * (1.0 / n_a + 1.0 / n_b)).sqrt();
-        let t = if se > 1e-30 {
-            log2_fcs[g] / se
-        } else {
-            0.0
-        };
+        let t = if se > 1e-30 { log2_fcs[g] / se } else { 0.0 };
 
         // p-value from t-distribution approximation (normal for large df)
         let mod_df = d0 + df;
@@ -436,8 +448,18 @@ pub fn diff_methylation(
         return Err(CyaneaError::InvalidInput("dimension mismatch".into()));
     }
 
-    let idx_a: Vec<usize> = groups.iter().enumerate().filter(|(_, &g)| g == 0).map(|(i, _)| i).collect();
-    let idx_b: Vec<usize> = groups.iter().enumerate().filter(|(_, &g)| g == 1).map(|(i, _)| i).collect();
+    let idx_a: Vec<usize> = groups
+        .iter()
+        .enumerate()
+        .filter(|(_, &g)| g == 0)
+        .map(|(i, _)| i)
+        .collect();
+    let idx_b: Vec<usize> = groups
+        .iter()
+        .enumerate()
+        .filter(|(_, &g)| g == 1)
+        .map(|(i, _)| i)
+        .collect();
     let n_a = idx_a.len() as f64;
     let n_b = idx_b.len() as f64;
 
@@ -451,10 +473,7 @@ pub fn diff_methylation(
     let mut results = Vec::with_capacity(n_probes);
 
     // Convert to M-values for statistical testing
-    let m_values: Vec<Vec<f64>> = beta_values
-        .iter()
-        .map(|row| beta_to_m_value(row))
-        .collect();
+    let m_values: Vec<Vec<f64>> = beta_values.iter().map(|row| beta_to_m_value(row)).collect();
 
     // Per-probe statistics
     let mut vars = vec![0.0; n_probes];
@@ -470,8 +489,14 @@ pub fn diff_methylation(
         let m_mean_b: f64 = idx_b.iter().map(|&i| m_values[p][i]).sum::<f64>() / n_b;
         m_fcs[p] = m_mean_b - m_mean_a;
 
-        let ss_a: f64 = idx_a.iter().map(|&i| (m_values[p][i] - m_mean_a).powi(2)).sum();
-        let ss_b: f64 = idx_b.iter().map(|&i| (m_values[p][i] - m_mean_b).powi(2)).sum();
+        let ss_a: f64 = idx_a
+            .iter()
+            .map(|&i| (m_values[p][i] - m_mean_a).powi(2))
+            .sum();
+        let ss_b: f64 = idx_b
+            .iter()
+            .map(|&i| (m_values[p][i] - m_mean_b).powi(2))
+            .sum();
         vars[p] = if df > 0.0 { (ss_a + ss_b) / df } else { 0.0 };
     }
 
@@ -711,11 +736,11 @@ mod tests {
     fn test_limma_basic() {
         // 5 genes × 6 samples (3 per group)
         let expression = vec![
-            vec![5.0, 5.1, 4.9, 10.0, 10.2, 9.8],  // up-regulated
-            vec![10.0, 9.8, 10.2, 5.0, 5.1, 4.9],   // down-regulated
-            vec![7.0, 7.1, 6.9, 7.0, 7.2, 6.8],     // no change
-            vec![3.0, 3.1, 2.9, 8.0, 8.1, 7.9],     // up-regulated
-            vec![6.0, 6.5, 5.5, 6.0, 6.5, 5.5],     // no change
+            vec![5.0, 5.1, 4.9, 10.0, 10.2, 9.8], // up-regulated
+            vec![10.0, 9.8, 10.2, 5.0, 5.1, 4.9], // down-regulated
+            vec![7.0, 7.1, 6.9, 7.0, 7.2, 6.8],   // no change
+            vec![3.0, 3.1, 2.9, 8.0, 8.1, 7.9],   // up-regulated
+            vec![6.0, 6.5, 5.5, 6.0, 6.5, 5.5],   // no change
         ];
         let gene_names: Vec<String> = (0..5).map(|i| format!("Gene{}", i)).collect();
         let groups = vec![0, 0, 0, 1, 1, 1];
@@ -739,10 +764,7 @@ mod tests {
 
     #[test]
     fn test_limma_adj_p_values() {
-        let expression = vec![
-            vec![1.0, 1.1, 5.0, 5.1],
-            vec![2.0, 2.0, 2.0, 2.0],
-        ];
+        let expression = vec![vec![1.0, 1.1, 5.0, 5.1], vec![2.0, 2.0, 2.0, 2.0]];
         let gene_names = vec!["DE".into(), "Flat".into()];
         let groups = vec![0, 0, 1, 1];
         let results = limma_diff_expr(&expression, &gene_names, &groups).unwrap();
@@ -786,10 +808,10 @@ mod tests {
     fn test_swan_normalize() {
         // 4 probes: 2 Type I, 2 Type II
         let beta = vec![
-            vec![0.3, 0.4],  // Type I
-            vec![0.7, 0.8],  // Type I
-            vec![0.2, 0.3],  // Type II (will be adjusted)
-            vec![0.6, 0.7],  // Type II (will be adjusted)
+            vec![0.3, 0.4], // Type I
+            vec![0.7, 0.8], // Type I
+            vec![0.2, 0.3], // Type II (will be adjusted)
+            vec![0.6, 0.7], // Type II (will be adjusted)
         ];
         let types = vec![
             InfiniumType::TypeI,
@@ -810,9 +832,9 @@ mod tests {
     fn test_diff_methylation() {
         // 3 probes × 4 samples
         let beta = vec![
-            vec![0.2, 0.25, 0.8, 0.85],  // differentially methylated
-            vec![0.5, 0.5, 0.5, 0.5],     // no difference
-            vec![0.9, 0.85, 0.1, 0.15],   // differentially methylated (opposite)
+            vec![0.2, 0.25, 0.8, 0.85], // differentially methylated
+            vec![0.5, 0.5, 0.5, 0.5],   // no difference
+            vec![0.9, 0.85, 0.1, 0.15], // differentially methylated (opposite)
         ];
         let probe_ids = vec!["cg001".into(), "cg002".into(), "cg003".into()];
         let groups = vec![0, 0, 1, 1];

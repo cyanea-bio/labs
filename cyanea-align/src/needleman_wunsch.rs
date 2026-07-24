@@ -243,7 +243,10 @@ mod tests {
         let scheme = ScoringScheme::Substitution(SubstitutionMatrix::blosum62());
         let result = needleman_wunsch(b"HEAGAWGHEE", b"PAWHEAE", &scheme).unwrap();
         // Just check it runs and produces a reasonable alignment
-        assert!(result.score > 0, "expected positive score for related peptides");
+        assert!(
+            result.score > 0,
+            "expected positive score for related peptides"
+        );
         assert!(result.length() > 0);
     }
 

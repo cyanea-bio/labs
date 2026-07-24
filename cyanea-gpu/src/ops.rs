@@ -346,9 +346,7 @@ mod tests {
     fn ops_batch_z_score_constant_column() {
         let b = backend();
         // 2 rows × 2 cols: col0 = [5,5] (constant), col1 = [1,3]
-        let data = b
-            .buffer_from_slice(&[5.0, 1.0, 5.0, 3.0])
-            .unwrap();
+        let data = b.buffer_from_slice(&[5.0, 1.0, 5.0, 3.0]).unwrap();
         let result = batch_z_score(&b, &data, 2, 2).unwrap();
         let out = b.read_buffer(&result).unwrap();
         // Constant column → all zeros

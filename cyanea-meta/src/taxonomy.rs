@@ -7,8 +7,8 @@
 //! - `get_lineage` — full lineage from taxid to root
 //! - `lca` — lowest common ancestor of multiple taxa
 
-use std::collections::{BTreeMap, HashMap};
 use crate::error::{MetaError, Result};
+use std::collections::{BTreeMap, HashMap};
 
 /// NCBI-style taxonomic rank.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -105,7 +105,13 @@ impl TaxonomyDB {
     ///
     /// # Errors
     /// Returns an error if the parent taxon does not exist.
-    pub fn add_node(&mut self, taxid: u32, parent_id: u32, rank: TaxonRank, name: &str) -> Result<()> {
+    pub fn add_node(
+        &mut self,
+        taxid: u32,
+        parent_id: u32,
+        rank: TaxonRank,
+        name: &str,
+    ) -> Result<()> {
         if !self.nodes.contains_key(&parent_id) {
             return Err(MetaError::Taxonomy(format!(
                 "parent taxon {} not found",
@@ -299,11 +305,16 @@ mod tests {
     fn sample_db() -> TaxonomyDB {
         let mut db = TaxonomyDB::new(1);
         db.add_node(2, 1, TaxonRank::Domain, "Bacteria").unwrap();
-        db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria").unwrap();
-        db.add_node(202, 2, TaxonRank::Phylum, "Firmicutes").unwrap();
-        db.add_node(2011, 201, TaxonRank::Species, "E. coli").unwrap();
-        db.add_node(2012, 201, TaxonRank::Species, "Salmonella").unwrap();
-        db.add_node(2021, 202, TaxonRank::Species, "B. subtilis").unwrap();
+        db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria")
+            .unwrap();
+        db.add_node(202, 2, TaxonRank::Phylum, "Firmicutes")
+            .unwrap();
+        db.add_node(2011, 201, TaxonRank::Species, "E. coli")
+            .unwrap();
+        db.add_node(2012, 201, TaxonRank::Species, "Salmonella")
+            .unwrap();
+        db.add_node(2021, 202, TaxonRank::Species, "B. subtilis")
+            .unwrap();
         db
     }
 

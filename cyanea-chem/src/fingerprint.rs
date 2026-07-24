@@ -157,10 +157,16 @@ pub fn tanimoto_bulk(query: &Fingerprint, targets: &[Fingerprint]) -> Vec<f64> {
     #[cfg(feature = "parallel")]
     {
         use rayon::prelude::*;
-        targets.par_iter().map(|t| tanimoto_similarity(query, t)).collect()
+        targets
+            .par_iter()
+            .map(|t| tanimoto_similarity(query, t))
+            .collect()
     }
     #[cfg(not(feature = "parallel"))]
-    targets.iter().map(|t| tanimoto_similarity(query, t)).collect()
+    targets
+        .iter()
+        .map(|t| tanimoto_similarity(query, t))
+        .collect()
 }
 
 // FNV-1a hash functions for deterministic hashing

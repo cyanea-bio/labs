@@ -61,8 +61,7 @@ pub fn parse_clustal(input: &str) -> Result<ClustalAlignment> {
     }
 
     let mut seq_order: Vec<String> = Vec::new();
-    let mut seq_data: std::collections::HashMap<String, String> =
-        std::collections::HashMap::new();
+    let mut seq_data: std::collections::HashMap<String, String> = std::collections::HashMap::new();
     let mut conservation = String::new();
     let mut block_seq_count = 0usize;
     let mut expected_seqs_per_block: Option<usize> = None;
@@ -86,7 +85,11 @@ pub fn parse_clustal(input: &str) -> Result<ClustalAlignment> {
         // are typically indented to align under the sequence data.
         // They don't start with an alphanumeric name character.
         let trimmed = line.trim();
-        if !trimmed.is_empty() && trimmed.chars().all(|c| c == '*' || c == ':' || c == '.' || c == ' ') {
+        if !trimmed.is_empty()
+            && trimmed
+                .chars()
+                .all(|c| c == '*' || c == ':' || c == '.' || c == ' ')
+        {
             conservation.push_str(trimmed);
             continue;
         }
@@ -162,10 +165,20 @@ pub fn write_clustal(aln: &ClustalAlignment) -> String {
     }
 
     // Find the longest name for padding
-    let max_name_len = aln.sequences.iter().map(|(n, _)| n.len()).max().unwrap_or(0);
+    let max_name_len = aln
+        .sequences
+        .iter()
+        .map(|(n, _)| n.len())
+        .max()
+        .unwrap_or(0);
     let pad = max_name_len + 4;
 
-    let total_len = aln.sequences.iter().map(|(_, s)| s.len()).max().unwrap_or(0);
+    let total_len = aln
+        .sequences
+        .iter()
+        .map(|(_, s)| s.len())
+        .max()
+        .unwrap_or(0);
     let conservation = aln.conservation.as_deref().unwrap_or("");
 
     let mut offset = 0;

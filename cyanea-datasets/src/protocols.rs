@@ -50,15 +50,21 @@ impl Protocol {
     pub fn to_markdown(&self) -> String {
         let mut md = String::new();
         md.push_str(&format!("# {}\n\n", self.title));
-        md.push_str(&format!("**Category:** {}\n", match self.category {
-            ProtocolCategory::WetLab => "Wet Lab",
-            ProtocolCategory::DryLab => "Dry Lab (Computational)",
-        }));
-        md.push_str(&format!("**Difficulty:** {}\n", match self.difficulty {
-            Difficulty::Beginner => "Beginner",
-            Difficulty::Intermediate => "Intermediate",
-            Difficulty::Advanced => "Advanced",
-        }));
+        md.push_str(&format!(
+            "**Category:** {}\n",
+            match self.category {
+                ProtocolCategory::WetLab => "Wet Lab",
+                ProtocolCategory::DryLab => "Dry Lab (Computational)",
+            }
+        ));
+        md.push_str(&format!(
+            "**Difficulty:** {}\n",
+            match self.difficulty {
+                Difficulty::Beginner => "Beginner",
+                Difficulty::Intermediate => "Intermediate",
+                Difficulty::Advanced => "Advanced",
+            }
+        ));
         md.push_str(&format!("**Estimated time:** {}\n\n", self.estimated_time));
         md.push_str(&format!("{}\n\n", self.description));
 
@@ -127,12 +133,18 @@ pub fn all_protocols() -> Vec<Protocol> {
 
 /// List only wet-lab protocols.
 pub fn wet_lab_protocols() -> Vec<Protocol> {
-    all_protocols().into_iter().filter(|p| p.category == ProtocolCategory::WetLab).collect()
+    all_protocols()
+        .into_iter()
+        .filter(|p| p.category == ProtocolCategory::WetLab)
+        .collect()
 }
 
 /// List only dry-lab (computational) protocols.
 pub fn dry_lab_protocols() -> Vec<Protocol> {
-    all_protocols().into_iter().filter(|p| p.category == ProtocolCategory::DryLab).collect()
+    all_protocols()
+        .into_iter()
+        .filter(|p| p.category == ProtocolCategory::DryLab)
+        .collect()
 }
 
 // ---------------------------------------------------------------------------
@@ -1416,8 +1428,16 @@ mod tests {
         let all = all_protocols();
         for p in &all {
             assert!(!p.steps.is_empty(), "{} has no steps", p.title);
-            assert!(!p.requirements.is_empty(), "{} has no requirements", p.title);
-            assert!(!p.expected_outputs.is_empty(), "{} has no expected outputs", p.title);
+            assert!(
+                !p.requirements.is_empty(),
+                "{} has no requirements",
+                p.title
+            );
+            assert!(
+                !p.expected_outputs.is_empty(),
+                "{} has no expected outputs",
+                p.title
+            );
         }
     }
 
@@ -1426,7 +1446,13 @@ mod tests {
         let all = all_protocols();
         for p in &all {
             for (i, step) in p.steps.iter().enumerate() {
-                assert_eq!(step.number as usize, i + 1, "{}: step {} misnumbered", p.title, i + 1);
+                assert_eq!(
+                    step.number as usize,
+                    i + 1,
+                    "{}: step {} misnumbered",
+                    p.title,
+                    i + 1
+                );
             }
         }
     }
@@ -1460,9 +1486,18 @@ mod tests {
     #[test]
     fn test_protocol_difficulty_levels() {
         let all = all_protocols();
-        let beginner: Vec<_> = all.iter().filter(|p| p.difficulty == Difficulty::Beginner).collect();
-        let intermediate: Vec<_> = all.iter().filter(|p| p.difficulty == Difficulty::Intermediate).collect();
-        let advanced: Vec<_> = all.iter().filter(|p| p.difficulty == Difficulty::Advanced).collect();
+        let beginner: Vec<_> = all
+            .iter()
+            .filter(|p| p.difficulty == Difficulty::Beginner)
+            .collect();
+        let intermediate: Vec<_> = all
+            .iter()
+            .filter(|p| p.difficulty == Difficulty::Intermediate)
+            .collect();
+        let advanced: Vec<_> = all
+            .iter()
+            .filter(|p| p.difficulty == Difficulty::Advanced)
+            .collect();
         assert!(!beginner.is_empty());
         assert!(!intermediate.is_empty());
         assert!(!advanced.is_empty());

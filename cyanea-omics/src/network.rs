@@ -177,8 +177,7 @@ impl Graph {
 
                         // ΔQ with resolution parameter γ
                         let delta_q = (k_i_in - k_i_in_current) / m2
-                            - resolution * k_i * (sigma_tot - sigma_tot_current + k_i)
-                                / (m2 * m2)
+                            - resolution * k_i * (sigma_tot - sigma_tot_current + k_i) / (m2 * m2)
                                 * 2.0;
 
                         if delta_q > best_delta_q {
@@ -433,7 +432,8 @@ impl Graph {
                 }
 
                 // Σ_tot for current community.
-                let sigma_tot_current = self.community_total_weight(&assignments, current_community);
+                let sigma_tot_current =
+                    self.community_total_weight(&assignments, current_community);
                 let k_i_in_current = community_weights
                     .iter()
                     .find(|(c, _)| *c == current_community)
@@ -653,7 +653,11 @@ mod tests {
         g.add_edge(1, 2, 1.0).unwrap();
         let assignments = vec![0, 0, 0];
         let q = g.modularity(&assignments);
-        assert!(q.abs() < 1e-10, "Q should be ~0 for single community, got {}", q);
+        assert!(
+            q.abs() < 1e-10,
+            "Q should be ~0 for single community, got {}",
+            q
+        );
     }
 
     #[test]

@@ -62,8 +62,8 @@ pub use grn::{clr, infer_grn, CorrelationMethod, ExpressionMatrix, GrnResult};
 
 // Re-export pathway analysis
 pub use pathway::{
-    parse_gmt, pathway_crosstalk, score_pathways_by_topology, write_gmt, CrosstalkResult,
-    Pathway, PathwayDatabase, PathwayScore, PathwaySource,
+    parse_gmt, pathway_crosstalk, score_pathways_by_topology, write_gmt, CrosstalkResult, Pathway,
+    PathwayDatabase, PathwayScore, PathwaySource,
 };
 
 // Re-export format I/O

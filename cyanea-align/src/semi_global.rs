@@ -292,7 +292,10 @@ mod tests {
     fn protein_semi_global() {
         let scheme = ScoringScheme::Substitution(SubstitutionMatrix::blosum62());
         let result = semi_global(b"HEAG", b"XXHEAGXX", &scheme).unwrap();
-        assert!(result.score > 0, "expected positive score for embedded peptide");
+        assert!(
+            result.score > 0,
+            "expected positive score for embedded peptide"
+        );
     }
 
     #[test]

@@ -90,9 +90,7 @@ pub fn highly_variable_genes(adata: &mut AnnData, config: &HvgConfig) -> Result<
 
     let dispersions_norm = match config.method {
         HvgMethod::SeuratV3 => hvg_seurat_v3(&means, &variances, n_vars),
-        HvgMethod::CellRanger => {
-            hvg_cell_ranger(&means, &variances, n_vars, config.n_bins)
-        }
+        HvgMethod::CellRanger => hvg_cell_ranger(&means, &variances, n_vars, config.n_bins),
     };
 
     // Select top genes
@@ -133,7 +131,11 @@ fn hvg_seurat_v3(means: &[f64], variances: &[f64], n_vars: usize) -> Vec<f64> {
 
     // Sort genes by mean for local fitting
     let mut order: Vec<usize> = (0..n_vars).collect();
-    order.sort_by(|&a, &b| log_means[a].partial_cmp(&log_means[b]).unwrap_or(std::cmp::Ordering::Equal));
+    order.sort_by(|&a, &b| {
+        log_means[a]
+            .partial_cmp(&log_means[b])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     // Expected variance: use local window to estimate mean-variance trend
     let window = (n_vars / 10).max(10).min(n_vars);
@@ -148,7 +150,11 @@ fn hvg_seurat_v3(means: &[f64], variances: &[f64], n_vars: usize) -> Vec<f64> {
             sum += variances[j];
             count += 1;
         }
-        expected_var[idx] = if count > 0 { sum / count as f64 } else { variances[idx] };
+        expected_var[idx] = if count > 0 {
+            sum / count as f64
+        } else {
+            variances[idx]
+        };
     }
 
     // Standardized variance: variance / expected_variance
@@ -161,12 +167,7 @@ fn hvg_seurat_v3(means: &[f64], variances: &[f64], n_vars: usize) -> Vec<f64> {
 }
 
 /// CellRanger: bin genes by mean, normalize dispersion within bins.
-fn hvg_cell_ranger(
-    means: &[f64],
-    variances: &[f64],
-    n_vars: usize,
-    n_bins: usize,
-) -> Vec<f64> {
+fn hvg_cell_ranger(means: &[f64], variances: &[f64], n_vars: usize, n_bins: usize) -> Vec<f64> {
     // Dispersion = variance / mean (coefficient of variation squared)
     let dispersions: Vec<f64> = (0..n_vars)
         .map(|j| {
@@ -274,13 +275,7 @@ pub fn normalize_total(adata: &mut AnnData, config: &NormalizeConfig) -> Result<
     let row_sums = adata.x().row_sums();
     let factors: Vec<f64> = row_sums
         .iter()
-        .map(|&s| {
-            if s > 0.0 {
-                config.target_sum / s
-            } else {
-                0.0
-            }
-        })
+        .map(|&s| if s > 0.0 { config.target_sum / s } else { 0.0 })
         .collect();
 
     // Apply normalization
@@ -332,11 +327,9 @@ pub fn regress_out(adata: &mut AnnData, keys: &[&str]) -> Result<()> {
         let col = adata
             .get_obs(key)
             .ok_or_else(|| CyaneaError::InvalidInput(format!("obs key '{}' not found", key)))?;
-        let values = col
-            .as_numeric()
-            .ok_or_else(|| {
-                CyaneaError::InvalidInput(format!("obs '{}' must be numeric for regression", key))
-            })?;
+        let values = col.as_numeric().ok_or_else(|| {
+            CyaneaError::InvalidInput(format!("obs '{}' must be numeric for regression", key))
+        })?;
         for i in 0..n_obs {
             design[i][k + 1] = values[i];
         }
@@ -510,8 +503,7 @@ pub fn scrublet_doublets(adata: &mut AnnData, config: &ScrubletConfig) -> Result
         let i = lcg_next(&mut rng_state) as usize % n_obs;
         let j = lcg_next(&mut rng_state) as usize % n_obs;
         for v in 0..n_vars {
-            sim_flat[s * n_vars + v] =
-                (obs_flat[i * n_vars + v] + obs_flat[j * n_vars + v]) / 2.0;
+            sim_flat[s * n_vars + v] = (obs_flat[i * n_vars + v] + obs_flat[j * n_vars + v]) / 2.0;
         }
     }
 
@@ -550,17 +542,17 @@ pub fn scrublet_doublets(adata: &mut AnnData, config: &ScrubletConfig) -> Result
         dists.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
 
         let k = config.k_neighbors.min(dists.len());
-        let sim_count = dists[..k]
-            .iter()
-            .filter(|&&(idx, _)| idx >= n_obs)
-            .count();
+        let sim_count = dists[..k].iter().filter(|&&(idx, _)| idx >= n_obs).count();
         scores[i] = sim_count as f64 / k as f64;
     }
 
     // Bimodal threshold detection: use simple Otsu-like method
     let threshold = otsu_threshold(&scores);
 
-    let predicted: Vec<f64> = scores.iter().map(|&s| if s > threshold { 1.0 } else { 0.0 }).collect();
+    let predicted: Vec<f64> = scores
+        .iter()
+        .map(|&s| if s > threshold { 1.0 } else { 0.0 })
+        .collect();
 
     adata.add_obs_column("doublet_score", ColumnData::Numeric(scores))?;
     adata.add_obs_column("predicted_doublet", ColumnData::Numeric(predicted))?;
@@ -606,7 +598,9 @@ fn otsu_threshold(scores: &[f64]) -> f64 {
 
 /// Simple LCG random number generator.
 fn lcg_next(state: &mut u64) -> u64 {
-    *state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+    *state = state
+        .wrapping_mul(6364136223846793005)
+        .wrapping_add(1442695040888963407);
     *state >> 33
 }
 
@@ -705,10 +699,10 @@ mod tests {
         let mut data = vec![vec![0.0; 5]; 10];
         for i in 0..10 {
             data[i][0] = (i as f64) * 10.0; // high variance gene
-            data[i][1] = (i as f64) * 8.0;  // high variance gene
-            data[i][2] = 1.0;               // constant
-            data[i][3] = 1.1;               // near-constant
-            data[i][4] = 1.2;               // near-constant
+            data[i][1] = (i as f64) * 8.0; // high variance gene
+            data[i][2] = 1.0; // constant
+            data[i][3] = 1.1; // near-constant
+            data[i][4] = 1.2; // near-constant
         }
         let mut adata = make_adata(data);
 
@@ -719,7 +713,11 @@ mod tests {
         };
         highly_variable_genes(&mut adata, &config).unwrap();
 
-        let hv = adata.get_var("highly_variable").unwrap().as_numeric().unwrap();
+        let hv = adata
+            .get_var("highly_variable")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         assert_eq!(hv[0], 1.0); // high variance
         assert_eq!(hv[1], 1.0); // high variance
         assert_eq!(hv[2], 0.0); // constant
@@ -745,7 +743,11 @@ mod tests {
             n_bins: 5,
         };
         highly_variable_genes(&mut adata, &config).unwrap();
-        let disp = adata.get_var("dispersions_norm").unwrap().as_numeric().unwrap();
+        let disp = adata
+            .get_var("dispersions_norm")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         assert_eq!(disp.len(), 5);
     }
 
@@ -784,7 +786,11 @@ mod tests {
             ..Default::default()
         };
         highly_variable_genes(&mut adata, &config).unwrap();
-        let hv = adata.get_var("highly_variable").unwrap().as_numeric().unwrap();
+        let hv = adata
+            .get_var("highly_variable")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         // All genes should be selected
         assert!(hv.iter().all(|&v| v == 1.0));
     }
@@ -846,14 +852,9 @@ mod tests {
 
     #[test]
     fn normalize_total_sparse() {
-        let s = SparseMatrix::from_triplets(
-            vec![0, 0, 1],
-            vec![0, 1, 0],
-            vec![3.0, 7.0, 5.0],
-            2,
-            2,
-        )
-        .unwrap();
+        let s =
+            SparseMatrix::from_triplets(vec![0, 0, 1], vec![0, 1, 0], vec![3.0, 7.0, 5.0], 2, 2)
+                .unwrap();
         let mut adata = AnnData::new(
             MatrixData::Sparse(s),
             vec!["c0".into(), "c1".into()],
@@ -972,9 +973,20 @@ mod tests {
             .map(|i| vec![i as f64, (i * 2) as f64, (i * 3) as f64])
             .collect();
         let mut adata = make_adata(data);
-        scrublet_doublets(&mut adata, &ScrubletConfig { n_pcs: 2, ..Default::default() }).unwrap();
+        scrublet_doublets(
+            &mut adata,
+            &ScrubletConfig {
+                n_pcs: 2,
+                ..Default::default()
+            },
+        )
+        .unwrap();
         assert!(adata.get_obs("predicted_doublet").is_some());
-        let preds = adata.get_obs("predicted_doublet").unwrap().as_numeric().unwrap();
+        let preds = adata
+            .get_obs("predicted_doublet")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         assert!(preds.iter().all(|&p| p == 0.0 || p == 1.0));
     }
 
@@ -1013,10 +1025,7 @@ mod tests {
 
     #[test]
     fn score_genes_all_genes_as_signature() {
-        let data = vec![
-            vec![1.0, 2.0],
-            vec![3.0, 4.0],
-        ];
+        let data = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
         let mut adata = make_adata(data);
         // All genes in signature → no reference genes, reference mean = 0
         score_genes(&mut adata, &[0, 1], 5, "all_sig").unwrap();
@@ -1105,7 +1114,11 @@ mod tests {
             },
         )
         .unwrap();
-        let hv = adata.get_var("highly_variable").unwrap().as_numeric().unwrap();
+        let hv = adata
+            .get_var("highly_variable")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         // Should have exactly 2 HVGs
         let n_hvg: usize = hv.iter().filter(|&&v| v == 1.0).count();
         assert_eq!(n_hvg, 2);
@@ -1124,12 +1137,18 @@ mod tests {
             data[i][1] = 10.0;
         }
         let mut adata = make_adata(data);
-        adata.add_obs_column("cov1", ColumnData::Numeric(cov1)).unwrap();
-        adata.add_obs_column("cov2", ColumnData::Numeric(cov2)).unwrap();
+        adata
+            .add_obs_column("cov1", ColumnData::Numeric(cov1))
+            .unwrap();
+        adata
+            .add_obs_column("cov2", ColumnData::Numeric(cov2))
+            .unwrap();
 
         regress_out(&mut adata, &["cov1", "cov2"]).unwrap();
 
-        let max_resid = (0..n).map(|i| adata.x().get(i, 0).abs()).fold(0.0f64, f64::max);
+        let max_resid = (0..n)
+            .map(|i| adata.x().get(i, 0).abs())
+            .fold(0.0f64, f64::max);
         assert!(max_resid < 1e-8, "max residual = {}", max_resid);
     }
 }

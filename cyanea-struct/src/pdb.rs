@@ -189,13 +189,19 @@ fn parse_atom_record(line: &str, is_hetatm: bool) -> Result<Atom> {
         .map_err(|e| CyaneaError::Parse(alloc::format!("bad z coordinate: {}", e)))?;
 
     let occupancy = if line.len() >= 60 {
-        safe_slice(line, 54, 60).trim().parse::<f64>().unwrap_or(1.0)
+        safe_slice(line, 54, 60)
+            .trim()
+            .parse::<f64>()
+            .unwrap_or(1.0)
     } else {
         1.0
     };
 
     let temp_factor = if line.len() >= 66 {
-        safe_slice(line, 60, 66).trim().parse::<f64>().unwrap_or(0.0)
+        safe_slice(line, 60, 66)
+            .trim()
+            .parse::<f64>()
+            .unwrap_or(0.0)
     } else {
         0.0
     };

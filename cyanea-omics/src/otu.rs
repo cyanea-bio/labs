@@ -174,11 +174,7 @@ impl OtuTable {
     ///
     /// Returns an error if `taxonomy` length doesn't match the number of OTUs,
     /// or any lineage is shorter than `level`.
-    pub fn collapse_taxonomy(
-        &self,
-        level: usize,
-        taxonomy: &[Vec<String>],
-    ) -> Result<Self> {
+    pub fn collapse_taxonomy(&self, level: usize, taxonomy: &[Vec<String>]) -> Result<Self> {
         if taxonomy.len() != self.n_otus() {
             return Err(CyaneaError::InvalidInput(format!(
                 "taxonomy length {} does not match OTU count {}",
@@ -287,11 +283,7 @@ mod tests {
 
     fn sample_table() -> OtuTable {
         OtuTable::new(
-            vec![
-                vec![10, 5, 0, 1],
-                vec![20, 0, 3, 2],
-                vec![15, 10, 1, 0],
-            ],
+            vec![vec![10, 5, 0, 1], vec![20, 0, 3, 2], vec![15, 10, 1, 0]],
             vec!["S1".into(), "S2".into(), "S3".into()],
             vec!["OTU1".into(), "OTU2".into(), "OTU3".into(), "OTU4".into()],
         )

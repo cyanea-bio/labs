@@ -6,10 +6,22 @@
 /// Short subsequence (~60 aa) around key mutation sites.
 pub fn spike_alignment_seqs() -> Vec<(&'static str, &'static [u8])> {
     vec![
-        ("Wuhan-Hu-1", b"YQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKSTN"),
-        ("Alpha_B117",  b"YQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKSTN"),
-        ("Delta_B1617", b"YQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKSTN"),
-        ("Omicron_BA1", b"YQAGSTPCNGVKGFNCYFPLQSYGFHPTNGVGYQPYRVVVLSFELLHAPATVCGPKSTN"),
+        (
+            "Wuhan-Hu-1",
+            b"YQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKSTN",
+        ),
+        (
+            "Alpha_B117",
+            b"YQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKSTN",
+        ),
+        (
+            "Delta_B1617",
+            b"YQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKSTN",
+        ),
+        (
+            "Omicron_BA1",
+            b"YQAGSTPCNGVKGFNCYFPLQSYGFHPTNGVGYQPYRVVVLSFELLHAPATVCGPKSTN",
+        ),
     ]
 }
 
@@ -75,7 +87,9 @@ mod tests {
         assert_eq!(seqs.len(), 4);
         // All same length (pre-aligned region)
         let len = seqs[0].1.len();
-        assert!(seqs.iter().all(|s| s.1.len() == len || (s.1.len() as i64 - len as i64).abs() <= 1));
+        assert!(seqs
+            .iter()
+            .all(|s| s.1.len() == len || (s.1.len() as i64 - len as i64).abs() <= 1));
     }
 
     #[test]

@@ -32,10 +32,7 @@ impl KmerCounter {
                 *counts.entry(kmer).or_insert(0usize) += 1;
             }
         }
-        KmerCounts {
-            counts,
-            k: self.k,
-        }
+        KmerCounts { counts, k: self.k }
     }
 
     /// Count k-mers and return a normalized frequency vector for the given alphabet.

@@ -107,10 +107,7 @@ pub fn z_score_columns(data: &mut [f64], n_cols: usize) -> Result<()> {
     let n_rows = data.len() / n_cols;
     let nf = n_rows as f64;
     for col in 0..n_cols {
-        let mean: f64 = (0..n_rows)
-            .map(|r| data[r * n_cols + col])
-            .sum::<f64>()
-            / nf;
+        let mean: f64 = (0..n_rows).map(|r| data[r * n_cols + col]).sum::<f64>() / nf;
         let var: f64 = (0..n_rows)
             .map(|r| (data[r * n_cols + col] - mean).powi(2))
             .sum::<f64>()

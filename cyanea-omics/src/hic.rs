@@ -441,7 +441,13 @@ pub fn call_compartments(
     // Assign compartments
     let compartments: Vec<Compartment> = eigvec
         .iter()
-        .map(|&v| if v >= 0.0 { Compartment::A } else { Compartment::B })
+        .map(|&v| {
+            if v >= 0.0 {
+                Compartment::A
+            } else {
+                Compartment::B
+            }
+        })
         .collect();
 
     Ok(CompartmentResult {
@@ -842,9 +848,7 @@ mod tests {
         let bias = m.ice_balance(50, 1e-6);
         assert_eq!(bias.len(), 5);
         // After balancing, row sums should be more uniform
-        let row_sums: Vec<f64> = (0..5)
-            .map(|i| (0..5).map(|j| m.get(i, j)).sum())
-            .collect();
+        let row_sums: Vec<f64> = (0..5).map(|i| (0..5).map(|j| m.get(i, j)).sum()).collect();
         let mean = row_sums.iter().sum::<f64>() / 5.0;
         let var = row_sums.iter().map(|s| (s - mean).powi(2)).sum::<f64>() / 5.0;
         let cv = var.sqrt() / mean;
@@ -903,7 +907,10 @@ mod tests {
         // First half and second half should be in different compartments
         let comp_first = &result.compartments[2];
         let comp_second = &result.compartments[15];
-        assert_ne!(comp_first, comp_second, "different blocks should be in different compartments");
+        assert_ne!(
+            comp_first, comp_second,
+            "different blocks should be in different compartments"
+        );
     }
 
     #[test]
@@ -915,7 +922,11 @@ mod tests {
                 let d = if i > j { i - j } else { j - i };
                 // First half is A (high contacts among themselves)
                 let same = (i < 5 && j < 5) || (i >= 5 && j >= 5);
-                let v = if same { 50.0 / (d as f64 + 1.0) } else { 10.0 / (d as f64 + 1.0) };
+                let v = if same {
+                    50.0 / (d as f64 + 1.0)
+                } else {
+                    10.0 / (d as f64 + 1.0)
+                };
                 m.set(i, j, v);
             }
         }
@@ -953,7 +964,9 @@ mod tests {
 
         let loops = call_loops(&m, &params).unwrap();
         // Should find the injected loop
-        let found = loops.iter().any(|l| l.anchor1_bin == 5 && l.anchor2_bin == 20);
+        let found = loops
+            .iter()
+            .any(|l| l.anchor1_bin == 5 && l.anchor2_bin == 20);
         assert!(found, "should detect the injected loop at (5,20)");
     }
 
@@ -985,9 +998,21 @@ mod tests {
     #[test]
     fn test_contacts_to_matrix() {
         let contacts = vec![
-            SparseContact { bin1: 0, bin2: 1, count: 10.0 },
-            SparseContact { bin1: 1, bin2: 2, count: 20.0 },
-            SparseContact { bin1: 0, bin2: 2, count: 5.0 },
+            SparseContact {
+                bin1: 0,
+                bin2: 1,
+                count: 10.0,
+            },
+            SparseContact {
+                bin1: 1,
+                bin2: 2,
+                count: 20.0,
+            },
+            SparseContact {
+                bin1: 0,
+                bin2: 2,
+                count: 5.0,
+            },
         ];
         let m = contacts_to_matrix(&contacts, "chr1", 5000, 5);
         assert!((m.get(0, 1) - 10.0).abs() < 1e-10);
@@ -997,9 +1022,11 @@ mod tests {
 
     #[test]
     fn test_write_pairs() {
-        let contacts = vec![
-            SparseContact { bin1: 0, bin2: 5, count: 42.0 },
-        ];
+        let contacts = vec![SparseContact {
+            bin1: 0,
+            bin2: 5,
+            count: 42.0,
+        }];
         let output = write_pairs(&contacts, "chr1", 10000);
         assert!(output.contains("pairs format"));
         assert!(output.contains("chr1\t0\tchr1\t50000"));

@@ -178,10 +178,7 @@ impl RandomForest {
             return vec![0.0; n_features];
         }
 
-        counts
-            .iter()
-            .map(|&c| c as f64 / total as f64)
-            .collect()
+        counts.iter().map(|&c| c as f64 / total as f64).collect()
     }
 
     /// Number of trees in the forest.
@@ -398,12 +395,7 @@ mod tests {
     fn binary_classification() {
         // Simple binary split on feature 0
         let data = vec![
-            0.0, 0.0,
-            1.0, 0.0,
-            2.0, 0.0,
-            10.0, 0.0,
-            11.0, 0.0,
-            12.0, 0.0,
+            0.0, 0.0, 1.0, 0.0, 2.0, 0.0, 10.0, 0.0, 11.0, 0.0, 12.0, 0.0,
         ];
         let labels = vec![0, 0, 0, 1, 1, 1];
         let config = RandomForestConfig {

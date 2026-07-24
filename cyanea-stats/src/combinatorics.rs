@@ -135,7 +135,11 @@ pub fn combinations(n: usize, k: usize) -> Combinations {
     } else {
         Some((0..k).collect())
     };
-    Combinations { n, k, current: first }
+    Combinations {
+        n,
+        k,
+        current: first,
+    }
 }
 
 /// Iterator over k-element combinations of `[0, n)`.
@@ -196,8 +200,13 @@ mod tests {
         for n in 0..=20 {
             let exact = factorial(n).unwrap() as f64;
             let ln_val = ln_factorial(n);
-            assert!((ln_val - exact.ln()).abs() < 1e-8 || (n == 0 && ln_val.abs() < 1e-10),
-                "ln_factorial({}) = {} but expected {}", n, ln_val, exact.ln());
+            assert!(
+                (ln_val - exact.ln()).abs() < 1e-8 || (n == 0 && ln_val.abs() < 1e-10),
+                "ln_factorial({}) = {} but expected {}",
+                n,
+                ln_val,
+                exact.ln()
+            );
         }
     }
 

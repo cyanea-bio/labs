@@ -231,8 +231,14 @@ mod tests {
         // Combined: ATG CCC TAA TTA GGG CAT
         let seq = b"ATGCCCTAATTAGGGCAT";
         let orfs = find_orfs_both_strands(seq, 1);
-        let fwd: Vec<_> = orfs.iter().filter(|o| o.strand == Strand::Forward).collect();
-        let rev: Vec<_> = orfs.iter().filter(|o| o.strand == Strand::Reverse).collect();
+        let fwd: Vec<_> = orfs
+            .iter()
+            .filter(|o| o.strand == Strand::Forward)
+            .collect();
+        let rev: Vec<_> = orfs
+            .iter()
+            .filter(|o| o.strand == Strand::Reverse)
+            .collect();
         assert!(!fwd.is_empty(), "expected forward ORFs");
         assert!(!rev.is_empty(), "expected reverse ORFs");
     }
@@ -244,7 +250,10 @@ mod tests {
         // Mapped back: start = 9-9 = 0, end = 9-0 = 9
         let seq = b"TTAGGGCAT";
         let orfs = find_orfs_both_strands(seq, 1);
-        let rev: Vec<_> = orfs.iter().filter(|o| o.strand == Strand::Reverse).collect();
+        let rev: Vec<_> = orfs
+            .iter()
+            .filter(|o| o.strand == Strand::Reverse)
+            .collect();
         assert_eq!(rev.len(), 1);
         assert_eq!(rev[0].start, 0);
         assert_eq!(rev[0].end, 9);

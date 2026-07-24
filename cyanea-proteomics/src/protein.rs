@@ -82,18 +82,13 @@ impl ProteinEntry {
 /// 2. Identify unique peptides (mapping to exactly one protein)
 /// 3. Greedily select proteins that explain the most unassigned peptides
 /// 4. Group proteins with identical peptide sets (indistinguishable)
-pub fn infer_proteins(
-    psms: &[Psm],
-    proteins: &[ProteinEntry],
-) -> Result<Vec<ProteinGroup>> {
+pub fn infer_proteins(psms: &[Psm], proteins: &[ProteinEntry]) -> Result<Vec<ProteinGroup>> {
     if psms.is_empty() {
         return Ok(Vec::new());
     }
 
     // Collect unique peptide sequences from PSMs
-    let mut peptide_set: Vec<String> = psms.iter()
-        .map(|p| p.peptide_sequence.clone())
-        .collect();
+    let mut peptide_set: Vec<String> = psms.iter().map(|p| p.peptide_sequence.clone()).collect();
     peptide_set.sort();
     peptide_set.dedup();
 
@@ -104,7 +99,8 @@ pub fn infer_proteins(
     for (pi, protein) in proteins.iter().enumerate() {
         for pep_seq in &peptide_set {
             if protein.contains_peptide(pep_seq.as_bytes()) {
-                peptide_to_proteins.entry(pep_seq.clone())
+                peptide_to_proteins
+                    .entry(pep_seq.clone())
                     .or_default()
                     .push(pi);
             }
@@ -117,9 +113,7 @@ pub fn infer_proteins(
 
     for (pep, prot_indices) in &peptide_to_proteins {
         for &pi in prot_indices {
-            protein_peptides.entry(pi)
-                .or_default()
-                .push(pep.clone());
+            protein_peptides.entry(pi).or_default().push(pep.clone());
         }
     }
 
@@ -133,24 +127,21 @@ pub fn infer_proteins(
         std::collections::HashMap::new();
 
     for (&pi, peps) in &protein_peptides {
-        groups.entry(peps.clone())
-            .or_default()
-            .push(pi);
+        groups.entry(peps.clone()).or_default().push(pi);
     }
 
     // Greedy parsimony: select groups covering the most unassigned peptides
-    let mut unassigned: std::collections::HashSet<String> =
-        peptide_set.iter().cloned().collect();
+    let mut unassigned: std::collections::HashSet<String> = peptide_set.iter().cloned().collect();
     let mut selected_groups = Vec::new();
 
     let mut group_list: Vec<(Vec<String>, Vec<usize>)> = groups.into_iter().collect();
 
     while !unassigned.is_empty() {
         // Find group covering the most unassigned peptides
-        let best = group_list.iter().enumerate()
-            .max_by_key(|(_, (peps, _))| {
-                peps.iter().filter(|p| unassigned.contains(*p)).count()
-            });
+        let best = group_list
+            .iter()
+            .enumerate()
+            .max_by_key(|(_, (peps, _))| peps.iter().filter(|p| unassigned.contains(*p)).count());
 
         match best {
             Some((idx, (peps, _))) => {
@@ -172,22 +163,27 @@ pub fn infer_proteins(
     let mut results = Vec::new();
 
     for (peps, prot_indices) in selected_groups {
-        let accessions: Vec<String> = prot_indices.iter()
+        let accessions: Vec<String> = prot_indices
+            .iter()
             .map(|&pi| proteins[pi].accession.clone())
             .collect();
 
         // Determine unique vs shared peptides
-        let unique: Vec<String> = peps.iter()
+        let unique: Vec<String> = peps
+            .iter()
             .filter(|p| {
-                peptide_to_proteins.get(*p)
+                peptide_to_proteins
+                    .get(*p)
                     .map_or(true, |prots| prots.len() == 1)
             })
             .cloned()
             .collect();
 
-        let shared: Vec<String> = peps.iter()
+        let shared: Vec<String> = peps
+            .iter()
             .filter(|p| {
-                peptide_to_proteins.get(*p)
+                peptide_to_proteins
+                    .get(*p)
                     .map_or(false, |prots| prots.len() > 1)
             })
             .cloned()
@@ -227,7 +223,11 @@ pub fn infer_proteins(
     }
 
     // Sort by score descending
-    results.sort_by(|a, b| b.best_score.partial_cmp(&a.best_score).unwrap_or(std::cmp::Ordering::Equal));
+    results.sort_by(|a, b| {
+        b.best_score
+            .partial_cmp(&a.best_score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     Ok(results)
 }
@@ -269,13 +269,8 @@ mod tests {
 
     #[test]
     fn test_infer_single_protein() {
-        let psms = vec![
-            make_psm("PEPTIDEK", 20.0),
-            make_psm("SEQUENCER", 15.0),
-        ];
-        let proteins = vec![
-            ProteinEntry::new("P1", b"MAAAKPEPTIDEKSEQUENCER"),
-        ];
+        let psms = vec![make_psm("PEPTIDEK", 20.0), make_psm("SEQUENCER", 15.0)];
+        let proteins = vec![ProteinEntry::new("P1", b"MAAAKPEPTIDEKSEQUENCER")];
 
         let groups = infer_proteins(&psms, &proteins).unwrap();
         assert_eq!(groups.len(), 1);
@@ -287,13 +282,10 @@ mod tests {
     fn test_infer_parsimony() {
         // P1 has peptide A only; P2 has peptide C only
         // Parsimony: need both proteins to explain all peptides
-        let psms = vec![
-            make_psm("AAAAAAK", 20.0),
-            make_psm("CCCCCK", 10.0),
-        ];
+        let psms = vec![make_psm("AAAAAAK", 20.0), make_psm("CCCCCK", 10.0)];
         let proteins = vec![
-            ProteinEntry::new("P1", b"MAAAAAAK"),   // contains AAAAAAK
-            ProteinEntry::new("P2", b"MCCCCCKDD"),  // contains CCCCCK
+            ProteinEntry::new("P1", b"MAAAAAAK"),  // contains AAAAAAK
+            ProteinEntry::new("P2", b"MCCCCCKDD"), // contains CCCCCK
         ];
 
         let groups = infer_proteins(&psms, &proteins).unwrap();
@@ -301,7 +293,8 @@ mod tests {
         let total_accessions: usize = groups.iter().map(|g| g.accessions.len()).sum();
         assert_eq!(total_accessions, 2);
         // All peptides should be explained
-        let all_peps: Vec<String> = groups.iter()
+        let all_peps: Vec<String> = groups
+            .iter()
             .flat_map(|g| g.unique_peptides.iter().chain(g.shared_peptides.iter()))
             .cloned()
             .collect();
@@ -331,10 +324,7 @@ mod tests {
 
     #[test]
     fn test_shared_peptides() {
-        let psms = vec![
-            make_psm("UNIQUE", 20.0),
-            make_psm("SHARED", 15.0),
-        ];
+        let psms = vec![make_psm("UNIQUE", 20.0), make_psm("SHARED", 15.0)];
         let proteins = vec![
             ProteinEntry::new("P1", b"MUNIQUESHARED"),
             ProteinEntry::new("P2", b"MSHARED"),
@@ -342,7 +332,10 @@ mod tests {
 
         let groups = infer_proteins(&psms, &proteins).unwrap();
         // P1 should have UNIQUE as unique and SHARED as shared
-        let p1_group = groups.iter().find(|g| g.accessions.contains(&"P1".to_string())).unwrap();
+        let p1_group = groups
+            .iter()
+            .find(|g| g.accessions.contains(&"P1".to_string()))
+            .unwrap();
         assert!(p1_group.unique_peptides.contains(&"UNIQUE".to_string()));
         assert!(p1_group.shared_peptides.contains(&"SHARED".to_string()));
     }

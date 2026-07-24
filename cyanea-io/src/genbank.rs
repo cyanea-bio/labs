@@ -132,7 +132,10 @@ pub fn parse_genbank(path: impl AsRef<Path>) -> Result<Vec<GenbankRecord>> {
             }
         } else if line.starts_with("DEFINITION") {
             builder.definition = line[12..].trim().to_string();
-        } else if line.starts_with("            ") && !builder.definition.is_empty() && builder.accession.is_empty() {
+        } else if line.starts_with("            ")
+            && !builder.definition.is_empty()
+            && builder.accession.is_empty()
+        {
             // Continuation of DEFINITION
             builder.definition.push(' ');
             builder.definition.push_str(line.trim());

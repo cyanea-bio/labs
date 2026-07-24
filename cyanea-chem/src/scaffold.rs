@@ -48,14 +48,20 @@ pub fn murcko_scaffold(mol: &Molecule) -> Result<MurckoResult> {
     let n = mol.atom_count();
     if n == 0 {
         let empty = Molecule::new(String::new(), Vec::new(), Vec::new());
-        return Ok(MurckoResult { framework: empty.clone(), generic: empty });
+        return Ok(MurckoResult {
+            framework: empty.clone(),
+            generic: empty,
+        });
     }
 
     let rings = ring::find_sssr(mol);
     if rings.is_empty() {
         // No rings — the Murcko scaffold is empty
         let empty = Molecule::new(String::new(), Vec::new(), Vec::new());
-        return Ok(MurckoResult { framework: empty.clone(), generic: empty });
+        return Ok(MurckoResult {
+            framework: empty.clone(),
+            generic: empty,
+        });
     }
 
     // Mark ring atoms
@@ -159,7 +165,12 @@ fn find_linker_atoms(
     linkers
 }
 
-fn bfs_path_to_set(mol: &Molecule, start: usize, targets: &HashSet<usize>, n: usize) -> Option<Vec<usize>> {
+fn bfs_path_to_set(
+    mol: &Molecule,
+    start: usize,
+    targets: &HashSet<usize>,
+    n: usize,
+) -> Option<Vec<usize>> {
     let mut visited = vec![false; n];
     let mut parent = vec![usize::MAX; n];
     let mut queue = VecDeque::new();
@@ -260,7 +271,11 @@ fn make_generic(mol: &Molecule) -> Molecule {
 ///
 /// Uses a modular product graph approach with Bron-Kerbosch maximum clique.
 /// The `timeout_ms` parameter limits computation time.
-pub fn maximum_common_substructure(mol_a: &Molecule, mol_b: &Molecule, timeout_ms: u64) -> Result<McsResult> {
+pub fn maximum_common_substructure(
+    mol_a: &Molecule,
+    mol_b: &Molecule,
+    timeout_ms: u64,
+) -> Result<McsResult> {
     let na = mol_a.atom_count();
     let nb = mol_b.atom_count();
 
@@ -304,13 +319,17 @@ pub fn maximum_common_substructure(mol_a: &Molecule, mol_b: &Molecule, timeout_m
     let mcs_a_atoms: HashSet<usize> = max_clique.iter().map(|&ni| nodes[ni].0).collect();
     let mcs_b_atoms: HashSet<usize> = max_clique.iter().map(|&ni| nodes[ni].1).collect();
 
-    let mcs_bonds_a = mol_a.bonds.iter().filter(|b| {
-        mcs_a_atoms.contains(&b.atom1) && mcs_a_atoms.contains(&b.atom2)
-    }).count();
+    let mcs_bonds_a = mol_a
+        .bonds
+        .iter()
+        .filter(|b| mcs_a_atoms.contains(&b.atom1) && mcs_a_atoms.contains(&b.atom2))
+        .count();
 
-    let mcs_bonds_b = mol_b.bonds.iter().filter(|b| {
-        mcs_b_atoms.contains(&b.atom1) && mcs_b_atoms.contains(&b.atom2)
-    }).count();
+    let mcs_bonds_b = mol_b
+        .bonds
+        .iter()
+        .filter(|b| mcs_b_atoms.contains(&b.atom1) && mcs_b_atoms.contains(&b.atom2))
+        .count();
 
     Ok(McsResult {
         mcs_atoms: max_clique.len(),
@@ -322,7 +341,10 @@ pub fn maximum_common_substructure(mol_a: &Molecule, mol_b: &Molecule, timeout_m
 
 /// Build modular product graph: compatible (atom_a, atom_b) pairs with edges
 /// for compatible bond pairs.
-fn modular_product_graph(mol_a: &Molecule, mol_b: &Molecule) -> (Vec<(usize, usize)>, Vec<Vec<bool>>) {
+fn modular_product_graph(
+    mol_a: &Molecule,
+    mol_b: &Molecule,
+) -> (Vec<(usize, usize)>, Vec<Vec<bool>>) {
     let na = mol_a.atom_count();
     let nb = mol_b.atom_count();
 
@@ -460,7 +482,9 @@ fn bk_pivot(
 pub fn r_group_decomposition(mol: &Molecule, core: &Molecule) -> Result<RGroupResult> {
     let matches = find_substructure_matches(mol, core);
     if matches.is_empty() {
-        return Err(CyaneaError::InvalidInput("core not found in molecule".into()));
+        return Err(CyaneaError::InvalidInput(
+            "core not found in molecule".into(),
+        ));
     }
 
     let best_match = &matches[0];
@@ -485,7 +509,10 @@ pub fn r_group_decomposition(mol: &Molecule, core: &Molecule) -> Result<RGroupRe
         }
     }
 
-    Ok(RGroupResult { core_mapping, r_groups })
+    Ok(RGroupResult {
+        core_mapping,
+        r_groups,
+    })
 }
 
 /// BFS to collect all atoms in an R-group fragment.

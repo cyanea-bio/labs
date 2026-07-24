@@ -296,7 +296,8 @@ mod tests {
                 let tpm_from_fpkm = fpkm_vals[i * 2 + j] / fpkm_sum * 1e6;
                 assert!(
                     (tpm_from_fpkm - tpm_vals[i * 2 + j]).abs() < 1.0,
-                    "gene {i} sample {j}: tpm_from_fpkm={tpm_from_fpkm}, tpm={}", tpm_vals[i * 2 + j]
+                    "gene {i} sample {j}: tpm_from_fpkm={tpm_from_fpkm}, tpm={}",
+                    tpm_vals[i * 2 + j]
                 );
             }
         }

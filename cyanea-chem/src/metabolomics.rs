@@ -102,22 +102,72 @@ pub struct MetabolicPathway {
 /// Common positive-mode ESI adducts.
 pub fn positive_adducts() -> Vec<Adduct> {
     vec![
-        Adduct { name: "[M+H]+".into(), mult: 1.0, shift: 1.007276, charge: 1 },
-        Adduct { name: "[M+Na]+".into(), mult: 1.0, shift: 22.989218, charge: 1 },
-        Adduct { name: "[M+K]+".into(), mult: 1.0, shift: 38.963158, charge: 1 },
-        Adduct { name: "[M+NH4]+".into(), mult: 1.0, shift: 18.034164, charge: 1 },
-        Adduct { name: "[2M+H]+".into(), mult: 2.0, shift: 1.007276, charge: 1 },
-        Adduct { name: "[M+2H]2+".into(), mult: 1.0, shift: 2.014552, charge: 2 },
+        Adduct {
+            name: "[M+H]+".into(),
+            mult: 1.0,
+            shift: 1.007276,
+            charge: 1,
+        },
+        Adduct {
+            name: "[M+Na]+".into(),
+            mult: 1.0,
+            shift: 22.989218,
+            charge: 1,
+        },
+        Adduct {
+            name: "[M+K]+".into(),
+            mult: 1.0,
+            shift: 38.963158,
+            charge: 1,
+        },
+        Adduct {
+            name: "[M+NH4]+".into(),
+            mult: 1.0,
+            shift: 18.034164,
+            charge: 1,
+        },
+        Adduct {
+            name: "[2M+H]+".into(),
+            mult: 2.0,
+            shift: 1.007276,
+            charge: 1,
+        },
+        Adduct {
+            name: "[M+2H]2+".into(),
+            mult: 1.0,
+            shift: 2.014552,
+            charge: 2,
+        },
     ]
 }
 
 /// Common negative-mode ESI adducts.
 pub fn negative_adducts() -> Vec<Adduct> {
     vec![
-        Adduct { name: "[M-H]-".into(), mult: 1.0, shift: -1.007276, charge: 1 },
-        Adduct { name: "[M+FA-H]-".into(), mult: 1.0, shift: 44.998201, charge: 1 },
-        Adduct { name: "[M+Cl]-".into(), mult: 1.0, shift: 34.969402, charge: 1 },
-        Adduct { name: "[M-2H]2-".into(), mult: 1.0, shift: -2.014552, charge: 2 },
+        Adduct {
+            name: "[M-H]-".into(),
+            mult: 1.0,
+            shift: -1.007276,
+            charge: 1,
+        },
+        Adduct {
+            name: "[M+FA-H]-".into(),
+            mult: 1.0,
+            shift: 44.998201,
+            charge: 1,
+        },
+        Adduct {
+            name: "[M+Cl]-".into(),
+            mult: 1.0,
+            shift: 34.969402,
+            charge: 1,
+        },
+        Adduct {
+            name: "[M-2H]2-".into(),
+            mult: 1.0,
+            shift: -2.014552,
+            charge: 2,
+        },
     ]
 }
 
@@ -159,7 +209,11 @@ pub fn match_by_mass(
         }
     }
 
-    matches.sort_by(|a, b| a.ppm_error.partial_cmp(&b.ppm_error).unwrap_or(core::cmp::Ordering::Equal));
+    matches.sort_by(|a, b| {
+        a.ppm_error
+            .partial_cmp(&b.ppm_error)
+            .unwrap_or(core::cmp::Ordering::Equal)
+    });
     matches
 }
 
@@ -194,12 +248,16 @@ pub fn isotope_pattern(formula: &str, max_peaks: usize) -> Result<Vec<IsotopePea
         }
     }
 
-    Ok(pattern.iter().enumerate().map(|(i, &abundance)| {
-        IsotopePeak {
-            mass_offset: i as f64 * 1.003355, // average neutron mass difference
-            abundance,
-        }
-    }).collect())
+    Ok(pattern
+        .iter()
+        .enumerate()
+        .map(|(i, &abundance)| {
+            IsotopePeak {
+                mass_offset: i as f64 * 1.003355, // average neutron mass difference
+                abundance,
+            }
+        })
+        .collect())
 }
 
 fn parse_formula(formula: &str) -> Result<BTreeMap<char, u32>> {
@@ -242,13 +300,13 @@ fn parse_formula(formula: &str) -> Result<BTreeMap<char, u32>> {
 fn element_isotope_pattern(element: char, count: u32) -> Result<Vec<f64>> {
     // Natural isotope abundances (M+0, M+1, M+2, ...)
     let base = match element {
-        'C' => vec![0.9893, 0.0107],               // 12C, 13C
-        'H' => vec![0.999885, 0.000115],            // 1H, 2H
-        'N' => vec![0.99632, 0.00368],              // 14N, 15N
-        'O' => vec![0.99757, 0.00038, 0.00205],     // 16O, 17O, 18O
+        'C' => vec![0.9893, 0.0107],                      // 12C, 13C
+        'H' => vec![0.999885, 0.000115],                  // 1H, 2H
+        'N' => vec![0.99632, 0.00368],                    // 14N, 15N
+        'O' => vec![0.99757, 0.00038, 0.00205],           // 16O, 17O, 18O
         'S' => vec![0.9499, 0.0075, 0.0425, 0.0, 0.0001], // 32S, 33S, 34S, skip, 36S
-        'P' => vec![1.0],                           // 31P (monoisotopic)
-        'F' => vec![1.0],                           // 19F
+        'P' => vec![1.0],                                 // 31P (monoisotopic)
+        'F' => vec![1.0],                                 // 19F
         _ => vec![1.0],
     };
 
@@ -288,10 +346,10 @@ fn convolve_patterns(a: &[f64], b: &[f64]) -> Vec<f64> {
 /// * `polar_surface_area` — in Angstrom^2
 pub fn predict_rt(logp: f64, molecular_weight: f64, polar_surface_area: f64) -> RtPrediction {
     // Empirical coefficients for a typical 20-min C18 gradient
-    let a = 2.5;   // logP contribution
-    let b = 1.8;   // MW contribution
-    let c = 3.2;   // PSA contribution (polar = earlier elution)
-    let d = 5.0;   // intercept
+    let a = 2.5; // logP contribution
+    let b = 1.8; // MW contribution
+    let c = 3.2; // PSA contribution (polar = earlier elution)
+    let d = 5.0; // intercept
 
     let rt = a * logp + b * (molecular_weight / 1000.0) - c * (polar_surface_area / 100.0) + d;
     let rt_clamped = rt.clamp(0.5, 30.0);
@@ -356,7 +414,9 @@ pub fn pathway_enrichment(
     let mut results = Vec::new();
 
     for pw in pathways {
-        let hits: usize = pw.metabolite_ids.iter()
+        let hits: usize = pw
+            .metabolite_ids
+            .iter()
             .filter(|id| matched_set.contains(id.as_str()))
             .count();
 
@@ -382,7 +442,11 @@ pub fn pathway_enrichment(
         });
     }
 
-    results.sort_by(|a, b| a.p_value.partial_cmp(&b.p_value).unwrap_or(core::cmp::Ordering::Equal));
+    results.sort_by(|a, b| {
+        a.p_value
+            .partial_cmp(&b.p_value)
+            .unwrap_or(core::cmp::Ordering::Equal)
+    });
     results
 }
 
@@ -439,26 +503,166 @@ fn log_factorial(n: usize) -> f64 {
 /// A small demo metabolite database (20 common metabolites).
 pub fn demo_metabolite_database() -> Vec<Metabolite> {
     vec![
-        Metabolite { id: "C00031".into(), name: "D-Glucose".into(), formula: "C6H12O6".into(), exact_mass: 180.06339, pathways: vec!["map00010".into(), "map00500".into()], inchikey_prefix: Some("WQZGKKKJIJFFOK".into()) },
-        Metabolite { id: "C00036".into(), name: "Oxaloacetate".into(), formula: "C4H4O5".into(), exact_mass: 132.00587, pathways: vec!["map00020".into(), "map00620".into()], inchikey_prefix: Some("KHPXUQMNIQBQEV".into()) },
-        Metabolite { id: "C00042".into(), name: "Succinate".into(), formula: "C4H6O4".into(), exact_mass: 118.02661, pathways: vec!["map00020".into(), "map00190".into()], inchikey_prefix: Some("KDYFGRWQOYBRFD".into()) },
-        Metabolite { id: "C00074".into(), name: "Phosphoenolpyruvate".into(), formula: "C3H5O6P".into(), exact_mass: 167.98237, pathways: vec!["map00010".into(), "map00620".into()], inchikey_prefix: Some("DTBNBXWJWCWCIK".into()) },
-        Metabolite { id: "C00149".into(), name: "L-Malate".into(), formula: "C4H6O5".into(), exact_mass: 134.02153, pathways: vec!["map00020".into(), "map00620".into()], inchikey_prefix: Some("BJEPYKJPYRNKOW".into()) },
-        Metabolite { id: "C00158".into(), name: "Citrate".into(), formula: "C6H8O7".into(), exact_mass: 192.02700, pathways: vec!["map00020".into()], inchikey_prefix: Some("KRKNYBCHXYNGOX".into()) },
-        Metabolite { id: "C00186".into(), name: "L-Lactate".into(), formula: "C3H6O3".into(), exact_mass: 90.03169, pathways: vec!["map00010".into(), "map00620".into()], inchikey_prefix: Some("JVTAAEKCZFNVCJ".into()) },
-        Metabolite { id: "C00022".into(), name: "Pyruvate".into(), formula: "C3H4O3".into(), exact_mass: 88.01604, pathways: vec!["map00010".into(), "map00020".into(), "map00620".into()], inchikey_prefix: Some("LCTONWCANYUPML".into()) },
-        Metabolite { id: "C00024".into(), name: "Acetyl-CoA".into(), formula: "C23H38N7O17P3S".into(), exact_mass: 809.12576, pathways: vec!["map00010".into(), "map00020".into()], inchikey_prefix: None },
-        Metabolite { id: "C00037".into(), name: "Glycine".into(), formula: "C2H5NO2".into(), exact_mass: 75.03203, pathways: vec!["map00260".into(), "map00630".into()], inchikey_prefix: Some("DHMQDGOQFOQNFH".into()) },
-        Metabolite { id: "C00041".into(), name: "L-Alanine".into(), formula: "C3H7NO2".into(), exact_mass: 89.04768, pathways: vec!["map00250".into(), "map00260".into()], inchikey_prefix: Some("QNAYBMKLOCPYGJ".into()) },
-        Metabolite { id: "C00064".into(), name: "L-Glutamine".into(), formula: "C5H10N2O3".into(), exact_mass: 146.06914, pathways: vec!["map00250".into(), "map00230".into()], inchikey_prefix: Some("ZDXPYRJPNDTMRX".into()) },
-        Metabolite { id: "C00049".into(), name: "L-Aspartate".into(), formula: "C4H7NO4".into(), exact_mass: 133.03751, pathways: vec!["map00250".into(), "map00260".into()], inchikey_prefix: Some("CKLJMWTZIZZHCS".into()) },
-        Metabolite { id: "C00079".into(), name: "L-Phenylalanine".into(), formula: "C9H11NO2".into(), exact_mass: 165.07898, pathways: vec!["map00360".into(), "map00400".into()], inchikey_prefix: Some("COLNVLDHVKWLRT".into()) },
-        Metabolite { id: "C00078".into(), name: "L-Tryptophan".into(), formula: "C11H12N2O2".into(), exact_mass: 204.08988, pathways: vec!["map00380".into(), "map00400".into()], inchikey_prefix: Some("QIVBCDIJIAJPQS".into()) },
-        Metabolite { id: "C00062".into(), name: "L-Arginine".into(), formula: "C6H14N4O2".into(), exact_mass: 174.11168, pathways: vec!["map00220".into(), "map00330".into()], inchikey_prefix: Some("ODKSFYDXXFIFQN".into()) },
-        Metabolite { id: "C00025".into(), name: "L-Glutamate".into(), formula: "C5H9NO4".into(), exact_mass: 147.05316, pathways: vec!["map00250".into(), "map00220".into()], inchikey_prefix: Some("WHUUTDBJXJRKMK".into()) },
-        Metabolite { id: "C00065".into(), name: "L-Serine".into(), formula: "C3H7NO3".into(), exact_mass: 105.04259, pathways: vec!["map00260".into(), "map00630".into()], inchikey_prefix: Some("MTCFGRXMJLQNBG".into()) },
-        Metabolite { id: "C00183".into(), name: "L-Valine".into(), formula: "C5H11NO2".into(), exact_mass: 117.07898, pathways: vec!["map00280".into(), "map00290".into()], inchikey_prefix: Some("KZSNJWFQEVHDMF".into()) },
-        Metabolite { id: "C00082".into(), name: "L-Tyrosine".into(), formula: "C9H11NO3".into(), exact_mass: 181.07389, pathways: vec!["map00350".into(), "map00400".into()], inchikey_prefix: Some("OUYCCCASQSFEME".into()) },
+        Metabolite {
+            id: "C00031".into(),
+            name: "D-Glucose".into(),
+            formula: "C6H12O6".into(),
+            exact_mass: 180.06339,
+            pathways: vec!["map00010".into(), "map00500".into()],
+            inchikey_prefix: Some("WQZGKKKJIJFFOK".into()),
+        },
+        Metabolite {
+            id: "C00036".into(),
+            name: "Oxaloacetate".into(),
+            formula: "C4H4O5".into(),
+            exact_mass: 132.00587,
+            pathways: vec!["map00020".into(), "map00620".into()],
+            inchikey_prefix: Some("KHPXUQMNIQBQEV".into()),
+        },
+        Metabolite {
+            id: "C00042".into(),
+            name: "Succinate".into(),
+            formula: "C4H6O4".into(),
+            exact_mass: 118.02661,
+            pathways: vec!["map00020".into(), "map00190".into()],
+            inchikey_prefix: Some("KDYFGRWQOYBRFD".into()),
+        },
+        Metabolite {
+            id: "C00074".into(),
+            name: "Phosphoenolpyruvate".into(),
+            formula: "C3H5O6P".into(),
+            exact_mass: 167.98237,
+            pathways: vec!["map00010".into(), "map00620".into()],
+            inchikey_prefix: Some("DTBNBXWJWCWCIK".into()),
+        },
+        Metabolite {
+            id: "C00149".into(),
+            name: "L-Malate".into(),
+            formula: "C4H6O5".into(),
+            exact_mass: 134.02153,
+            pathways: vec!["map00020".into(), "map00620".into()],
+            inchikey_prefix: Some("BJEPYKJPYRNKOW".into()),
+        },
+        Metabolite {
+            id: "C00158".into(),
+            name: "Citrate".into(),
+            formula: "C6H8O7".into(),
+            exact_mass: 192.02700,
+            pathways: vec!["map00020".into()],
+            inchikey_prefix: Some("KRKNYBCHXYNGOX".into()),
+        },
+        Metabolite {
+            id: "C00186".into(),
+            name: "L-Lactate".into(),
+            formula: "C3H6O3".into(),
+            exact_mass: 90.03169,
+            pathways: vec!["map00010".into(), "map00620".into()],
+            inchikey_prefix: Some("JVTAAEKCZFNVCJ".into()),
+        },
+        Metabolite {
+            id: "C00022".into(),
+            name: "Pyruvate".into(),
+            formula: "C3H4O3".into(),
+            exact_mass: 88.01604,
+            pathways: vec!["map00010".into(), "map00020".into(), "map00620".into()],
+            inchikey_prefix: Some("LCTONWCANYUPML".into()),
+        },
+        Metabolite {
+            id: "C00024".into(),
+            name: "Acetyl-CoA".into(),
+            formula: "C23H38N7O17P3S".into(),
+            exact_mass: 809.12576,
+            pathways: vec!["map00010".into(), "map00020".into()],
+            inchikey_prefix: None,
+        },
+        Metabolite {
+            id: "C00037".into(),
+            name: "Glycine".into(),
+            formula: "C2H5NO2".into(),
+            exact_mass: 75.03203,
+            pathways: vec!["map00260".into(), "map00630".into()],
+            inchikey_prefix: Some("DHMQDGOQFOQNFH".into()),
+        },
+        Metabolite {
+            id: "C00041".into(),
+            name: "L-Alanine".into(),
+            formula: "C3H7NO2".into(),
+            exact_mass: 89.04768,
+            pathways: vec!["map00250".into(), "map00260".into()],
+            inchikey_prefix: Some("QNAYBMKLOCPYGJ".into()),
+        },
+        Metabolite {
+            id: "C00064".into(),
+            name: "L-Glutamine".into(),
+            formula: "C5H10N2O3".into(),
+            exact_mass: 146.06914,
+            pathways: vec!["map00250".into(), "map00230".into()],
+            inchikey_prefix: Some("ZDXPYRJPNDTMRX".into()),
+        },
+        Metabolite {
+            id: "C00049".into(),
+            name: "L-Aspartate".into(),
+            formula: "C4H7NO4".into(),
+            exact_mass: 133.03751,
+            pathways: vec!["map00250".into(), "map00260".into()],
+            inchikey_prefix: Some("CKLJMWTZIZZHCS".into()),
+        },
+        Metabolite {
+            id: "C00079".into(),
+            name: "L-Phenylalanine".into(),
+            formula: "C9H11NO2".into(),
+            exact_mass: 165.07898,
+            pathways: vec!["map00360".into(), "map00400".into()],
+            inchikey_prefix: Some("COLNVLDHVKWLRT".into()),
+        },
+        Metabolite {
+            id: "C00078".into(),
+            name: "L-Tryptophan".into(),
+            formula: "C11H12N2O2".into(),
+            exact_mass: 204.08988,
+            pathways: vec!["map00380".into(), "map00400".into()],
+            inchikey_prefix: Some("QIVBCDIJIAJPQS".into()),
+        },
+        Metabolite {
+            id: "C00062".into(),
+            name: "L-Arginine".into(),
+            formula: "C6H14N4O2".into(),
+            exact_mass: 174.11168,
+            pathways: vec!["map00220".into(), "map00330".into()],
+            inchikey_prefix: Some("ODKSFYDXXFIFQN".into()),
+        },
+        Metabolite {
+            id: "C00025".into(),
+            name: "L-Glutamate".into(),
+            formula: "C5H9NO4".into(),
+            exact_mass: 147.05316,
+            pathways: vec!["map00250".into(), "map00220".into()],
+            inchikey_prefix: Some("WHUUTDBJXJRKMK".into()),
+        },
+        Metabolite {
+            id: "C00065".into(),
+            name: "L-Serine".into(),
+            formula: "C3H7NO3".into(),
+            exact_mass: 105.04259,
+            pathways: vec!["map00260".into(), "map00630".into()],
+            inchikey_prefix: Some("MTCFGRXMJLQNBG".into()),
+        },
+        Metabolite {
+            id: "C00183".into(),
+            name: "L-Valine".into(),
+            formula: "C5H11NO2".into(),
+            exact_mass: 117.07898,
+            pathways: vec!["map00280".into(), "map00290".into()],
+            inchikey_prefix: Some("KZSNJWFQEVHDMF".into()),
+        },
+        Metabolite {
+            id: "C00082".into(),
+            name: "L-Tyrosine".into(),
+            formula: "C9H11NO3".into(),
+            exact_mass: 181.07389,
+            pathways: vec!["map00350".into(), "map00400".into()],
+            inchikey_prefix: Some("OUYCCCASQSFEME".into()),
+        },
     ]
 }
 
@@ -468,22 +672,45 @@ pub fn demo_metabolic_pathways() -> Vec<MetabolicPathway> {
         MetabolicPathway {
             id: "map00010".into(),
             name: "Glycolysis / Gluconeogenesis".into(),
-            metabolite_ids: vec!["C00031".into(), "C00074".into(), "C00022".into(), "C00186".into(), "C00024".into()],
+            metabolite_ids: vec![
+                "C00031".into(),
+                "C00074".into(),
+                "C00022".into(),
+                "C00186".into(),
+                "C00024".into(),
+            ],
         },
         MetabolicPathway {
             id: "map00020".into(),
             name: "Citrate cycle (TCA cycle)".into(),
-            metabolite_ids: vec!["C00036".into(), "C00042".into(), "C00149".into(), "C00158".into(), "C00022".into(), "C00024".into()],
+            metabolite_ids: vec![
+                "C00036".into(),
+                "C00042".into(),
+                "C00149".into(),
+                "C00158".into(),
+                "C00022".into(),
+                "C00024".into(),
+            ],
         },
         MetabolicPathway {
             id: "map00250".into(),
             name: "Alanine, aspartate, glutamate metabolism".into(),
-            metabolite_ids: vec!["C00041".into(), "C00049".into(), "C00064".into(), "C00025".into()],
+            metabolite_ids: vec![
+                "C00041".into(),
+                "C00049".into(),
+                "C00064".into(),
+                "C00025".into(),
+            ],
         },
         MetabolicPathway {
             id: "map00260".into(),
             name: "Glycine, serine, threonine metabolism".into(),
-            metabolite_ids: vec!["C00037".into(), "C00041".into(), "C00049".into(), "C00065".into()],
+            metabolite_ids: vec![
+                "C00037".into(),
+                "C00041".into(),
+                "C00049".into(),
+                "C00065".into(),
+            ],
         },
         MetabolicPathway {
             id: "map00400".into(),
@@ -493,7 +720,13 @@ pub fn demo_metabolic_pathways() -> Vec<MetabolicPathway> {
         MetabolicPathway {
             id: "map00620".into(),
             name: "Pyruvate metabolism".into(),
-            metabolite_ids: vec!["C00022".into(), "C00036".into(), "C00074".into(), "C00149".into(), "C00186".into()],
+            metabolite_ids: vec![
+                "C00022".into(),
+                "C00036".into(),
+                "C00074".into(),
+                "C00149".into(),
+                "C00186".into(),
+            ],
         },
     ]
 }

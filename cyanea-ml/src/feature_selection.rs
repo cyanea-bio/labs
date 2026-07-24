@@ -153,9 +153,7 @@ pub fn variance_threshold(
 ) -> Result<FeatureSelection> {
     validate_data(data, n_features)?;
     if threshold < 0.0 {
-        return Err(CyaneaError::InvalidInput(
-            "threshold must be >= 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("threshold must be >= 0".into()));
     }
 
     let n_samples = data.len() / n_features;
@@ -236,17 +234,13 @@ pub fn mutual_information(
     let mut mi_scores = vec![0.0; n_features];
 
     for j in 0..n_features {
-        let col: Vec<f64> = (0..n_samples)
-            .map(|i| data[i * n_features + j])
-            .collect();
+        let col: Vec<f64> = (0..n_samples).map(|i| data[i * n_features + j]).collect();
         let bins = discretize(&col, n_bins);
         mi_scores[j] = compute_mi(&bins, n_bins, labels, n_classes, n_samples);
     }
 
     // Select features with MI > 0 (sorted ascending by index)
-    let selected: Vec<usize> = (0..n_features)
-        .filter(|&j| mi_scores[j] > 0.0)
-        .collect();
+    let selected: Vec<usize> = (0..n_features).filter(|&j| mi_scores[j] > 0.0).collect();
 
     Ok(FeatureSelection {
         selected,
@@ -688,12 +682,7 @@ mod tests {
     #[test]
     fn variance_removes_constant_features() {
         // Feature 0: varies, Feature 1: constant, Feature 2: varies
-        let data = vec![
-            1.0, 5.0, 0.0,
-            2.0, 5.0, 1.0,
-            3.0, 5.0, 2.0,
-            4.0, 5.0, 3.0,
-        ];
+        let data = vec![1.0, 5.0, 0.0, 2.0, 5.0, 1.0, 3.0, 5.0, 2.0, 4.0, 5.0, 3.0];
         let result = variance_threshold(&data, 3, 0.0).unwrap();
         assert_eq!(result.selected, vec![0, 2]);
         assert!(result.scores[1] < f64::EPSILON); // constant → zero variance
@@ -709,12 +698,7 @@ mod tests {
     #[test]
     fn variance_higher_threshold_removes_more() {
         // Feature 0: [0,1,2,3] → var=1.25, Feature 1: [0,0.1,0.2,0.3] → var=0.0125
-        let data = vec![
-            0.0, 0.0,
-            1.0, 0.1,
-            2.0, 0.2,
-            3.0, 0.3,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 0.1, 2.0, 0.2, 3.0, 0.3];
         let low = variance_threshold(&data, 2, 0.01).unwrap();
         assert_eq!(low.selected, vec![0, 1]);
 
@@ -724,11 +708,7 @@ mod tests {
 
     #[test]
     fn variance_transform_shape() {
-        let data = vec![
-            1.0, 5.0, 10.0,
-            2.0, 5.0, 20.0,
-            3.0, 5.0, 30.0,
-        ];
+        let data = vec![1.0, 5.0, 10.0, 2.0, 5.0, 20.0, 3.0, 5.0, 30.0];
         let result = variance_threshold(&data, 3, 0.0).unwrap();
         let filtered = result.transform(&data);
         assert_eq!(filtered.len(), 3 * result.n_selected());
@@ -765,14 +745,7 @@ mod tests {
     #[test]
     fn mi_informative_feature_scores_high() {
         // Feature 0 perfectly predicts the label; feature 1 is noise
-        let data = vec![
-            0.0, 5.0,
-            0.0, 5.1,
-            0.0, 4.9,
-            1.0, 5.0,
-            1.0, 5.1,
-            1.0, 4.9,
-        ];
+        let data = vec![0.0, 5.0, 0.0, 5.1, 0.0, 4.9, 1.0, 5.0, 1.0, 5.1, 1.0, 4.9];
         let labels = vec![0, 0, 0, 1, 1, 1];
         let result = mutual_information(&data, 2, &labels, 5).unwrap();
         assert!(
@@ -784,11 +757,7 @@ mod tests {
 
     #[test]
     fn mi_constant_feature_zero() {
-        let data = vec![
-            5.0, 0.0,
-            5.0, 1.0,
-            5.0, 2.0,
-        ];
+        let data = vec![5.0, 0.0, 5.0, 1.0, 5.0, 2.0];
         let labels = vec![0, 1, 2];
         let result = mutual_information(&data, 2, &labels, 3).unwrap();
         assert!(
@@ -802,12 +771,8 @@ mod tests {
     fn mi_selects_nonzero_features() {
         // Two informative features, one constant
         let data = vec![
-            0.0, 5.0, 10.0,
-            1.0, 5.0, 11.0,
-            2.0, 5.0, 12.0,
-            3.0, 5.0, 13.0,
-            4.0, 5.0, 14.0,
-            5.0, 5.0, 15.0,
+            0.0, 5.0, 10.0, 1.0, 5.0, 11.0, 2.0, 5.0, 12.0, 3.0, 5.0, 13.0, 4.0, 5.0, 14.0, 5.0,
+            5.0, 15.0,
         ];
         let labels = vec![0, 0, 0, 1, 1, 1];
         let result = mutual_information(&data, 3, &labels, 5).unwrap();
@@ -821,10 +786,7 @@ mod tests {
     #[test]
     fn mi_top_k_limits_count() {
         let data = vec![
-            0.0, 10.0, 100.0,
-            1.0, 11.0, 101.0,
-            2.0, 12.0, 102.0,
-            3.0, 13.0, 103.0,
+            0.0, 10.0, 100.0, 1.0, 11.0, 101.0, 2.0, 12.0, 102.0, 3.0, 13.0, 103.0,
         ];
         let labels = vec![0, 0, 1, 1];
         let result = mutual_information_top_k(&data, 3, &labels, 4, 1).unwrap();
@@ -834,10 +796,7 @@ mod tests {
     #[test]
     fn mi_top_k_sorted_by_index() {
         let data = vec![
-            100.0, 0.0, 50.0,
-            101.0, 1.0, 51.0,
-            102.0, 2.0, 52.0,
-            103.0, 3.0, 53.0,
+            100.0, 0.0, 50.0, 101.0, 1.0, 51.0, 102.0, 2.0, 52.0, 103.0, 3.0, 53.0,
         ];
         let labels = vec![0, 0, 1, 1];
         let result = mutual_information_top_k(&data, 3, &labels, 4, 2).unwrap();
@@ -850,11 +809,7 @@ mod tests {
     #[test]
     fn mi_multiclass() {
         // 3 classes separated by feature 0
-        let data = vec![
-            0.0, 1.0,
-            10.0, 1.0,
-            20.0, 1.0,
-        ];
+        let data = vec![0.0, 1.0, 10.0, 1.0, 20.0, 1.0];
         let labels = vec![0, 1, 2];
         let result = mutual_information(&data, 2, &labels, 3).unwrap();
         assert!(result.scores[0] > 0.0);
@@ -911,12 +866,8 @@ mod tests {
     fn rfe_rankings_correct() {
         // 3 features, select 1 → features get ranks 1, 2, or 3
         let data = vec![
-            0.0, 5.0, 10.0,
-            1.0, 5.0, 11.0,
-            2.0, 5.0, 12.0,
-            10.0, 5.0, 20.0,
-            11.0, 5.0, 21.0,
-            12.0, 5.0, 22.0,
+            0.0, 5.0, 10.0, 1.0, 5.0, 11.0, 2.0, 5.0, 12.0, 10.0, 5.0, 20.0, 11.0, 5.0, 21.0, 12.0,
+            5.0, 22.0,
         ];
 
         let result = recursive_feature_elimination(&data, 3, 1, |_filtered, n_feat| {
@@ -941,10 +892,7 @@ mod tests {
     #[test]
     fn rfe_n_select_equals_n_features() {
         let data = vec![1.0, 2.0, 3.0, 4.0];
-        let result = recursive_feature_elimination(&data, 2, 2, |_d, n| {
-            Ok(vec![1.0; n])
-        })
-        .unwrap();
+        let result = recursive_feature_elimination(&data, 2, 2, |_d, n| Ok(vec![1.0; n])).unwrap();
         assert_eq!(result.selected, vec![0, 1]);
     }
 
@@ -968,10 +916,7 @@ mod tests {
 
     #[test]
     fn rfe_transform_works() {
-        let data = vec![
-            1.0, 2.0, 3.0,
-            4.0, 5.0, 6.0,
-        ];
+        let data = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
         let result = recursive_feature_elimination(&data, 3, 2, |_d, n| {
             // Remove first active feature each time
             let mut imp = vec![1.0; n];
@@ -990,14 +935,7 @@ mod tests {
     fn lasso_selects_informative_features() {
         // y = 2*x0 + 0*x1 (feature 1 is pure noise)
         let data = vec![
-            1.0, 10.0,
-            2.0, 20.0,
-            3.0, 30.0,
-            4.0, 40.0,
-            5.0, 50.0,
-            6.0, 60.0,
-            7.0, 70.0,
-            8.0, 80.0,
+            1.0, 10.0, 2.0, 20.0, 3.0, 30.0, 4.0, 40.0, 5.0, 50.0, 6.0, 60.0, 7.0, 70.0, 8.0, 80.0,
         ];
         let targets: Vec<f64> = (0..8).map(|i| 2.0 * (i + 1) as f64).collect();
 
@@ -1014,19 +952,15 @@ mod tests {
         let targets = vec![2.0, 4.0, 6.0, 8.0, 10.0];
 
         let result = lasso_selection(&data, 1, &targets, 100.0, 100, 1e-8).unwrap();
-        assert!(result.selected.is_empty(), "high alpha should drive all weights to zero");
+        assert!(
+            result.selected.is_empty(),
+            "high alpha should drive all weights to zero"
+        );
     }
 
     #[test]
     fn lasso_zero_alpha_keeps_all() {
-        let data = vec![
-            1.0, 0.0,
-            0.0, 1.0,
-            1.0, 1.0,
-            2.0, 1.0,
-            1.0, 2.0,
-            3.0, 0.0,
-        ];
+        let data = vec![1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0, 3.0, 0.0];
         let targets = vec![1.0, 2.0, 3.0, 3.0, 4.0, 3.0];
 
         let result = lasso_selection(&data, 2, &targets, 0.0, 1000, 1e-10).unwrap();
@@ -1068,10 +1002,7 @@ mod tests {
     #[test]
     fn lasso_transform_shape() {
         let data = vec![
-            1.0, 2.0, 3.0,
-            4.0, 5.0, 6.0,
-            7.0, 8.0, 9.0,
-            10.0, 11.0, 12.0,
+            1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0,
         ];
         let targets = vec![1.0, 4.0, 7.0, 10.0];
 
@@ -1106,12 +1037,8 @@ mod tests {
     fn integration_variance_then_mi() {
         // Pipeline: variance threshold → mutual information on remaining features
         let data = vec![
-            0.0, 5.0, 10.0, 1.0,
-            1.0, 5.0, 11.0, 1.0,
-            2.0, 5.0, 12.0, 1.0,
-            3.0, 5.0, 13.0, 1.0,
-            4.0, 5.0, 14.0, 1.0,
-            5.0, 5.0, 15.0, 1.0,
+            0.0, 5.0, 10.0, 1.0, 1.0, 5.0, 11.0, 1.0, 2.0, 5.0, 12.0, 1.0, 3.0, 5.0, 13.0, 1.0,
+            4.0, 5.0, 14.0, 1.0, 5.0, 5.0, 15.0, 1.0,
         ];
         let labels = vec![0, 0, 0, 1, 1, 1];
 
@@ -1169,14 +1096,8 @@ mod tests {
     fn lasso_multivariate_selection() {
         // y = 1*x0 + 2*x1, x2 is uncorrelated noise (alternating pattern)
         let data = vec![
-            1.0, 0.0, 1.0,
-            0.0, 1.0, -1.0,
-            1.0, 1.0, 1.0,
-            2.0, 0.0, -1.0,
-            0.0, 2.0, 1.0,
-            2.0, 1.0, -1.0,
-            1.0, 2.0, 1.0,
-            2.0, 2.0, -1.0,
+            1.0, 0.0, 1.0, 0.0, 1.0, -1.0, 1.0, 1.0, 1.0, 2.0, 0.0, -1.0, 0.0, 2.0, 1.0, 2.0, 1.0,
+            -1.0, 1.0, 2.0, 1.0, 2.0, 2.0, -1.0,
         ];
         let targets = vec![1.0, 2.0, 3.0, 2.0, 4.0, 4.0, 5.0, 6.0];
 
@@ -1184,11 +1105,13 @@ mod tests {
         // Features 0 and 1 should have non-trivial weights
         assert!(
             result.weights[0].abs() > 0.1,
-            "feature 0 weight {} should be > 0.1", result.weights[0]
+            "feature 0 weight {} should be > 0.1",
+            result.weights[0]
         );
         assert!(
             result.weights[1].abs() > 0.1,
-            "feature 1 weight {} should be > 0.1", result.weights[1]
+            "feature 1 weight {} should be > 0.1",
+            result.weights[1]
         );
     }
 

@@ -60,7 +60,10 @@ pub fn diffusion_map(adata: &mut AnnData, config: &DiffusionConfig) -> Result<Di
     let w = conn.to_dense();
 
     // Compute row sums (degree)
-    let d: Vec<f64> = w.iter().map(|row| row.iter().sum::<f64>().max(1e-15)).collect();
+    let d: Vec<f64> = w
+        .iter()
+        .map(|row| row.iter().sum::<f64>().max(1e-15))
+        .collect();
 
     // Anisotropic diffusion: W' = D^{-α} W D^{-α}
     let mut w_prime = vec![vec![0.0; n]; n];
@@ -89,7 +92,10 @@ pub fn diffusion_map(adata: &mut AnnData, config: &DiffusionConfig) -> Result<Di
 
     // Work with the symmetric matrix: D'^{1/2} T D'^{-1/2} for numerical stability
     let d_sqrt: Vec<f64> = d_prime.iter().map(|&di| di.sqrt()).collect();
-    let d_inv_sqrt: Vec<f64> = d_prime.iter().map(|&di| 1.0 / di.sqrt().max(1e-15)).collect();
+    let d_inv_sqrt: Vec<f64> = d_prime
+        .iter()
+        .map(|&di| 1.0 / di.sqrt().max(1e-15))
+        .collect();
 
     let mut sym = vec![vec![0.0; n]; n];
     for i in 0..n {
@@ -169,11 +175,7 @@ fn power_iteration(matrix: &[Vec<f64>], n: usize, max_iter: usize) -> (f64, Vec<
             break;
         }
 
-        let new_eigenvalue = w
-            .iter()
-            .zip(v.iter())
-            .map(|(wi, vi)| wi * vi)
-            .sum::<f64>();
+        let new_eigenvalue = w.iter().zip(v.iter()).map(|(wi, vi)| wi * vi).sum::<f64>();
 
         // Normalize
         for x in &mut w {
@@ -309,28 +311,29 @@ pub struct PagaResult {
 /// Computes inter-cluster connectivity from `obsp["connectivities"]`
 /// normalized by random expectation. Returns a coarse-grained graph.
 pub fn paga(adata: &AnnData, cluster_key: &str) -> Result<PagaResult> {
-    let conn = adata
-        .get_obsp("connectivities")
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput(
-                "obsp['connectivities'] not found; run neighbors() first".into(),
-            )
-        })?;
+    let conn = adata.get_obsp("connectivities").ok_or_else(|| {
+        CyaneaError::InvalidInput("obsp['connectivities'] not found; run neighbors() first".into())
+    })?;
 
-    let cluster_col = adata
-        .get_obs(cluster_key)
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput(format!("obs['{}'] not found; run clustering first", cluster_key))
-        })?;
+    let cluster_col = adata.get_obs(cluster_key).ok_or_else(|| {
+        CyaneaError::InvalidInput(format!(
+            "obs['{}'] not found; run clustering first",
+            cluster_key
+        ))
+    })?;
 
     let labels: Vec<String> = match cluster_col {
         ColumnData::Strings(v) => v.clone(),
         ColumnData::Numeric(v) => v.iter().map(|x| x.to_string()).collect(),
-        ColumnData::Categorical { codes, categories } => {
-            codes.iter().map(|&c| {
-                categories.get(c as usize).cloned().unwrap_or_else(|| c.to_string())
-            }).collect()
-        }
+        ColumnData::Categorical { codes, categories } => codes
+            .iter()
+            .map(|&c| {
+                categories
+                    .get(c as usize)
+                    .cloned()
+                    .unwrap_or_else(|| c.to_string())
+            })
+            .collect(),
     };
 
     // Build cluster map
@@ -439,16 +442,12 @@ pub fn rna_velocity(adata: &mut AnnData, config: &VelocityConfig) -> Result<()> 
 
     let spliced = adata
         .get_layer("spliced")
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput("layers['spliced'] not found".into())
-        })?
+        .ok_or_else(|| CyaneaError::InvalidInput("layers['spliced'] not found".into()))?
         .clone();
 
     let unspliced = adata
         .get_layer("unspliced")
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput("layers['unspliced'] not found".into())
-        })?
+        .ok_or_else(|| CyaneaError::InvalidInput("layers['unspliced'] not found".into()))?
         .clone();
 
     // Compute per-gene gamma by least-squares regression: u = gamma * s
@@ -641,12 +640,20 @@ mod tests {
 
         let r1 = diffusion_map(
             &mut adata1,
-            &DiffusionConfig { alpha: 0.0, ..Default::default() },
-        ).unwrap();
+            &DiffusionConfig {
+                alpha: 0.0,
+                ..Default::default()
+            },
+        )
+        .unwrap();
         let r2 = diffusion_map(
             &mut adata2,
-            &DiffusionConfig { alpha: 1.0, ..Default::default() },
-        ).unwrap();
+            &DiffusionConfig {
+                alpha: 1.0,
+                ..Default::default()
+            },
+        )
+        .unwrap();
 
         // Different alpha should produce different eigenvalues
         if !r1.eigenvalues.is_empty() && !r2.eigenvalues.is_empty() {
@@ -665,10 +672,28 @@ mod tests {
         let conn = make_connectivity(n, &[(0..n).collect()]);
         adata.add_obsp("connectivities", conn).unwrap();
 
-        diffusion_map(&mut adata, &DiffusionConfig { n_components: 3, ..Default::default() }).unwrap();
-        dpt(&mut adata, &DptConfig { root_cell: 0, ..Default::default() }).unwrap();
+        diffusion_map(
+            &mut adata,
+            &DiffusionConfig {
+                n_components: 3,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        dpt(
+            &mut adata,
+            &DptConfig {
+                root_cell: 0,
+                ..Default::default()
+            },
+        )
+        .unwrap();
 
-        let pt = adata.get_obs("dpt_pseudotime").unwrap().as_numeric().unwrap();
+        let pt = adata
+            .get_obs("dpt_pseudotime")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         assert_eq!(pt.len(), n);
         // Root cell should have pseudotime 0
         assert!((pt[0] - 0.0).abs() < 1e-10);
@@ -683,10 +708,28 @@ mod tests {
         let conn = make_connectivity(n, &[(0..n).collect()]);
         adata.add_obsp("connectivities", conn).unwrap();
 
-        diffusion_map(&mut adata, &DiffusionConfig { n_components: 3, ..Default::default() }).unwrap();
-        dpt(&mut adata, &DptConfig { root_cell: n - 1, ..Default::default() }).unwrap();
+        diffusion_map(
+            &mut adata,
+            &DiffusionConfig {
+                n_components: 3,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        dpt(
+            &mut adata,
+            &DptConfig {
+                root_cell: n - 1,
+                ..Default::default()
+            },
+        )
+        .unwrap();
 
-        let pt = adata.get_obs("dpt_pseudotime").unwrap().as_numeric().unwrap();
+        let pt = adata
+            .get_obs("dpt_pseudotime")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         assert!((pt[n - 1] - 0.0).abs() < 1e-10);
     }
 
@@ -697,7 +740,13 @@ mod tests {
         let conn = make_connectivity(n, &[(0..n).collect()]);
         adata.add_obsp("connectivities", conn).unwrap();
         diffusion_map(&mut adata, &DiffusionConfig::default()).unwrap();
-        let result = dpt(&mut adata, &DptConfig { root_cell: 100, ..Default::default() });
+        let result = dpt(
+            &mut adata,
+            &DptConfig {
+                root_cell: 100,
+                ..Default::default()
+            },
+        );
         assert!(result.is_err());
     }
 
@@ -720,10 +769,28 @@ mod tests {
         }
         adata.add_obsp("connectivities", conn).unwrap();
 
-        diffusion_map(&mut adata, &DiffusionConfig { n_components: 3, ..Default::default() }).unwrap();
-        dpt(&mut adata, &DptConfig { root_cell: 0, ..Default::default() }).unwrap();
+        diffusion_map(
+            &mut adata,
+            &DiffusionConfig {
+                n_components: 3,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        dpt(
+            &mut adata,
+            &DptConfig {
+                root_cell: 0,
+                ..Default::default()
+            },
+        )
+        .unwrap();
 
-        let pt = adata.get_obs("dpt_pseudotime").unwrap().as_numeric().unwrap();
+        let pt = adata
+            .get_obs("dpt_pseudotime")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         // Pseudotime should generally increase along the chain
         assert!(pt[0] < pt[2] || pt[0] < pt[4]);
     }
@@ -737,7 +804,9 @@ mod tests {
         let conn = make_connectivity(n, &[vec![0, 1, 2, 3, 4], vec![5, 6, 7, 8, 9]]);
         adata.add_obsp("connectivities", conn).unwrap();
 
-        let labels: Vec<String> = (0..n).map(|i| if i < 5 { "A".into() } else { "B".into() }).collect();
+        let labels: Vec<String> = (0..n)
+            .map(|i| if i < 5 { "A".into() } else { "B".into() })
+            .collect();
         adata.add_obs("cluster", labels).unwrap();
 
         let result = paga(&adata, "cluster").unwrap();
@@ -760,7 +829,14 @@ mod tests {
         adata.add_obsp("connectivities", conn).unwrap();
 
         let labels: Vec<String> = (0..n)
-            .map(|i| match i / 3 { 0 => "A", 1 => "B", _ => "C" }.into())
+            .map(|i| {
+                match i / 3 {
+                    0 => "A",
+                    1 => "B",
+                    _ => "C",
+                }
+                .into()
+            })
             .collect();
         adata.add_obs("cluster", labels).unwrap();
 
@@ -772,7 +848,12 @@ mod tests {
     #[test]
     fn paga_missing_connectivities() {
         let mut adata = make_adata(5, 2);
-        adata.add_obs("cluster", vec!["A"; 5].into_iter().map(String::from).collect()).unwrap();
+        adata
+            .add_obs(
+                "cluster",
+                vec!["A"; 5].into_iter().map(String::from).collect(),
+            )
+            .unwrap();
         let result = paga(&adata, "cluster");
         assert!(result.is_err());
     }
@@ -793,7 +874,9 @@ mod tests {
         let conn = make_connectivity(n, &[vec![0, 1, 2], vec![3, 4, 5]]);
         adata.add_obsp("connectivities", conn).unwrap();
 
-        let labels: Vec<String> = (0..n).map(|i| if i < 3 { "X".into() } else { "Y".into() }).collect();
+        let labels: Vec<String> = (0..n)
+            .map(|i| if i < 3 { "X".into() } else { "Y".into() })
+            .collect();
         adata.add_obs("cluster", labels).unwrap();
 
         let result = paga(&adata, "cluster").unwrap();
@@ -818,8 +901,12 @@ mod tests {
                 unspliced_data[i][j] = spliced_data[i][j] * 0.5; // gamma = 0.5
             }
         }
-        adata.add_layer("spliced", MatrixData::Dense(spliced_data)).unwrap();
-        adata.add_layer("unspliced", MatrixData::Dense(unspliced_data)).unwrap();
+        adata
+            .add_layer("spliced", MatrixData::Dense(spliced_data))
+            .unwrap();
+        adata
+            .add_layer("unspliced", MatrixData::Dense(unspliced_data))
+            .unwrap();
 
         rna_velocity(&mut adata, &VelocityConfig::default()).unwrap();
 
@@ -833,7 +920,9 @@ mod tests {
                 assert!(
                     vel.get(i, j).abs() < 1e-10,
                     "velocity[{},{}] = {} (expected ~0)",
-                    i, j, vel.get(i, j)
+                    i,
+                    j,
+                    vel.get(i, j)
                 );
             }
         }
@@ -846,10 +935,21 @@ mod tests {
 
         let spliced = vec![vec![1.0, 2.0]; n];
         let unspliced = vec![vec![5.0, 10.0]; n]; // u > gamma*s → positive velocity
-        adata.add_layer("spliced", MatrixData::Dense(spliced)).unwrap();
-        adata.add_layer("unspliced", MatrixData::Dense(unspliced)).unwrap();
+        adata
+            .add_layer("spliced", MatrixData::Dense(spliced))
+            .unwrap();
+        adata
+            .add_layer("unspliced", MatrixData::Dense(unspliced))
+            .unwrap();
 
-        rna_velocity(&mut adata, &VelocityConfig { min_counts: 0, ..Default::default() }).unwrap();
+        rna_velocity(
+            &mut adata,
+            &VelocityConfig {
+                min_counts: 0,
+                ..Default::default()
+            },
+        )
+        .unwrap();
 
         // Gamma should be u·s / s·s per gene
         // For all-same-value data: gamma = 5*1/(1*1) = 5, velocity = 5 - 5*1 = 0
@@ -861,7 +961,9 @@ mod tests {
     #[test]
     fn velocity_missing_spliced() {
         let mut adata = make_adata(5, 2);
-        adata.add_layer("unspliced", MatrixData::Dense(vec![vec![1.0, 2.0]; 5])).unwrap();
+        adata
+            .add_layer("unspliced", MatrixData::Dense(vec![vec![1.0, 2.0]; 5]))
+            .unwrap();
         let result = rna_velocity(&mut adata, &VelocityConfig::default());
         assert!(result.is_err());
     }
@@ -869,7 +971,9 @@ mod tests {
     #[test]
     fn velocity_missing_unspliced() {
         let mut adata = make_adata(5, 2);
-        adata.add_layer("spliced", MatrixData::Dense(vec![vec![1.0, 2.0]; 5])).unwrap();
+        adata
+            .add_layer("spliced", MatrixData::Dense(vec![vec![1.0, 2.0]; 5]))
+            .unwrap();
         let result = rna_velocity(&mut adata, &VelocityConfig::default());
         assert!(result.is_err());
     }
@@ -881,8 +985,12 @@ mod tests {
         // Gene 0: high counts, Gene 1: very low counts
         let spliced = vec![vec![10.0, 0.001]; n];
         let unspliced = vec![vec![5.0, 0.001]; n];
-        adata.add_layer("spliced", MatrixData::Dense(spliced)).unwrap();
-        adata.add_layer("unspliced", MatrixData::Dense(unspliced)).unwrap();
+        adata
+            .add_layer("spliced", MatrixData::Dense(spliced))
+            .unwrap();
+        adata
+            .add_layer("unspliced", MatrixData::Dense(unspliced))
+            .unwrap();
 
         rna_velocity(
             &mut adata,
@@ -912,10 +1020,21 @@ mod tests {
                 unspliced[i][j] = spliced[i][j] * 0.3 + (i as f64) * 0.1;
             }
         }
-        adata.add_layer("spliced", MatrixData::Dense(spliced)).unwrap();
-        adata.add_layer("unspliced", MatrixData::Dense(unspliced)).unwrap();
+        adata
+            .add_layer("spliced", MatrixData::Dense(spliced))
+            .unwrap();
+        adata
+            .add_layer("unspliced", MatrixData::Dense(unspliced))
+            .unwrap();
 
-        rna_velocity(&mut adata, &VelocityConfig { min_counts: 0, ..Default::default() }).unwrap();
+        rna_velocity(
+            &mut adata,
+            &VelocityConfig {
+                min_counts: 0,
+                ..Default::default()
+            },
+        )
+        .unwrap();
 
         let vg = adata.get_obsp("velocity_graph").unwrap();
         assert!(vg.nnz() > 0, "velocity graph should have entries");
@@ -935,10 +1054,28 @@ mod tests {
         }
         adata.add_obsp("connectivities", conn).unwrap();
 
-        diffusion_map(&mut adata, &DiffusionConfig { n_components: 3, ..Default::default() }).unwrap();
-        dpt(&mut adata, &DptConfig { root_cell: 0, ..Default::default() }).unwrap();
+        diffusion_map(
+            &mut adata,
+            &DiffusionConfig {
+                n_components: 3,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        dpt(
+            &mut adata,
+            &DptConfig {
+                root_cell: 0,
+                ..Default::default()
+            },
+        )
+        .unwrap();
 
-        let pt = adata.get_obs("dpt_pseudotime").unwrap().as_numeric().unwrap();
+        let pt = adata
+            .get_obs("dpt_pseudotime")
+            .unwrap()
+            .as_numeric()
+            .unwrap();
         assert_eq!(pt.len(), n);
         assert!(pt[0].abs() < 1e-10, "root pseudotime should be 0");
         assert!(pt.iter().all(|&v| v >= 0.0 && v <= 1.0));

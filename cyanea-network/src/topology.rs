@@ -69,7 +69,11 @@ pub fn closeness_centrality(graph: &Graph) -> Result<CentralityResult> {
         return Ok(CentralityResult { scores });
     }
 
-    let ids: Vec<String> = graph.node_ids().into_iter().map(|s| s.to_string()).collect();
+    let ids: Vec<String> = graph
+        .node_ids()
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
     let mut scores = HashMap::new();
 
     for id in &ids {
@@ -81,8 +85,7 @@ pub fn closeness_centrality(graph: &Graph) -> Result<CentralityResult> {
             let sum_dist: usize = dists.values().sum();
             // Wasserman-Faust normalization for disconnected graphs
             let closeness = if sum_dist > 0 {
-                (reachable as f64) / (sum_dist as f64)
-                    * (reachable as f64 / (n - 1) as f64)
+                (reachable as f64) / (sum_dist as f64) * (reachable as f64 / (n - 1) as f64)
             } else {
                 0.0
             };
@@ -99,7 +102,11 @@ pub fn closeness_centrality(graph: &Graph) -> Result<CentralityResult> {
 /// 1/((n-1)(n-2)) for directed graphs and 2/((n-1)(n-2)) for undirected.
 pub fn betweenness_centrality(graph: &Graph) -> Result<CentralityResult> {
     let n = graph.node_count();
-    let ids: Vec<String> = graph.node_ids().into_iter().map(|s| s.to_string()).collect();
+    let ids: Vec<String> = graph
+        .node_ids()
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
     let mut cb: HashMap<String, f64> = ids.iter().map(|id| (id.clone(), 0.0)).collect();
 
     if n <= 2 {
@@ -150,12 +157,8 @@ pub fn betweenness_centrality(graph: &Graph) -> Result<CentralityResult> {
 
     // Normalize
     let norm = match graph.graph_type {
-        crate::graph::GraphType::Directed => {
-            ((n - 1) * (n - 2)) as f64
-        }
-        crate::graph::GraphType::Undirected => {
-            ((n - 1) * (n - 2)) as f64 / 2.0
-        }
+        crate::graph::GraphType::Directed => ((n - 1) * (n - 2)) as f64,
+        crate::graph::GraphType::Undirected => ((n - 1) * (n - 2)) as f64 / 2.0,
     };
 
     if norm > 0.0 {
@@ -184,12 +187,19 @@ pub fn pagerank(
         });
     }
 
-    let ids: Vec<String> = graph.node_ids().into_iter().map(|s| s.to_string()).collect();
-    let mut rank: HashMap<String, f64> = ids.iter().map(|id| (id.clone(), 1.0 / n as f64)).collect();
+    let ids: Vec<String> = graph
+        .node_ids()
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
+    let mut rank: HashMap<String, f64> =
+        ids.iter().map(|id| (id.clone(), 1.0 / n as f64)).collect();
 
     for _ in 0..max_iter {
-        let mut new_rank: HashMap<String, f64> =
-            ids.iter().map(|id| (id.clone(), (1.0 - damping) / n as f64)).collect();
+        let mut new_rank: HashMap<String, f64> = ids
+            .iter()
+            .map(|id| (id.clone(), (1.0 - damping) / n as f64))
+            .collect();
 
         // Accumulate dangling node mass
         let mut dangling_sum = 0.0;
@@ -365,14 +375,16 @@ pub fn connected_components(graph: &Graph) -> Vec<HashSet<String>> {
 /// Returns None if no path exists.
 pub fn shortest_path(graph: &Graph, source: &str, target: &str) -> Result<Option<Vec<String>>> {
     if !graph.nodes.contains_key(source) {
-        return Err(cyanea_core::CyaneaError::InvalidInput(
-            format!("source '{}' not found", source),
-        ));
+        return Err(cyanea_core::CyaneaError::InvalidInput(format!(
+            "source '{}' not found",
+            source
+        )));
     }
     if !graph.nodes.contains_key(target) {
-        return Err(cyanea_core::CyaneaError::InvalidInput(
-            format!("target '{}' not found", target),
-        ));
+        return Err(cyanea_core::CyaneaError::InvalidInput(format!(
+            "target '{}' not found",
+            target
+        )));
     }
 
     if source == target {

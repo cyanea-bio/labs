@@ -378,9 +378,7 @@ impl FracMinHash {
             ));
         }
         if scale == 0 {
-            return Err(CyaneaError::InvalidInput(
-                "scale must be at least 1".into(),
-            ));
+            return Err(CyaneaError::InvalidInput("scale must be at least 1".into()));
         }
         let max_hash = u64::MAX / scale;
         Ok(Self {
@@ -628,11 +626,7 @@ mod tests {
         let a = MinHash::from_sequence(seq, 7, 100).unwrap();
         let b = MinHash::from_sequence(seq, 7, 100).unwrap();
         let j = a.jaccard(&b).unwrap();
-        assert!(
-            (j - 1.0).abs() < 1e-10,
-            "expected Jaccard ~1.0, got {}",
-            j
-        );
+        assert!((j - 1.0).abs() < 1e-10, "expected Jaccard ~1.0, got {}", j);
     }
 
     // --- MinHash: disjoint sequences ---
@@ -681,11 +675,7 @@ mod tests {
         let a = MinHash::from_sequence(seq_a, 5, 1000).unwrap();
         let b = MinHash::from_sequence(seq_b, 5, 1000).unwrap();
         let c = a.containment(&b).unwrap();
-        assert!(
-            c > 0.9,
-            "expected containment ~1.0 for subset, got {}",
-            c
-        );
+        assert!(c > 0.9, "expected containment ~1.0 for subset, got {}", c);
     }
 
     // --- MinHash: ANI of identical sequences ---
@@ -696,11 +686,7 @@ mod tests {
         let a = MinHash::from_sequence(seq, 7, 100).unwrap();
         let b = MinHash::from_sequence(seq, 7, 100).unwrap();
         let ani = a.ani(&b).unwrap();
-        assert!(
-            (ani - 1.0).abs() < 1e-10,
-            "expected ANI ~1.0, got {}",
-            ani
-        );
+        assert!((ani - 1.0).abs() < 1e-10, "expected ANI ~1.0, got {}", ani);
     }
 
     // --- MinHash: incompatible k error ---
@@ -756,11 +742,7 @@ mod tests {
         let a = FracMinHash::from_sequence(seq, 7, 2).unwrap();
         let b = FracMinHash::from_sequence(seq, 7, 2).unwrap();
         let j = a.jaccard(&b).unwrap();
-        assert!(
-            (j - 1.0).abs() < 1e-10,
-            "expected Jaccard ~1.0, got {}",
-            j
-        );
+        assert!((j - 1.0).abs() < 1e-10, "expected Jaccard ~1.0, got {}", j);
     }
 
     // --- FracMinHash: containment ---
@@ -772,11 +754,7 @@ mod tests {
         let a = FracMinHash::from_sequence(seq_a, 5, 1).unwrap();
         let b = FracMinHash::from_sequence(seq_b, 5, 1).unwrap();
         let c = a.containment(&b).unwrap();
-        assert!(
-            c > 0.9,
-            "expected containment ~1.0 for subset, got {}",
-            c
-        );
+        assert!(c > 0.9, "expected containment ~1.0 for subset, got {}", c);
     }
 
     // --- FracMinHash: incompatible parameters error ---

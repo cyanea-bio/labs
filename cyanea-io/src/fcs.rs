@@ -104,7 +104,10 @@ pub fn parse_fcs(data: &[u8]) -> Result<FcsFile> {
         .to_string();
 
     if !version.starts_with("FCS") {
-        return Err(CyaneaError::Parse(format!("Not an FCS file: '{}'", version)));
+        return Err(CyaneaError::Parse(format!(
+            "Not an FCS file: '{}'",
+            version
+        )));
     }
 
     // Offsets (ASCII integers, right-justified in 8-byte fields)
@@ -141,39 +144,53 @@ pub fn parse_fcs(data: &[u8]) -> Result<FcsFile> {
     };
 
     // Parse parameters
-    let n_params = text.get("$PAR")
+    let n_params = text
+        .get("$PAR")
         .and_then(|v| v.trim().parse::<usize>().ok())
         .ok_or_else(|| CyaneaError::Parse("Missing $PAR keyword".into()))?;
 
-    let n_events = text.get("$TOT")
+    let n_events = text
+        .get("$TOT")
         .and_then(|v| v.trim().parse::<usize>().ok())
         .ok_or_else(|| CyaneaError::Parse("Missing $TOT keyword".into()))?;
 
     let mut parameters = Vec::with_capacity(n_params);
     for i in 1..=n_params {
-        let name = text.get(&format!("$P{}N", i))
+        let name = text
+            .get(&format!("$P{}N", i))
             .cloned()
             .unwrap_or_else(|| format!("P{}", i));
         let stain = text.get(&format!("$P{}S", i)).cloned();
-        let bits = text.get(&format!("$P{}B", i))
+        let bits = text
+            .get(&format!("$P{}B", i))
             .and_then(|v| v.trim().parse().ok())
             .unwrap_or(32);
-        let range = text.get(&format!("$P{}R", i))
+        let range = text
+            .get(&format!("$P{}R", i))
             .and_then(|v| v.trim().parse().ok())
             .unwrap_or(262144.0);
-        let amplification = text.get(&format!("$P{}E", i))
+        let amplification = text
+            .get(&format!("$P{}E", i))
             .map(|v| parse_amplification(v))
             .unwrap_or((0.0, 0.0));
 
-        parameters.push(FcsParameter { name, stain, bits, range, amplification });
+        parameters.push(FcsParameter {
+            name,
+            stain,
+            bits,
+            range,
+            amplification,
+        });
     }
 
     // Parse DATA segment
-    let datatype = text.get("$DATATYPE")
+    let datatype = text
+        .get("$DATATYPE")
         .map(|s| s.trim().to_uppercase())
         .unwrap_or_else(|| "F".into());
 
-    let byteord = text.get("$BYTEORD")
+    let byteord = text
+        .get("$BYTEORD")
         .map(|s| s.trim().to_string())
         .unwrap_or_else(|| "1,2,3,4".into());
 
@@ -217,7 +234,10 @@ pub fn write_fcs(fcs: &FcsFile) -> Result<Vec<u8>> {
         }
         text_pairs.push((format!("$P{}B", idx), p.bits.to_string()));
         text_pairs.push((format!("$P{}R", idx), format!("{}", p.range as u64)));
-        text_pairs.push((format!("$P{}E", idx), format!("{},{}", p.amplification.0, p.amplification.1)));
+        text_pairs.push((
+            format!("$P{}E", idx),
+            format!("{},{}", p.amplification.0, p.amplification.1),
+        ));
     }
 
     let sep = '/';
@@ -254,7 +274,11 @@ pub fn write_fcs(fcs: &FcsFile) -> Result<Vec<u8>> {
     let text_bytes = full_text.as_bytes();
     let text_end = text_start + text_bytes.len() - 1;
     let data_start = text_end + 1;
-    let data_end = if data_size > 0 { data_start + data_size - 1 } else { data_start };
+    let data_end = if data_size > 0 {
+        data_start + data_size - 1
+    } else {
+        data_start
+    };
 
     // Build output
     let total_size = data_end + 1;
@@ -300,7 +324,8 @@ pub fn fcs_stats(fcs: &FcsFile) -> FcsStats {
 fn parse_offset(field: &[u8]) -> Result<u64> {
     let s = std::str::from_utf8(field)
         .map_err(|_| CyaneaError::Parse("Invalid offset field".into()))?;
-    s.trim().parse::<u64>()
+    s.trim()
+        .parse::<u64>()
         .map_err(|_| CyaneaError::Parse(format!("Invalid offset: '{}'", s.trim())))
 }
 
@@ -390,13 +415,25 @@ fn parse_data_segment(
                     let o = offset + j * 8;
                     let val = if little_endian {
                         f64::from_le_bytes([
-                            data[o], data[o + 1], data[o + 2], data[o + 3],
-                            data[o + 4], data[o + 5], data[o + 6], data[o + 7],
+                            data[o],
+                            data[o + 1],
+                            data[o + 2],
+                            data[o + 3],
+                            data[o + 4],
+                            data[o + 5],
+                            data[o + 6],
+                            data[o + 7],
                         ])
                     } else {
                         f64::from_be_bytes([
-                            data[o], data[o + 1], data[o + 2], data[o + 3],
-                            data[o + 4], data[o + 5], data[o + 6], data[o + 7],
+                            data[o],
+                            data[o + 1],
+                            data[o + 2],
+                            data[o + 3],
+                            data[o + 4],
+                            data[o + 5],
+                            data[o + 6],
+                            data[o + 7],
                         ])
                     };
                     event.push(val);
@@ -429,13 +466,17 @@ fn parse_data_segment(
                         32 => {
                             if little_endian {
                                 u32::from_le_bytes([
-                                    data[byte_off], data[byte_off + 1],
-                                    data[byte_off + 2], data[byte_off + 3],
+                                    data[byte_off],
+                                    data[byte_off + 1],
+                                    data[byte_off + 2],
+                                    data[byte_off + 3],
                                 ]) as f64
                             } else {
                                 u32::from_be_bytes([
-                                    data[byte_off], data[byte_off + 1],
-                                    data[byte_off + 2], data[byte_off + 3],
+                                    data[byte_off],
+                                    data[byte_off + 1],
+                                    data[byte_off + 2],
+                                    data[byte_off + 3],
                                 ]) as f64
                             }
                         }
@@ -452,7 +493,8 @@ fn parse_data_segment(
             let text = std::str::from_utf8(data)
                 .map_err(|_| CyaneaError::Parse("Invalid ASCII DATA segment".into()))?;
             for line in text.lines().take(n_events) {
-                let event: Vec<f64> = line.split_whitespace()
+                let event: Vec<f64> = line
+                    .split_whitespace()
                     .filter_map(|s| s.parse().ok())
                     .collect();
                 if event.len() == n_params {
@@ -461,7 +503,10 @@ fn parse_data_segment(
             }
         }
         _ => {
-            return Err(CyaneaError::Parse(format!("Unknown $DATATYPE: '{}'", datatype)));
+            return Err(CyaneaError::Parse(format!(
+                "Unknown $DATATYPE: '{}'",
+                datatype
+            )));
         }
     }
 
@@ -481,11 +526,7 @@ mod tests {
 
         let params: Vec<String> = (0..n_params).map(|i| format!("P{}", i + 1)).collect();
 
-        let pairs = vec![
-            ("$DATATYPE", "F"),
-            ("$MODE", "L"),
-            ("$BYTEORD", "1,2,3,4"),
-        ];
+        let pairs = vec![("$DATATYPE", "F"), ("$MODE", "L"), ("$BYTEORD", "1,2,3,4")];
         for (k, v) in &pairs {
             text.push_str(k);
             text.push(sep);
@@ -525,7 +566,11 @@ mod tests {
         let text_end = text_start + text_bytes.len() - 1;
         let data_start = text_end + 1;
         let data_size = values.len() * 4;
-        let data_end = if data_size > 0 { data_start + data_size - 1 } else { data_start };
+        let data_end = if data_size > 0 {
+            data_start + data_size - 1
+        } else {
+            data_start
+        };
 
         // Add data offsets to text
         let mut full_text = text.clone();
@@ -541,7 +586,11 @@ mod tests {
         let text_bytes = full_text.as_bytes();
         let text_end = text_start + text_bytes.len() - 1;
         let data_start = text_end + 1;
-        let data_end = if data_size > 0 { data_start + data_size - 1 } else { data_start };
+        let data_end = if data_size > 0 {
+            data_start + data_size - 1
+        } else {
+            data_start
+        };
 
         let total_size = data_end + 1;
         let mut buf = vec![0u8; total_size.max(256)];
@@ -571,9 +620,9 @@ mod tests {
     #[test]
     fn test_parse_basic_fcs() {
         let values: Vec<f32> = vec![
-            100.0, 200.0, 300.0,  // event 1
-            150.0, 250.0, 350.0,  // event 2
-            120.0, 220.0, 320.0,  // event 3
+            100.0, 200.0, 300.0, // event 1
+            150.0, 250.0, 350.0, // event 2
+            120.0, 220.0, 320.0, // event 3
         ];
         let data = make_test_fcs(3, 3, &values);
         let fcs = parse_fcs(&data).unwrap();
@@ -588,10 +637,7 @@ mod tests {
 
     #[test]
     fn test_event_values() {
-        let values: Vec<f32> = vec![
-            10.0, 20.0,
-            30.0, 40.0,
-        ];
+        let values: Vec<f32> = vec![10.0, 20.0, 30.0, 40.0];
         let data = make_test_fcs(2, 2, &values);
         let fcs = parse_fcs(&data).unwrap();
 

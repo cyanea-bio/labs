@@ -77,13 +77,10 @@ impl IndexedVcfReader {
     /// Coordinates are 0-based, half-open `[start, end)`.
     /// VCF internally uses 1-based positions; conversion is handled automatically.
     pub fn fetch(&mut self, chrom: &str, start: u64, end: u64) -> Result<Vec<Variant>> {
-        let start_pos =
-            noodles_core::Position::try_from((start + 1) as usize).map_err(|_| {
-                CyaneaError::InvalidInput(format!("invalid start position: {}", start))
-            })?;
-        let end_pos = noodles_core::Position::try_from(end as usize).map_err(|_| {
-            CyaneaError::InvalidInput(format!("invalid end position: {}", end))
-        })?;
+        let start_pos = noodles_core::Position::try_from((start + 1) as usize)
+            .map_err(|_| CyaneaError::InvalidInput(format!("invalid start position: {}", start)))?;
+        let end_pos = noodles_core::Position::try_from(end as usize)
+            .map_err(|_| CyaneaError::InvalidInput(format!("invalid end position: {}", end)))?;
 
         let region = noodles_core::Region::new(chrom, start_pos..=end_pos);
 
@@ -94,8 +91,8 @@ impl IndexedVcfReader {
 
         let mut variants = Vec::new();
         for result in query {
-            let noodles_rec = result
-                .map_err(|e| CyaneaError::Parse(format!("error reading VCF record: {e}")))?;
+            let noodles_rec =
+                result.map_err(|e| CyaneaError::Parse(format!("error reading VCF record: {e}")))?;
 
             let variant = convert_noodles_vcf_record(&noodles_rec, &self.header)?;
             variants.push(variant);
@@ -156,7 +153,10 @@ fn convert_noodles_vcf_record(
         })
         .collect();
 
-    let quality = record.quality_score().and_then(|r| r.ok()).map(|q| q as f64);
+    let quality = record
+        .quality_score()
+        .and_then(|r| r.ok())
+        .map(|q| q as f64);
 
     let filters = record.filters();
     let filter = if filters.is_empty() {
@@ -190,9 +190,7 @@ mod tests {
     use std::io::Write;
 
     /// Write a bgzipped VCF file and its tabix index.
-    fn write_indexed_vcf(
-        vcf_content: &str,
-    ) -> (tempfile::NamedTempFile, tempfile::NamedTempFile) {
+    fn write_indexed_vcf(vcf_content: &str) -> (tempfile::NamedTempFile, tempfile::NamedTempFile) {
         // Write bgzipped VCF
         let mut vcf_gz_file = tempfile::NamedTempFile::with_suffix(".vcf.gz").unwrap();
         {
@@ -224,8 +222,7 @@ chr1\t500\t.\tG\tA\t50.0\tPASS\t.
 chr2\t100\t.\tT\tC\t25.0\tPASS\t.
 ";
         let (vcf_gz, tbi) = write_indexed_vcf(vcf);
-        let mut reader =
-            IndexedVcfReader::open_with_index(vcf_gz.path(), tbi.path()).unwrap();
+        let mut reader = IndexedVcfReader::open_with_index(vcf_gz.path(), tbi.path()).unwrap();
 
         let results = reader.fetch("chr1", 50, 250).unwrap();
         assert_eq!(results.len(), 2);
@@ -242,8 +239,7 @@ chr2\t100\t.\tT\tC\t25.0\tPASS\t.
 chr1\t100\t.\tA\tG\t30.0\tPASS\t.
 ";
         let (vcf_gz, tbi) = write_indexed_vcf(vcf);
-        let mut reader =
-            IndexedVcfReader::open_with_index(vcf_gz.path(), tbi.path()).unwrap();
+        let mut reader = IndexedVcfReader::open_with_index(vcf_gz.path(), tbi.path()).unwrap();
 
         let results = reader.fetch("chr1", 10000, 20000).unwrap();
         assert!(results.is_empty());
@@ -258,8 +254,7 @@ chr1\t100\t.\tA\tG\t30.0\tPASS\t.
 chr1\t100\trs123\tA\tG\t30.0\tPASS\t.
 ";
         let (vcf_gz, tbi) = write_indexed_vcf(vcf);
-        let mut reader =
-            IndexedVcfReader::open_with_index(vcf_gz.path(), tbi.path()).unwrap();
+        let mut reader = IndexedVcfReader::open_with_index(vcf_gz.path(), tbi.path()).unwrap();
 
         let results = reader.fetch("chr1", 0, 200).unwrap();
         assert_eq!(results.len(), 1);
@@ -282,8 +277,7 @@ chr1\t100\t.\tA\tG\t30.0\tPASS\t.
 chr2\t100\t.\tT\tC\t25.0\tPASS\t.
 ";
         let (vcf_gz, tbi) = write_indexed_vcf(vcf);
-        let mut reader =
-            IndexedVcfReader::open_with_index(vcf_gz.path(), tbi.path()).unwrap();
+        let mut reader = IndexedVcfReader::open_with_index(vcf_gz.path(), tbi.path()).unwrap();
 
         let chr1_results = reader.fetch("chr1", 0, 200).unwrap();
         assert_eq!(chr1_results.len(), 1);

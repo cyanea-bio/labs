@@ -189,16 +189,28 @@ mod tests {
     #[test]
     fn encode_decode_all_bases() {
         let original = b"AAAA";
-        assert_eq!(TwoBitSequence::encode(original).unwrap().decode(), original.to_vec());
+        assert_eq!(
+            TwoBitSequence::encode(original).unwrap().decode(),
+            original.to_vec()
+        );
 
         let original = b"CCCC";
-        assert_eq!(TwoBitSequence::encode(original).unwrap().decode(), original.to_vec());
+        assert_eq!(
+            TwoBitSequence::encode(original).unwrap().decode(),
+            original.to_vec()
+        );
 
         let original = b"GGGG";
-        assert_eq!(TwoBitSequence::encode(original).unwrap().decode(), original.to_vec());
+        assert_eq!(
+            TwoBitSequence::encode(original).unwrap().decode(),
+            original.to_vec()
+        );
 
         let original = b"TTTT";
-        assert_eq!(TwoBitSequence::encode(original).unwrap().decode(), original.to_vec());
+        assert_eq!(
+            TwoBitSequence::encode(original).unwrap().decode(),
+            original.to_vec()
+        );
     }
 
     #[test]

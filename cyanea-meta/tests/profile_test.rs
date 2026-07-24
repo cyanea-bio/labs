@@ -1,7 +1,6 @@
 /// Integration tests for profile module.
-
 use cyanea_meta::profile::{
-    profile_from_classifications, filter_profile, normalize_profile, merge_profiles,
+    filter_profile, merge_profiles, normalize_profile, profile_from_classifications,
 };
 
 #[test]

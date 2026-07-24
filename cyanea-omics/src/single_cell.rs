@@ -57,9 +57,11 @@ impl MatrixData {
     /// Get a value at (obs_idx, var_idx).
     pub fn get(&self, obs: usize, var: usize) -> f64 {
         match self {
-            MatrixData::Dense(rows) => {
-                rows.get(obs).and_then(|r| r.get(var)).copied().unwrap_or(0.0)
-            }
+            MatrixData::Dense(rows) => rows
+                .get(obs)
+                .and_then(|r| r.get(var))
+                .copied()
+                .unwrap_or(0.0),
             MatrixData::Sparse(s) => s.get(obs, var),
         }
     }
@@ -199,9 +201,7 @@ impl ColumnData {
             ColumnData::Strings(v) => {
                 ColumnData::Strings(indices.iter().map(|&i| v[i].clone()).collect())
             }
-            ColumnData::Numeric(v) => {
-                ColumnData::Numeric(indices.iter().map(|&i| v[i]).collect())
-            }
+            ColumnData::Numeric(v) => ColumnData::Numeric(indices.iter().map(|&i| v[i]).collect()),
             ColumnData::Categorical { codes, categories } => ColumnData::Categorical {
                 codes: indices.iter().map(|&i| codes[i]).collect(),
                 categories: categories.clone(),
@@ -250,11 +250,7 @@ impl AnnData {
     /// # Errors
     ///
     /// Returns an error if the matrix dimensions don't match the name vectors.
-    pub fn new(
-        x: MatrixData,
-        obs_names: Vec<String>,
-        var_names: Vec<String>,
-    ) -> Result<Self> {
+    pub fn new(x: MatrixData, obs_names: Vec<String>, var_names: Vec<String>) -> Result<Self> {
         let (n_obs, n_vars) = x.shape();
         if obs_names.len() != n_obs {
             return Err(CyaneaError::InvalidInput(format!(
@@ -479,7 +475,10 @@ impl AnnData {
         if n_obs != self.n_obs() || n_vars != self.n_vars() {
             return Err(CyaneaError::InvalidInput(format!(
                 "new X shape ({}, {}) does not match ({}, {})",
-                n_obs, n_vars, self.n_obs(), self.n_vars()
+                n_obs,
+                n_vars,
+                self.n_obs(),
+                self.n_vars()
             )));
         }
         self.x = new_x;
@@ -492,7 +491,8 @@ impl AnnData {
             if i >= self.n_vars() {
                 return Err(CyaneaError::InvalidInput(format!(
                     "var index {} out of bounds (n_vars={})",
-                    i, self.n_vars()
+                    i,
+                    self.n_vars()
                 )));
             }
         }
@@ -530,7 +530,10 @@ impl AnnData {
         if r != self.n_obs() || c != self.n_obs() {
             return Err(CyaneaError::InvalidInput(format!(
                 "obsp '{}' shape ({}, {}) does not match n_obs ({})",
-                key, r, c, self.n_obs()
+                key,
+                r,
+                c,
+                self.n_obs()
             )));
         }
         self.obsp.insert(key.to_string(), matrix);
@@ -795,10 +798,7 @@ mod tests {
     fn subset_obs() {
         let mut adata = sample_adata();
         adata
-            .add_obs(
-                "label",
-                vec!["a".into(), "b".into(), "c".into()],
-            )
+            .add_obs("label", vec!["a".into(), "b".into(), "c".into()])
             .unwrap();
         let sub = adata.subset_obs(&[0, 2]).unwrap();
         assert_eq!(sub.n_obs(), 2);
@@ -818,14 +818,7 @@ mod tests {
 
     #[test]
     fn sparse_x() {
-        let s = SparseMatrix::from_triplets(
-            vec![0, 1],
-            vec![0, 1],
-            vec![5.0, 10.0],
-            2,
-            2,
-        )
-        .unwrap();
+        let s = SparseMatrix::from_triplets(vec![0, 1], vec![0, 1], vec![5.0, 10.0], 2, 2).unwrap();
         let x = MatrixData::Sparse(s);
         let adata = AnnData::new(
             x,
@@ -865,19 +858,13 @@ mod tests {
 
     #[test]
     fn matrix_data_column_sums_dense() {
-        let x = MatrixData::Dense(vec![
-            vec![1.0, 2.0, 3.0],
-            vec![4.0, 5.0, 6.0],
-        ]);
+        let x = MatrixData::Dense(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
         assert_eq!(x.column_sums(), vec![5.0, 7.0, 9.0]);
     }
 
     #[test]
     fn matrix_data_column_means_dense() {
-        let x = MatrixData::Dense(vec![
-            vec![2.0, 4.0],
-            vec![6.0, 8.0],
-        ]);
+        let x = MatrixData::Dense(vec![vec![2.0, 4.0], vec![6.0, 8.0]]);
         let means = x.column_means();
         assert!((means[0] - 4.0).abs() < 1e-10);
         assert!((means[1] - 6.0).abs() < 1e-10);
@@ -885,10 +872,7 @@ mod tests {
 
     #[test]
     fn matrix_data_row_sums_dense() {
-        let x = MatrixData::Dense(vec![
-            vec![1.0, 2.0, 3.0],
-            vec![4.0, 5.0, 6.0],
-        ]);
+        let x = MatrixData::Dense(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
         assert_eq!(x.row_sums(), vec![6.0, 15.0]);
     }
 
@@ -900,14 +884,7 @@ mod tests {
 
     #[test]
     fn matrix_data_to_flat_row_major_sparse() {
-        let s = SparseMatrix::from_triplets(
-            vec![0, 1],
-            vec![1, 0],
-            vec![2.0, 3.0],
-            2,
-            2,
-        )
-        .unwrap();
+        let s = SparseMatrix::from_triplets(vec![0, 1], vec![1, 0], vec![2.0, 3.0], 2, 2).unwrap();
         let x = MatrixData::Sparse(s);
         assert_eq!(x.to_flat_row_major(), vec![0.0, 2.0, 3.0, 0.0]);
     }
@@ -941,7 +918,9 @@ mod tests {
     #[test]
     fn subset_vars_basic() {
         let mut adata = sample_adata();
-        adata.add_var("type", vec!["a".into(), "b".into(), "c".into()]).unwrap();
+        adata
+            .add_var("type", vec!["a".into(), "b".into(), "c".into()])
+            .unwrap();
         let sub = adata.subset_vars(&[0, 2]).unwrap();
         assert_eq!(sub.n_vars(), 2);
         assert_eq!(sub.n_obs(), 3);

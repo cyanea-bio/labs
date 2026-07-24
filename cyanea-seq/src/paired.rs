@@ -150,15 +150,13 @@ pub fn validate_mate_pair_strict(r1: &FastqRecord, r2: &FastqRecord) -> Result<(
 
 /// Convert raw needletail record fields into a [`FastqRecord`].
 fn record_from_parts(id: &[u8], seq: &[u8], qual: Option<&[u8]>) -> Result<FastqRecord> {
-    let raw_id =
-        std::str::from_utf8(id).map_err(|e| CyaneaError::Parse(e.to_string()))?;
+    let raw_id = std::str::from_utf8(id).map_err(|e| CyaneaError::Parse(e.to_string()))?;
     let (name, description) = match raw_id.split_once(char::is_whitespace) {
         Some((n, d)) => (n.to_string(), Some(d.to_string())),
         None => (raw_id.to_string(), None),
     };
     let sequence = DnaSequence::new(seq)?;
-    let qual_bytes =
-        qual.ok_or_else(|| CyaneaError::Parse("missing quality scores".into()))?;
+    let qual_bytes = qual.ok_or_else(|| CyaneaError::Parse("missing quality scores".into()))?;
     let quality = QualityScores::from_ascii(qual_bytes, PhredEncoding::Phred33)?;
     FastqRecord::new(name, description, sequence, quality)
 }
@@ -255,9 +253,7 @@ pub fn parse_interleaved_fastq(
         let r2 = reader
             .next()
             .ok_or_else(|| {
-                CyaneaError::InvalidInput(
-                    "odd number of records in interleaved FASTQ".into(),
-                )
+                CyaneaError::InvalidInput("odd number of records in interleaved FASTQ".into())
             })?
             .map_err(|e| CyaneaError::Parse(e.to_string()))?;
         let r2_rec = record_from_parts(r2.id(), &r2.seq(), r2.qual())?;
@@ -434,9 +430,7 @@ pub fn deinterleave_fastq_file(
         let r2 = reader
             .next()
             .ok_or_else(|| {
-                CyaneaError::InvalidInput(
-                    "odd number of records in interleaved FASTQ".into(),
-                )
+                CyaneaError::InvalidInput("odd number of records in interleaved FASTQ".into())
             })?
             .map_err(|e| CyaneaError::Parse(e.to_string()))?;
         let r2_rec = record_from_parts(r2.id(), &r2.seq(), r2.qual())?;
@@ -473,12 +467,7 @@ mod tests {
         FastqRecord::new(name.to_string(), None, sequence, quality).unwrap()
     }
 
-    fn make_record_with_desc(
-        name: &str,
-        desc: &str,
-        seq: &[u8],
-        quals: &[u8],
-    ) -> FastqRecord {
+    fn make_record_with_desc(name: &str, desc: &str, seq: &[u8], quals: &[u8]) -> FastqRecord {
         let sequence = DnaSequence::new(seq).unwrap();
         let quality = QualityScores::from_raw(quals.to_vec());
         FastqRecord::new(name.to_string(), Some(desc.to_string()), sequence, quality).unwrap()
@@ -652,12 +641,9 @@ mod tests {
             ("read1/2", "GGGGCCCC", "IIIIIIII"),
             ("read2/2", "AAAATTTT", "IIIIIIII"),
         ]);
-        let pairs = parse_paired_fastq_files(
-            r1_file.path(),
-            r2_file.path(),
-            MateValidation::Relaxed,
-        )
-        .unwrap();
+        let pairs =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::Relaxed)
+                .unwrap();
         assert_eq!(pairs.len(), 2);
         assert_eq!(pairs[0].r1().sequence().as_bytes(), b"ACGTACGT");
         assert_eq!(pairs[0].r2().sequence().as_bytes(), b"GGGGCCCC");
@@ -671,11 +657,8 @@ mod tests {
             ("read2/1", "TGCATGCA", "IIIIIIII"),
         ]);
         let r2_file = write_temp_fastq(&[("read1/2", "GGGGCCCC", "IIIIIIII")]);
-        let result = parse_paired_fastq_files(
-            r1_file.path(),
-            r2_file.path(),
-            MateValidation::Relaxed,
-        );
+        let result =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::Relaxed);
         assert!(result.is_err());
     }
 
@@ -686,11 +669,8 @@ mod tests {
             ("read1/2", "GGGGCCCC", "IIIIIIII"),
             ("read2/2", "AAAATTTT", "IIIIIIII"),
         ]);
-        let result = parse_paired_fastq_files(
-            r1_file.path(),
-            r2_file.path(),
-            MateValidation::Relaxed,
-        );
+        let result =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::Relaxed);
         assert!(result.is_err());
     }
 
@@ -698,12 +678,8 @@ mod tests {
     fn parse_paired_files_no_validation() {
         let r1_file = write_temp_fastq(&[("foo", "ACGTACGT", "IIIIIIII")]);
         let r2_file = write_temp_fastq(&[("bar", "GGGGCCCC", "IIIIIIII")]);
-        let pairs = parse_paired_fastq_files(
-            r1_file.path(),
-            r2_file.path(),
-            MateValidation::None,
-        )
-        .unwrap();
+        let pairs =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::None).unwrap();
         assert_eq!(pairs.len(), 1);
     }
 
@@ -711,11 +687,8 @@ mod tests {
     fn parse_paired_files_validation_failure() {
         let r1_file = write_temp_fastq(&[("read1/1", "ACGTACGT", "IIIIIIII")]);
         let r2_file = write_temp_fastq(&[("read2/2", "GGGGCCCC", "IIIIIIII")]);
-        let result = parse_paired_fastq_files(
-            r1_file.path(),
-            r2_file.path(),
-            MateValidation::Relaxed,
-        );
+        let result =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::Relaxed);
         assert!(result.is_err());
     }
 
@@ -723,12 +696,9 @@ mod tests {
     fn parse_paired_files_strict_validation() {
         let r1_file = write_temp_fastq(&[("read1/1", "ACGT", "IIII")]);
         let r2_file = write_temp_fastq(&[("read1/2", "TGCA", "IIII")]);
-        let pairs = parse_paired_fastq_files(
-            r1_file.path(),
-            r2_file.path(),
-            MateValidation::Strict,
-        )
-        .unwrap();
+        let pairs =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::Strict)
+                .unwrap();
         assert_eq!(pairs.len(), 1);
     }
 
@@ -769,15 +739,16 @@ mod tests {
 
         let r1_file = NamedTempFile::new().unwrap();
         let r2_file = NamedTempFile::new().unwrap();
-        write_paired_fastq(&pairs, r1_file.path(), r2_file.path(), PhredEncoding::Phred33)
-            .unwrap();
-
-        let parsed = parse_paired_fastq_files(
+        write_paired_fastq(
+            &pairs,
             r1_file.path(),
             r2_file.path(),
-            MateValidation::None,
+            PhredEncoding::Phred33,
         )
         .unwrap();
+
+        let parsed =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::None).unwrap();
         assert_eq!(parsed.len(), 1);
         assert_eq!(parsed[0].r1().sequence().as_bytes(), b"ACGTACGT");
         assert_eq!(parsed[0].r2().sequence().as_bytes(), b"TGCATGCA");
@@ -831,15 +802,16 @@ mod tests {
 
         let r1_file = NamedTempFile::new().unwrap();
         let r2_file = NamedTempFile::new().unwrap();
-        write_paired_fastq(&pairs, r1_file.path(), r2_file.path(), PhredEncoding::Phred33)
-            .unwrap();
-
-        let parsed = parse_paired_fastq_files(
+        write_paired_fastq(
+            &pairs,
             r1_file.path(),
             r2_file.path(),
-            MateValidation::None,
+            PhredEncoding::Phred33,
         )
         .unwrap();
+
+        let parsed =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::None).unwrap();
         assert_eq!(parsed.len(), 2);
         assert_eq!(parsed[0].r1().sequence().as_bytes(), b"AAAA");
         assert_eq!(parsed[1].r2().sequence().as_bytes(), b"TTTT");
@@ -879,12 +851,8 @@ mod tests {
         .unwrap();
         assert_eq!(count, 2);
 
-        let pairs = parse_paired_fastq_files(
-            out_r1.path(),
-            out_r2.path(),
-            MateValidation::None,
-        )
-        .unwrap();
+        let pairs =
+            parse_paired_fastq_files(out_r1.path(), out_r2.path(), MateValidation::None).unwrap();
         assert_eq!(pairs.len(), 2);
         assert_eq!(pairs[0].r1().sequence().as_bytes(), b"ACGTACGT");
         assert_eq!(pairs[0].r2().sequence().as_bytes(), b"GGGGCCCC");
@@ -892,10 +860,7 @@ mod tests {
 
     #[test]
     fn interleave_unequal_files() {
-        let r1_file = write_temp_fastq(&[
-            ("read1/1", "ACGT", "IIII"),
-            ("read2/1", "TGCA", "IIII"),
-        ]);
+        let r1_file = write_temp_fastq(&[("read1/1", "ACGT", "IIII"), ("read2/1", "TGCA", "IIII")]);
         let r2_file = write_temp_fastq(&[("read1/2", "GGGG", "IIII")]);
         let output = NamedTempFile::new().unwrap();
         let result = interleave_fastq_files(
@@ -913,12 +878,8 @@ mod tests {
     fn parse_paired_empty_files() {
         let r1_file = NamedTempFile::new().unwrap();
         let r2_file = NamedTempFile::new().unwrap();
-        let pairs = parse_paired_fastq_files(
-            r1_file.path(),
-            r2_file.path(),
-            MateValidation::None,
-        )
-        .unwrap();
+        let pairs =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::None).unwrap();
         assert!(pairs.is_empty());
     }
 
@@ -933,12 +894,9 @@ mod tests {
     fn parse_paired_single_pair() {
         let r1_file = write_temp_fastq(&[("read1/1", "ACGT", "IIII")]);
         let r2_file = write_temp_fastq(&[("read1/2", "TGCA", "IIII")]);
-        let pairs = parse_paired_fastq_files(
-            r1_file.path(),
-            r2_file.path(),
-            MateValidation::Strict,
-        )
-        .unwrap();
+        let pairs =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::Strict)
+                .unwrap();
         assert_eq!(pairs.len(), 1);
     }
 
@@ -947,14 +905,15 @@ mod tests {
         let pairs: Vec<PairedFastqRecord> = vec![];
         let r1_file = NamedTempFile::new().unwrap();
         let r2_file = NamedTempFile::new().unwrap();
-        write_paired_fastq(&pairs, r1_file.path(), r2_file.path(), PhredEncoding::Phred33)
-            .unwrap();
-        let parsed = parse_paired_fastq_files(
+        write_paired_fastq(
+            &pairs,
             r1_file.path(),
             r2_file.path(),
-            MateValidation::None,
+            PhredEncoding::Phred33,
         )
         .unwrap();
+        let parsed =
+            parse_paired_fastq_files(r1_file.path(), r2_file.path(), MateValidation::None).unwrap();
         assert!(parsed.is_empty());
     }
 
@@ -962,14 +921,10 @@ mod tests {
 
     #[test]
     fn paired_stats() {
-        let r1_file = write_temp_fastq(&[
-            ("read1", "ACGTACGT", "IIIIIIII"),
-            ("read2", "TGCA", "IIII"),
-        ]);
-        let r2_file = write_temp_fastq(&[
-            ("read1", "GGGGCCCC", "IIIIIIII"),
-            ("read2", "AAAA", "IIII"),
-        ]);
+        let r1_file =
+            write_temp_fastq(&[("read1", "ACGTACGT", "IIIIIIII"), ("read2", "TGCA", "IIII")]);
+        let r2_file =
+            write_temp_fastq(&[("read1", "GGGGCCCC", "IIIIIIII"), ("read2", "AAAA", "IIII")]);
         let stats = parse_paired_fastq_stats(r1_file.path(), r2_file.path()).unwrap();
         assert_eq!(stats.pair_count, 2);
         assert_eq!(stats.r1_stats.sequence_count, 2);

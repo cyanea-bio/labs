@@ -33,14 +33,8 @@ impl SpliceMatrices {
     ///
     /// Both matrices must have shape (n_cells, n_genes).
     pub fn new(spliced: Vec<Vec<f64>>, unspliced: Vec<Vec<f64>>) -> Result<Self> {
-        let (n_cells_s, n_genes_s) = (
-            spliced.len(),
-            spliced.first().map_or(0, |r| r.len()),
-        );
-        let (n_cells_u, n_genes_u) = (
-            unspliced.len(),
-            unspliced.first().map_or(0, |r| r.len()),
-        );
+        let (n_cells_s, n_genes_s) = (spliced.len(), spliced.first().map_or(0, |r| r.len()));
+        let (n_cells_u, n_genes_u) = (unspliced.len(), unspliced.first().map_or(0, |r| r.len()));
 
         if n_cells_s != n_cells_u || n_genes_s != n_genes_u {
             return Err(CyaneaError::InvalidInput(format!(
@@ -344,7 +338,12 @@ pub fn velocity_embedding(
     // If PCA available, smooth velocity in PCA space, then project
     if let Some(pca_data) = pca {
         let pca_velocity = smooth_velocity_in_pca(velocity, pca_data, config.n_neighbors)?;
-        arrows = project_pca_velocity_to_embedding(&pca_velocity, pca_data, embedding, config.arrow_scale)?;
+        arrows = project_pca_velocity_to_embedding(
+            &pca_velocity,
+            pca_data,
+            embedding,
+            config.arrow_scale,
+        )?;
     } else {
         // Direct projection: compute average velocity in embedding neighborhood
         for i in 0..n_cells {
@@ -380,7 +379,14 @@ pub fn velocity_embedding(
             let (v0, v1) = if variance > 1e-10 {
                 let norm: f64 = avg_vel.iter().map(|x| x * x).sum::<f64>().sqrt();
                 if norm > 1e-10 {
-                    (avg_vel[0] / norm, if avg_vel.len() > 1 { avg_vel[1] / norm } else { 0.0 })
+                    (
+                        avg_vel[0] / norm,
+                        if avg_vel.len() > 1 {
+                            avg_vel[1] / norm
+                        } else {
+                            0.0
+                        },
+                    )
                 } else {
                     (0.0, 0.0)
                 }
@@ -458,8 +464,16 @@ fn project_pca_velocity_to_embedding(
     for i in 0..n_cells {
         let vel_mag: f64 = pca_velocity[i].iter().map(|v| v * v).sum::<f64>().sqrt();
         if vel_mag > 1e-10 {
-            let dir_x = if n_pcs > 0 { pca_velocity[i][0] / vel_mag } else { 0.0 };
-            let dir_y = if n_pcs > 1 { pca_velocity[i][1] / vel_mag } else { 0.0 };
+            let dir_x = if n_pcs > 0 {
+                pca_velocity[i][0] / vel_mag
+            } else {
+                0.0
+            };
+            let dir_y = if n_pcs > 1 {
+                pca_velocity[i][1] / vel_mag
+            } else {
+                0.0
+            };
             arrows.push(VelocityArrow {
                 dx: dir_x * vel_mag * scale,
                 dy: dir_y * vel_mag * scale,
@@ -632,7 +646,8 @@ mod tests {
         assert_eq!(velocity.len(), 3);
         assert_eq!(velocity[0].len(), 2);
         // At steady state, velocity should be small but not necessarily near zero due to OLS
-        let mean_vel: f64 = velocity.iter().flatten().map(|v| v.abs()).sum::<f64>() / (velocity.len() * velocity[0].len()) as f64;
+        let mean_vel: f64 = velocity.iter().flatten().map(|v| v.abs()).sum::<f64>()
+            / (velocity.len() * velocity[0].len()) as f64;
         assert!(mean_vel < 1.0);
     }
 
@@ -655,13 +670,15 @@ mod tests {
     #[test]
     fn velocity_embedding_2d() {
         let velocity = vec![vec![1.0, 0.5]; 3];
-        let embedding = vec![
-            vec![0.0, 0.0],
-            vec![1.0, 0.0],
-            vec![1.0, 1.0],
-        ];
+        let embedding = vec![vec![0.0, 0.0], vec![1.0, 0.0], vec![1.0, 1.0]];
 
-        let arrows = velocity_embedding(&velocity, &embedding, None, &VelocityEmbeddingConfig::default()).unwrap();
+        let arrows = velocity_embedding(
+            &velocity,
+            &embedding,
+            None,
+            &VelocityEmbeddingConfig::default(),
+        )
+        .unwrap();
         assert_eq!(arrows.len(), 3);
         // Arrows should have non-zero components
         assert!(arrows[0].dx != 0.0 || arrows[0].dy != 0.0);
@@ -672,24 +689,31 @@ mod tests {
         let velocity = vec![vec![1.0, 0.5]; 3];
         let embedding = vec![vec![0.0, 0.0]; 2]; // wrong n_cells
 
-        let result = velocity_embedding(&velocity, &embedding, None, &VelocityEmbeddingConfig::default());
+        let result = velocity_embedding(
+            &velocity,
+            &embedding,
+            None,
+            &VelocityEmbeddingConfig::default(),
+        );
         assert!(result.is_err());
     }
 
     #[test]
     fn latent_time_basic() {
-        let adjacency = vec![
-            vec![(1, 1.0)],
-            vec![(2, 1.0)],
-            vec![(3, 1.0)],
-            vec![],
-        ];
+        let adjacency = vec![vec![(1, 1.0)], vec![(2, 1.0)], vec![(3, 1.0)], vec![]];
         let graph = VelocityGraphResult {
             adjacency,
             cell_velocities: vec![1.0, 1.0, 1.0, 0.5],
         };
 
-        let times = latent_time(&graph, &LatentTimeConfig { root_cell: Some(0), ..Default::default() }).unwrap();
+        let times = latent_time(
+            &graph,
+            &LatentTimeConfig {
+                root_cell: Some(0),
+                ..Default::default()
+            },
+        )
+        .unwrap();
         assert_eq!(times.len(), 4);
         // Root cell should have highest pseudotime after diffusion
         assert!(times[0] >= times[3]);
@@ -702,7 +726,13 @@ mod tests {
             adjacency: vec![vec![]],
             cell_velocities: vec![1.0],
         };
-        let result = latent_time(&graph, &LatentTimeConfig { root_cell: Some(10), ..Default::default() });
+        let result = latent_time(
+            &graph,
+            &LatentTimeConfig {
+                root_cell: Some(10),
+                ..Default::default()
+            },
+        );
         assert!(result.is_err());
     }
 

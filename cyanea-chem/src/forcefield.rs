@@ -71,48 +71,187 @@ impl Default for MinimizeConfig {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UffAtomType {
     H,
-    C3, C2, CR, C1,
-    N3, N2, NR, N1,
-    O3, O2, OR,
-    S3, S2,
+    C3,
+    C2,
+    CR,
+    C1,
+    N3,
+    N2,
+    NR,
+    N1,
+    O3,
+    O2,
+    OR,
+    S3,
+    S2,
     P3,
-    F, Cl, Br, I,
-    Si3, Se3,
+    F,
+    Cl,
+    Br,
+    I,
+    Si3,
+    Se3,
 }
 
 /// UFF parameters for an atom type.
 struct UffParams {
-    r_cov: f64,      // covalent radius (Å)
-    theta0: f64,     // ideal bond angle (radians)
-    x_vdw: f64,      // vdW distance (Å)
-    d_vdw: f64,      // vdW well depth (kcal/mol)
-    chi: f64,        // electronegativity (Rappé)
+    r_cov: f64,  // covalent radius (Å)
+    theta0: f64, // ideal bond angle (radians)
+    x_vdw: f64,  // vdW distance (Å)
+    d_vdw: f64,  // vdW well depth (kcal/mol)
+    chi: f64,    // electronegativity (Rappé)
 }
 
 fn uff_params(at: UffAtomType) -> UffParams {
     use std::f64::consts::PI;
     match at {
-        UffAtomType::H    => UffParams { r_cov: 0.354, theta0: 180.0*PI/180.0, x_vdw: 2.886, d_vdw: 0.044, chi: 2.20 },
-        UffAtomType::C3   => UffParams { r_cov: 0.757, theta0: 109.47*PI/180.0, x_vdw: 3.851, d_vdw: 0.105, chi: 2.55 },
-        UffAtomType::C2   => UffParams { r_cov: 0.732, theta0: 120.0*PI/180.0, x_vdw: 3.851, d_vdw: 0.105, chi: 2.55 },
-        UffAtomType::CR   => UffParams { r_cov: 0.729, theta0: 120.0*PI/180.0, x_vdw: 3.851, d_vdw: 0.105, chi: 2.55 },
-        UffAtomType::C1   => UffParams { r_cov: 0.706, theta0: 180.0*PI/180.0, x_vdw: 3.851, d_vdw: 0.105, chi: 2.55 },
-        UffAtomType::N3   => UffParams { r_cov: 0.700, theta0: 106.7*PI/180.0, x_vdw: 3.660, d_vdw: 0.069, chi: 3.04 },
-        UffAtomType::N2   => UffParams { r_cov: 0.685, theta0: 120.0*PI/180.0, x_vdw: 3.660, d_vdw: 0.069, chi: 3.04 },
-        UffAtomType::NR   => UffParams { r_cov: 0.683, theta0: 120.0*PI/180.0, x_vdw: 3.660, d_vdw: 0.069, chi: 3.04 },
-        UffAtomType::N1   => UffParams { r_cov: 0.656, theta0: 180.0*PI/180.0, x_vdw: 3.660, d_vdw: 0.069, chi: 3.04 },
-        UffAtomType::O3   => UffParams { r_cov: 0.658, theta0: 104.51*PI/180.0, x_vdw: 3.500, d_vdw: 0.060, chi: 3.44 },
-        UffAtomType::O2   => UffParams { r_cov: 0.634, theta0: 120.0*PI/180.0, x_vdw: 3.500, d_vdw: 0.060, chi: 3.44 },
-        UffAtomType::OR   => UffParams { r_cov: 0.639, theta0: 120.0*PI/180.0, x_vdw: 3.500, d_vdw: 0.060, chi: 3.44 },
-        UffAtomType::S3   => UffParams { r_cov: 1.016, theta0: 92.2*PI/180.0, x_vdw: 4.035, d_vdw: 0.274, chi: 2.58 },
-        UffAtomType::S2   => UffParams { r_cov: 0.992, theta0: 120.0*PI/180.0, x_vdw: 4.035, d_vdw: 0.274, chi: 2.58 },
-        UffAtomType::P3   => UffParams { r_cov: 1.018, theta0: 93.8*PI/180.0, x_vdw: 4.147, d_vdw: 0.305, chi: 2.19 },
-        UffAtomType::F    => UffParams { r_cov: 0.668, theta0: 180.0*PI/180.0, x_vdw: 3.364, d_vdw: 0.050, chi: 3.98 },
-        UffAtomType::Cl   => UffParams { r_cov: 1.033, theta0: 180.0*PI/180.0, x_vdw: 3.947, d_vdw: 0.227, chi: 3.16 },
-        UffAtomType::Br   => UffParams { r_cov: 1.176, theta0: 180.0*PI/180.0, x_vdw: 4.189, d_vdw: 0.251, chi: 2.96 },
-        UffAtomType::I    => UffParams { r_cov: 1.333, theta0: 180.0*PI/180.0, x_vdw: 4.500, d_vdw: 0.339, chi: 2.66 },
-        UffAtomType::Si3  => UffParams { r_cov: 1.116, theta0: 109.47*PI/180.0, x_vdw: 4.295, d_vdw: 0.402, chi: 1.90 },
-        UffAtomType::Se3  => UffParams { r_cov: 1.170, theta0: 90.6*PI/180.0, x_vdw: 4.205, d_vdw: 0.291, chi: 2.55 },
+        UffAtomType::H => UffParams {
+            r_cov: 0.354,
+            theta0: 180.0 * PI / 180.0,
+            x_vdw: 2.886,
+            d_vdw: 0.044,
+            chi: 2.20,
+        },
+        UffAtomType::C3 => UffParams {
+            r_cov: 0.757,
+            theta0: 109.47 * PI / 180.0,
+            x_vdw: 3.851,
+            d_vdw: 0.105,
+            chi: 2.55,
+        },
+        UffAtomType::C2 => UffParams {
+            r_cov: 0.732,
+            theta0: 120.0 * PI / 180.0,
+            x_vdw: 3.851,
+            d_vdw: 0.105,
+            chi: 2.55,
+        },
+        UffAtomType::CR => UffParams {
+            r_cov: 0.729,
+            theta0: 120.0 * PI / 180.0,
+            x_vdw: 3.851,
+            d_vdw: 0.105,
+            chi: 2.55,
+        },
+        UffAtomType::C1 => UffParams {
+            r_cov: 0.706,
+            theta0: 180.0 * PI / 180.0,
+            x_vdw: 3.851,
+            d_vdw: 0.105,
+            chi: 2.55,
+        },
+        UffAtomType::N3 => UffParams {
+            r_cov: 0.700,
+            theta0: 106.7 * PI / 180.0,
+            x_vdw: 3.660,
+            d_vdw: 0.069,
+            chi: 3.04,
+        },
+        UffAtomType::N2 => UffParams {
+            r_cov: 0.685,
+            theta0: 120.0 * PI / 180.0,
+            x_vdw: 3.660,
+            d_vdw: 0.069,
+            chi: 3.04,
+        },
+        UffAtomType::NR => UffParams {
+            r_cov: 0.683,
+            theta0: 120.0 * PI / 180.0,
+            x_vdw: 3.660,
+            d_vdw: 0.069,
+            chi: 3.04,
+        },
+        UffAtomType::N1 => UffParams {
+            r_cov: 0.656,
+            theta0: 180.0 * PI / 180.0,
+            x_vdw: 3.660,
+            d_vdw: 0.069,
+            chi: 3.04,
+        },
+        UffAtomType::O3 => UffParams {
+            r_cov: 0.658,
+            theta0: 104.51 * PI / 180.0,
+            x_vdw: 3.500,
+            d_vdw: 0.060,
+            chi: 3.44,
+        },
+        UffAtomType::O2 => UffParams {
+            r_cov: 0.634,
+            theta0: 120.0 * PI / 180.0,
+            x_vdw: 3.500,
+            d_vdw: 0.060,
+            chi: 3.44,
+        },
+        UffAtomType::OR => UffParams {
+            r_cov: 0.639,
+            theta0: 120.0 * PI / 180.0,
+            x_vdw: 3.500,
+            d_vdw: 0.060,
+            chi: 3.44,
+        },
+        UffAtomType::S3 => UffParams {
+            r_cov: 1.016,
+            theta0: 92.2 * PI / 180.0,
+            x_vdw: 4.035,
+            d_vdw: 0.274,
+            chi: 2.58,
+        },
+        UffAtomType::S2 => UffParams {
+            r_cov: 0.992,
+            theta0: 120.0 * PI / 180.0,
+            x_vdw: 4.035,
+            d_vdw: 0.274,
+            chi: 2.58,
+        },
+        UffAtomType::P3 => UffParams {
+            r_cov: 1.018,
+            theta0: 93.8 * PI / 180.0,
+            x_vdw: 4.147,
+            d_vdw: 0.305,
+            chi: 2.19,
+        },
+        UffAtomType::F => UffParams {
+            r_cov: 0.668,
+            theta0: 180.0 * PI / 180.0,
+            x_vdw: 3.364,
+            d_vdw: 0.050,
+            chi: 3.98,
+        },
+        UffAtomType::Cl => UffParams {
+            r_cov: 1.033,
+            theta0: 180.0 * PI / 180.0,
+            x_vdw: 3.947,
+            d_vdw: 0.227,
+            chi: 3.16,
+        },
+        UffAtomType::Br => UffParams {
+            r_cov: 1.176,
+            theta0: 180.0 * PI / 180.0,
+            x_vdw: 4.189,
+            d_vdw: 0.251,
+            chi: 2.96,
+        },
+        UffAtomType::I => UffParams {
+            r_cov: 1.333,
+            theta0: 180.0 * PI / 180.0,
+            x_vdw: 4.500,
+            d_vdw: 0.339,
+            chi: 2.66,
+        },
+        UffAtomType::Si3 => UffParams {
+            r_cov: 1.116,
+            theta0: 109.47 * PI / 180.0,
+            x_vdw: 4.295,
+            d_vdw: 0.402,
+            chi: 1.90,
+        },
+        UffAtomType::Se3 => UffParams {
+            r_cov: 1.170,
+            theta0: 90.6 * PI / 180.0,
+            x_vdw: 4.205,
+            d_vdw: 0.291,
+            chi: 2.55,
+        },
     }
 }
 
@@ -127,24 +266,42 @@ pub fn assign_uff_types(mol: &Molecule) -> Result<Vec<UffAtomType>> {
         let at = match atom.atomic_number {
             1 => UffAtomType::H,
             6 => {
-                if atom.is_aromatic { UffAtomType::CR }
-                else if bos > 3.5 { UffAtomType::C1 }
-                else if bos > 2.5 { UffAtomType::C2 }
-                else { UffAtomType::C3 }
+                if atom.is_aromatic {
+                    UffAtomType::CR
+                } else if bos > 3.5 {
+                    UffAtomType::C1
+                } else if bos > 2.5 {
+                    UffAtomType::C2
+                } else {
+                    UffAtomType::C3
+                }
             }
             7 => {
-                if atom.is_aromatic { UffAtomType::NR }
-                else if bos > 3.5 { UffAtomType::N1 }
-                else if bos > 2.5 { UffAtomType::N2 }
-                else { UffAtomType::N3 }
+                if atom.is_aromatic {
+                    UffAtomType::NR
+                } else if bos > 3.5 {
+                    UffAtomType::N1
+                } else if bos > 2.5 {
+                    UffAtomType::N2
+                } else {
+                    UffAtomType::N3
+                }
             }
             8 => {
-                if atom.is_aromatic { UffAtomType::OR }
-                else if bos > 1.5 { UffAtomType::O2 }
-                else { UffAtomType::O3 }
+                if atom.is_aromatic {
+                    UffAtomType::OR
+                } else if bos > 1.5 {
+                    UffAtomType::O2
+                } else {
+                    UffAtomType::O3
+                }
             }
             16 => {
-                if bos > 2.5 { UffAtomType::S2 } else { UffAtomType::S3 }
+                if bos > 2.5 {
+                    UffAtomType::S2
+                } else {
+                    UffAtomType::S3
+                }
             }
             15 => UffAtomType::P3,
             9 => UffAtomType::F,
@@ -167,29 +324,29 @@ pub fn assign_uff_types(mol: &Molecule) -> Result<Vec<UffAtomType>> {
 /// Simplified MMFF94 atom type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mmff94AtomType {
-    CR,   // Alkyl carbon sp3
-    C2,   // Vinylic carbon sp2
-    C3,   // Carbonyl carbon sp2
-    CAR,  // Aromatic carbon
-    C1,   // Acetylenic carbon sp
-    NR,   // Amine nitrogen sp3
-    N2,   // Imine nitrogen sp2
-    NAR,  // Aromatic nitrogen
-    N1,   // Nitrile nitrogen sp
-    OR,   // Ether/alcohol oxygen sp3
-    O2,   // Carbonyl oxygen sp2
-    OAR,  // Aromatic oxygen (furan)
-    SR,   // Thiol/thioether sulfur
-    S2,   // Thione sulfur
-    SAR,  // Aromatic sulfur (thiophene)
-    PR,   // Phosphorus sp3
+    CR,  // Alkyl carbon sp3
+    C2,  // Vinylic carbon sp2
+    C3,  // Carbonyl carbon sp2
+    CAR, // Aromatic carbon
+    C1,  // Acetylenic carbon sp
+    NR,  // Amine nitrogen sp3
+    N2,  // Imine nitrogen sp2
+    NAR, // Aromatic nitrogen
+    N1,  // Nitrile nitrogen sp
+    OR,  // Ether/alcohol oxygen sp3
+    O2,  // Carbonyl oxygen sp2
+    OAR, // Aromatic oxygen (furan)
+    SR,  // Thiol/thioether sulfur
+    S2,  // Thione sulfur
+    SAR, // Aromatic sulfur (thiophene)
+    PR,  // Phosphorus sp3
     F,
     Cl,
     Br,
     I,
     H,
-    HO,   // Hydrogen on oxygen
-    HN,   // Hydrogen on nitrogen
+    HO, // Hydrogen on oxygen
+    HN, // Hydrogen on nitrogen
     Si,
     Se,
     // Generic fallback
@@ -208,32 +365,188 @@ struct Mmff94VdwParams {
 
 fn mmff94_vdw_params(at: Mmff94AtomType) -> Mmff94VdwParams {
     match at {
-        Mmff94AtomType::CR  => Mmff94VdwParams { alpha: 1.050, n_eff: 2.490, a_type: 3.890, g: 1.282, da: 0 },
-        Mmff94AtomType::C2  => Mmff94VdwParams { alpha: 1.350, n_eff: 2.490, a_type: 3.890, g: 1.282, da: 0 },
-        Mmff94AtomType::C3  => Mmff94VdwParams { alpha: 1.100, n_eff: 2.490, a_type: 3.890, g: 1.282, da: 0 },
-        Mmff94AtomType::CAR => Mmff94VdwParams { alpha: 1.350, n_eff: 2.490, a_type: 3.890, g: 1.282, da: 0 },
-        Mmff94AtomType::C1  => Mmff94VdwParams { alpha: 1.300, n_eff: 2.490, a_type: 3.890, g: 1.282, da: 0 },
-        Mmff94AtomType::NR  => Mmff94VdwParams { alpha: 1.000, n_eff: 2.820, a_type: 3.890, g: 1.282, da: 1 },
-        Mmff94AtomType::N2  => Mmff94VdwParams { alpha: 1.100, n_eff: 2.820, a_type: 3.890, g: 1.282, da: 1 },
-        Mmff94AtomType::NAR => Mmff94VdwParams { alpha: 1.100, n_eff: 2.820, a_type: 3.890, g: 1.282, da: 2 },
-        Mmff94AtomType::N1  => Mmff94VdwParams { alpha: 1.000, n_eff: 2.820, a_type: 3.890, g: 1.282, da: 2 },
-        Mmff94AtomType::OR  => Mmff94VdwParams { alpha: 0.700, n_eff: 3.150, a_type: 3.890, g: 1.282, da: 2 },
-        Mmff94AtomType::O2  => Mmff94VdwParams { alpha: 0.700, n_eff: 3.150, a_type: 3.890, g: 1.282, da: 2 },
-        Mmff94AtomType::OAR => Mmff94VdwParams { alpha: 0.700, n_eff: 3.150, a_type: 3.890, g: 1.282, da: 2 },
-        Mmff94AtomType::SR  => Mmff94VdwParams { alpha: 3.000, n_eff: 3.480, a_type: 4.250, g: 1.345, da: 0 },
-        Mmff94AtomType::S2  => Mmff94VdwParams { alpha: 3.000, n_eff: 3.480, a_type: 4.250, g: 1.345, da: 0 },
-        Mmff94AtomType::SAR => Mmff94VdwParams { alpha: 3.000, n_eff: 3.480, a_type: 4.250, g: 1.345, da: 0 },
-        Mmff94AtomType::PR  => Mmff94VdwParams { alpha: 1.600, n_eff: 3.480, a_type: 4.150, g: 1.345, da: 0 },
-        Mmff94AtomType::F   => Mmff94VdwParams { alpha: 0.350, n_eff: 3.480, a_type: 3.480, g: 1.282, da: 2 },
-        Mmff94AtomType::Cl  => Mmff94VdwParams { alpha: 2.315, n_eff: 3.480, a_type: 3.947, g: 1.345, da: 0 },
-        Mmff94AtomType::Br  => Mmff94VdwParams { alpha: 3.400, n_eff: 3.480, a_type: 4.189, g: 1.359, da: 0 },
-        Mmff94AtomType::I   => Mmff94VdwParams { alpha: 5.500, n_eff: 3.480, a_type: 4.500, g: 1.404, da: 0 },
-        Mmff94AtomType::H   => Mmff94VdwParams { alpha: 0.250, n_eff: 0.800, a_type: 3.340, g: 1.112, da: 0 },
-        Mmff94AtomType::HO  => Mmff94VdwParams { alpha: 0.250, n_eff: 0.800, a_type: 3.340, g: 1.112, da: 1 },
-        Mmff94AtomType::HN  => Mmff94VdwParams { alpha: 0.250, n_eff: 0.800, a_type: 3.340, g: 1.112, da: 1 },
-        Mmff94AtomType::Si  => Mmff94VdwParams { alpha: 1.600, n_eff: 2.490, a_type: 4.295, g: 1.345, da: 0 },
-        Mmff94AtomType::Se  => Mmff94VdwParams { alpha: 3.400, n_eff: 3.480, a_type: 4.205, g: 1.359, da: 0 },
-        Mmff94AtomType::DU  => Mmff94VdwParams { alpha: 1.000, n_eff: 2.490, a_type: 3.890, g: 1.282, da: 0 },
+        Mmff94AtomType::CR => Mmff94VdwParams {
+            alpha: 1.050,
+            n_eff: 2.490,
+            a_type: 3.890,
+            g: 1.282,
+            da: 0,
+        },
+        Mmff94AtomType::C2 => Mmff94VdwParams {
+            alpha: 1.350,
+            n_eff: 2.490,
+            a_type: 3.890,
+            g: 1.282,
+            da: 0,
+        },
+        Mmff94AtomType::C3 => Mmff94VdwParams {
+            alpha: 1.100,
+            n_eff: 2.490,
+            a_type: 3.890,
+            g: 1.282,
+            da: 0,
+        },
+        Mmff94AtomType::CAR => Mmff94VdwParams {
+            alpha: 1.350,
+            n_eff: 2.490,
+            a_type: 3.890,
+            g: 1.282,
+            da: 0,
+        },
+        Mmff94AtomType::C1 => Mmff94VdwParams {
+            alpha: 1.300,
+            n_eff: 2.490,
+            a_type: 3.890,
+            g: 1.282,
+            da: 0,
+        },
+        Mmff94AtomType::NR => Mmff94VdwParams {
+            alpha: 1.000,
+            n_eff: 2.820,
+            a_type: 3.890,
+            g: 1.282,
+            da: 1,
+        },
+        Mmff94AtomType::N2 => Mmff94VdwParams {
+            alpha: 1.100,
+            n_eff: 2.820,
+            a_type: 3.890,
+            g: 1.282,
+            da: 1,
+        },
+        Mmff94AtomType::NAR => Mmff94VdwParams {
+            alpha: 1.100,
+            n_eff: 2.820,
+            a_type: 3.890,
+            g: 1.282,
+            da: 2,
+        },
+        Mmff94AtomType::N1 => Mmff94VdwParams {
+            alpha: 1.000,
+            n_eff: 2.820,
+            a_type: 3.890,
+            g: 1.282,
+            da: 2,
+        },
+        Mmff94AtomType::OR => Mmff94VdwParams {
+            alpha: 0.700,
+            n_eff: 3.150,
+            a_type: 3.890,
+            g: 1.282,
+            da: 2,
+        },
+        Mmff94AtomType::O2 => Mmff94VdwParams {
+            alpha: 0.700,
+            n_eff: 3.150,
+            a_type: 3.890,
+            g: 1.282,
+            da: 2,
+        },
+        Mmff94AtomType::OAR => Mmff94VdwParams {
+            alpha: 0.700,
+            n_eff: 3.150,
+            a_type: 3.890,
+            g: 1.282,
+            da: 2,
+        },
+        Mmff94AtomType::SR => Mmff94VdwParams {
+            alpha: 3.000,
+            n_eff: 3.480,
+            a_type: 4.250,
+            g: 1.345,
+            da: 0,
+        },
+        Mmff94AtomType::S2 => Mmff94VdwParams {
+            alpha: 3.000,
+            n_eff: 3.480,
+            a_type: 4.250,
+            g: 1.345,
+            da: 0,
+        },
+        Mmff94AtomType::SAR => Mmff94VdwParams {
+            alpha: 3.000,
+            n_eff: 3.480,
+            a_type: 4.250,
+            g: 1.345,
+            da: 0,
+        },
+        Mmff94AtomType::PR => Mmff94VdwParams {
+            alpha: 1.600,
+            n_eff: 3.480,
+            a_type: 4.150,
+            g: 1.345,
+            da: 0,
+        },
+        Mmff94AtomType::F => Mmff94VdwParams {
+            alpha: 0.350,
+            n_eff: 3.480,
+            a_type: 3.480,
+            g: 1.282,
+            da: 2,
+        },
+        Mmff94AtomType::Cl => Mmff94VdwParams {
+            alpha: 2.315,
+            n_eff: 3.480,
+            a_type: 3.947,
+            g: 1.345,
+            da: 0,
+        },
+        Mmff94AtomType::Br => Mmff94VdwParams {
+            alpha: 3.400,
+            n_eff: 3.480,
+            a_type: 4.189,
+            g: 1.359,
+            da: 0,
+        },
+        Mmff94AtomType::I => Mmff94VdwParams {
+            alpha: 5.500,
+            n_eff: 3.480,
+            a_type: 4.500,
+            g: 1.404,
+            da: 0,
+        },
+        Mmff94AtomType::H => Mmff94VdwParams {
+            alpha: 0.250,
+            n_eff: 0.800,
+            a_type: 3.340,
+            g: 1.112,
+            da: 0,
+        },
+        Mmff94AtomType::HO => Mmff94VdwParams {
+            alpha: 0.250,
+            n_eff: 0.800,
+            a_type: 3.340,
+            g: 1.112,
+            da: 1,
+        },
+        Mmff94AtomType::HN => Mmff94VdwParams {
+            alpha: 0.250,
+            n_eff: 0.800,
+            a_type: 3.340,
+            g: 1.112,
+            da: 1,
+        },
+        Mmff94AtomType::Si => Mmff94VdwParams {
+            alpha: 1.600,
+            n_eff: 2.490,
+            a_type: 4.295,
+            g: 1.345,
+            da: 0,
+        },
+        Mmff94AtomType::Se => Mmff94VdwParams {
+            alpha: 3.400,
+            n_eff: 3.480,
+            a_type: 4.205,
+            g: 1.359,
+            da: 0,
+        },
+        Mmff94AtomType::DU => Mmff94VdwParams {
+            alpha: 1.000,
+            n_eff: 2.490,
+            a_type: 3.890,
+            g: 1.282,
+            da: 0,
+        },
     }
 }
 
@@ -257,40 +570,63 @@ pub fn assign_mmff94_types(mol: &Molecule) -> Result<Vec<Mmff94AtomType>> {
                         _ => {}
                     }
                 }
-                if bonded_to_o { Mmff94AtomType::HO }
-                else if bonded_to_n { Mmff94AtomType::HN }
-                else { Mmff94AtomType::H }
+                if bonded_to_o {
+                    Mmff94AtomType::HO
+                } else if bonded_to_n {
+                    Mmff94AtomType::HN
+                } else {
+                    Mmff94AtomType::H
+                }
             }
             6 => {
-                if atom.is_aromatic { Mmff94AtomType::CAR }
-                else {
-                    let has_triple = mol.adjacency[i].iter().any(|&(_, bi)| {
-                        mol.bonds[bi].order == BondOrder::Triple
-                    });
+                if atom.is_aromatic {
+                    Mmff94AtomType::CAR
+                } else {
+                    let has_triple = mol.adjacency[i]
+                        .iter()
+                        .any(|&(_, bi)| mol.bonds[bi].order == BondOrder::Triple);
                     let has_double_o = mol.adjacency[i].iter().any(|&(nb, bi)| {
                         mol.atoms[nb].atomic_number == 8 && mol.bonds[bi].order == BondOrder::Double
                     });
-                    if has_triple { Mmff94AtomType::C1 }
-                    else if has_double_o { Mmff94AtomType::C3 }
-                    else if bos > 2.5 { Mmff94AtomType::C2 }
-                    else { Mmff94AtomType::CR }
+                    if has_triple {
+                        Mmff94AtomType::C1
+                    } else if has_double_o {
+                        Mmff94AtomType::C3
+                    } else if bos > 2.5 {
+                        Mmff94AtomType::C2
+                    } else {
+                        Mmff94AtomType::CR
+                    }
                 }
             }
             7 => {
-                if atom.is_aromatic { Mmff94AtomType::NAR }
-                else if bos > 3.5 { Mmff94AtomType::N1 }
-                else if bos > 2.5 { Mmff94AtomType::N2 }
-                else { Mmff94AtomType::NR }
+                if atom.is_aromatic {
+                    Mmff94AtomType::NAR
+                } else if bos > 3.5 {
+                    Mmff94AtomType::N1
+                } else if bos > 2.5 {
+                    Mmff94AtomType::N2
+                } else {
+                    Mmff94AtomType::NR
+                }
             }
             8 => {
-                if atom.is_aromatic { Mmff94AtomType::OAR }
-                else if bos > 1.5 { Mmff94AtomType::O2 }
-                else { Mmff94AtomType::OR }
+                if atom.is_aromatic {
+                    Mmff94AtomType::OAR
+                } else if bos > 1.5 {
+                    Mmff94AtomType::O2
+                } else {
+                    Mmff94AtomType::OR
+                }
             }
             16 => {
-                if atom.is_aromatic { Mmff94AtomType::SAR }
-                else if bos > 2.5 { Mmff94AtomType::S2 }
-                else { Mmff94AtomType::SR }
+                if atom.is_aromatic {
+                    Mmff94AtomType::SAR
+                } else if bos > 2.5 {
+                    Mmff94AtomType::S2
+                } else {
+                    Mmff94AtomType::SR
+                }
             }
             15 => Mmff94AtomType::PR,
             9 => Mmff94AtomType::F,
@@ -485,8 +821,24 @@ fn torsion_params(t1: UffAtomType, t2: UffAtomType, order: BondOrder) -> (f64, u
         BondOrder::Aromatic => (3.0, 2), // Moderate for aromatic
         BondOrder::Single => {
             // sp3-sp3 → V=1, n=3; sp3-sp2 → V=1, n=6; sp2-sp2 → V=5, n=2
-            let is_sp2_1 = matches!(t1, UffAtomType::C2 | UffAtomType::CR | UffAtomType::N2 | UffAtomType::NR | UffAtomType::O2 | UffAtomType::OR);
-            let is_sp2_2 = matches!(t2, UffAtomType::C2 | UffAtomType::CR | UffAtomType::N2 | UffAtomType::NR | UffAtomType::O2 | UffAtomType::OR);
+            let is_sp2_1 = matches!(
+                t1,
+                UffAtomType::C2
+                    | UffAtomType::CR
+                    | UffAtomType::N2
+                    | UffAtomType::NR
+                    | UffAtomType::O2
+                    | UffAtomType::OR
+            );
+            let is_sp2_2 = matches!(
+                t2,
+                UffAtomType::C2
+                    | UffAtomType::CR
+                    | UffAtomType::N2
+                    | UffAtomType::NR
+                    | UffAtomType::O2
+                    | UffAtomType::OR
+            );
             match (is_sp2_1, is_sp2_2) {
                 (true, true) => (5.0, 2),
                 (true, false) | (false, true) => (1.0, 6),
@@ -599,10 +951,12 @@ fn mmff94_eq_bond_length(t1: Mmff94AtomType, t2: Mmff94AtomType, order: BondOrde
 fn mmff94_cov_radius(at: Mmff94AtomType) -> f64 {
     match at {
         Mmff94AtomType::H | Mmff94AtomType::HO | Mmff94AtomType::HN => 0.33,
-        Mmff94AtomType::CR | Mmff94AtomType::C2 | Mmff94AtomType::C3 |
-        Mmff94AtomType::CAR | Mmff94AtomType::C1 => 0.77,
-        Mmff94AtomType::NR | Mmff94AtomType::N2 | Mmff94AtomType::NAR |
-        Mmff94AtomType::N1 => 0.70,
+        Mmff94AtomType::CR
+        | Mmff94AtomType::C2
+        | Mmff94AtomType::C3
+        | Mmff94AtomType::CAR
+        | Mmff94AtomType::C1 => 0.77,
+        Mmff94AtomType::NR | Mmff94AtomType::N2 | Mmff94AtomType::NAR | Mmff94AtomType::N1 => 0.70,
         Mmff94AtomType::OR | Mmff94AtomType::O2 | Mmff94AtomType::OAR => 0.66,
         Mmff94AtomType::F => 0.64,
         Mmff94AtomType::SR | Mmff94AtomType::S2 | Mmff94AtomType::SAR => 1.04,
@@ -632,10 +986,12 @@ fn mmff94_bond_k(t1: Mmff94AtomType, t2: Mmff94AtomType, order: BondOrder) -> f6
 fn mmff94_bond_scale(at: Mmff94AtomType) -> f64 {
     match at {
         Mmff94AtomType::H | Mmff94AtomType::HO | Mmff94AtomType::HN => 0.8,
-        Mmff94AtomType::CR | Mmff94AtomType::C2 | Mmff94AtomType::C3 |
-        Mmff94AtomType::CAR | Mmff94AtomType::C1 => 1.0,
-        Mmff94AtomType::NR | Mmff94AtomType::N2 | Mmff94AtomType::NAR |
-        Mmff94AtomType::N1 => 1.1,
+        Mmff94AtomType::CR
+        | Mmff94AtomType::C2
+        | Mmff94AtomType::C3
+        | Mmff94AtomType::CAR
+        | Mmff94AtomType::C1 => 1.0,
+        Mmff94AtomType::NR | Mmff94AtomType::N2 | Mmff94AtomType::NAR | Mmff94AtomType::N1 => 1.1,
         Mmff94AtomType::OR | Mmff94AtomType::O2 | Mmff94AtomType::OAR => 1.2,
         Mmff94AtomType::F => 1.3,
         _ => 0.9,
@@ -653,9 +1009,10 @@ fn mmff94_oop(mol: &Molecule, conf: &Conformer) -> f64 {
     for j in 0..mol.atom_count() {
         let atom = &mol.atoms[j];
         // Only sp2 atoms (aromatic or double-bonded) with exactly 3 neighbors
-        let is_sp2 = atom.is_aromatic || mol.adjacency[j].iter().any(|&(_, bi)| {
-            mol.bonds[bi].order == BondOrder::Double
-        });
+        let is_sp2 = atom.is_aromatic
+            || mol.adjacency[j]
+                .iter()
+                .any(|&(_, bi)| mol.bonds[bi].order == BondOrder::Double);
         if !is_sp2 || mol.adjacency[j].len() != 3 {
             continue;
         }
@@ -785,7 +1142,11 @@ fn minimize_impl(
         }
 
         // Check convergence: gradient norm
-        let grad_norm: f64 = gradient.iter().map(|g| g[0] * g[0] + g[1] * g[1] + g[2] * g[2]).sum::<f64>().sqrt();
+        let grad_norm: f64 = gradient
+            .iter()
+            .map(|g| g[0] * g[0] + g[1] * g[1] + g[2] * g[2])
+            .sum::<f64>()
+            .sqrt();
         if grad_norm < config.gradient_threshold {
             converged = true;
             break;
@@ -805,8 +1166,14 @@ fn minimize_impl(
                     }
                 } else {
                     // Fletcher-Reeves
-                    let num: f64 = gradient.iter().map(|g| g[0] * g[0] + g[1] * g[1] + g[2] * g[2]).sum();
-                    let den: f64 = prev_gradient.iter().map(|g| g[0] * g[0] + g[1] * g[1] + g[2] * g[2]).sum();
+                    let num: f64 = gradient
+                        .iter()
+                        .map(|g| g[0] * g[0] + g[1] * g[1] + g[2] * g[2])
+                        .sum();
+                    let den: f64 = prev_gradient
+                        .iter()
+                        .map(|g| g[0] * g[0] + g[1] * g[1] + g[2] * g[2])
+                        .sum();
                     let beta = if den > 1e-30 { num / den } else { 0.0 };
                     let beta = beta.min(2.0); // reset if β is too large
 
@@ -954,10 +1321,7 @@ mod tests {
 
     fn ethane_with_coords() -> (Molecule, Conformer) {
         let mol = parse_smiles("CC").unwrap();
-        let conf = Conformer::new(vec![
-            [0.0, 0.0, 0.0],
-            [1.54, 0.0, 0.0],
-        ]);
+        let conf = Conformer::new(vec![[0.0, 0.0, 0.0], [1.54, 0.0, 0.0]]);
         (mol, conf)
     }
 
@@ -989,10 +1353,10 @@ mod tests {
     fn mmff94_type_assignment() {
         let mol = parse_smiles("CC(=O)O").unwrap();
         let types = assign_mmff94_types(&mol).unwrap();
-        assert_eq!(types[0], Mmff94AtomType::CR);  // methyl C
-        assert_eq!(types[1], Mmff94AtomType::C3);  // carbonyl C
-        assert_eq!(types[2], Mmff94AtomType::O2);  // C=O
-        assert_eq!(types[3], Mmff94AtomType::OR);  // C-O-H
+        assert_eq!(types[0], Mmff94AtomType::CR); // methyl C
+        assert_eq!(types[1], Mmff94AtomType::C3); // carbonyl C
+        assert_eq!(types[2], Mmff94AtomType::O2); // C=O
+        assert_eq!(types[3], Mmff94AtomType::OR); // C-O-H
     }
 
     #[test]
@@ -1047,17 +1411,18 @@ mod tests {
             method: MinimizeMethod::SteepestDescent,
         };
         let result = uff_minimize(&mol, &conf, &config).unwrap();
-        assert!(result.final_energy <= result.initial_energy,
-            "energy should decrease: {} -> {}", result.initial_energy, result.final_energy);
+        assert!(
+            result.final_energy <= result.initial_energy,
+            "energy should decrease: {} -> {}",
+            result.initial_energy,
+            result.final_energy
+        );
     }
 
     #[test]
     fn mmff94_minimize_basic() {
         let mol = parse_smiles("CC").unwrap();
-        let conf = Conformer::new(vec![
-            [0.0, 0.0, 0.0],
-            [2.0, 0.0, 0.0],
-        ]);
+        let conf = Conformer::new(vec![[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]]);
         let config = MinimizeConfig {
             max_steps: 50,
             gradient_threshold: 1.0,
@@ -1070,10 +1435,7 @@ mod tests {
     #[test]
     fn conjugate_gradient_minimize() {
         let mol = parse_smiles("CC").unwrap();
-        let conf = Conformer::new(vec![
-            [0.0, 0.0, 0.0],
-            [2.0, 0.0, 0.0],
-        ]);
+        let conf = Conformer::new(vec![[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]]);
         let config = MinimizeConfig {
             max_steps: 50,
             gradient_threshold: 1.0,

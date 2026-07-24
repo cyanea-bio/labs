@@ -70,9 +70,7 @@ pub fn kmeans(data: &[&[f64]], config: &KMeansConfig) -> Result<KMeansResult> {
         return Err(CyaneaError::InvalidInput("empty data".into()));
     }
     if k == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "n_clusters must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_clusters must be > 0".into()));
     }
     if k > n {
         return Err(CyaneaError::InvalidInput(format!(
@@ -281,9 +279,7 @@ pub fn dbscan(data: &[&[f64]], config: &DbscanConfig) -> Result<DbscanResult> {
         return Err(CyaneaError::InvalidInput("eps must be > 0".into()));
     }
     if config.min_samples == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "min_samples must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("min_samples must be > 0".into()));
     }
 
     let dim = data[0].len();
@@ -459,9 +455,7 @@ pub fn hierarchical(
 ) -> Result<HierarchicalResult> {
     let n = distances.n();
     if config.n_clusters == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "n_clusters must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_clusters must be > 0".into()));
     }
     if config.n_clusters > n {
         return Err(CyaneaError::InvalidInput(format!(
@@ -477,8 +471,7 @@ pub fn hierarchical(
 
     // Each point starts in its own cluster.
     // cluster_members[i] = list of original point indices in cluster i.
-    let mut cluster_members: Vec<Option<Vec<usize>>> =
-        (0..n).map(|i| Some(vec![i])).collect();
+    let mut cluster_members: Vec<Option<Vec<usize>>> = (0..n).map(|i| Some(vec![i])).collect();
     let mut active: Vec<usize> = (0..n).collect();
     let mut merge_history = Vec::with_capacity(n - config.n_clusters);
 
@@ -618,8 +611,7 @@ fn hierarchical_ward_nn_chain(
     let mut n_active = n;
 
     // Cluster membership for final label assignment
-    let mut cluster_members: Vec<Option<Vec<usize>>> =
-        (0..n).map(|i| Some(vec![i])).collect();
+    let mut cluster_members: Vec<Option<Vec<usize>>> = (0..n).map(|i| Some(vec![i])).collect();
     let mut merge_history = Vec::with_capacity(n.saturating_sub(n_clusters));
 
     // NN-chain stack
@@ -1022,7 +1014,7 @@ mod tests {
         };
         let result = hierarchical(&dm, &config).unwrap();
         assert_eq!(result.merge_history.len(), 2); // n-1 merges for n=3 -> 1 cluster
-        // First merge should be distance 1.0 (between 0.0 and 1.0)
+                                                   // First merge should be distance 1.0 (between 0.0 and 1.0)
         assert!((result.merge_history[0].distance - 1.0).abs() < 1e-12);
     }
 

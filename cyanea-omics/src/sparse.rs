@@ -330,14 +330,9 @@ mod tests {
 
     #[test]
     fn test_from_triplets() {
-        let m = SparseMatrix::from_triplets(
-            vec![0, 1, 2],
-            vec![0, 1, 2],
-            vec![1.0, 2.0, 3.0],
-            3,
-            3,
-        )
-        .unwrap();
+        let m =
+            SparseMatrix::from_triplets(vec![0, 1, 2], vec![0, 1, 2], vec![1.0, 2.0, 3.0], 3, 3)
+                .unwrap();
         assert_eq!(m.nnz(), 3);
         assert_eq!(m.get(0, 0), 1.0);
         assert_eq!(m.get(1, 1), 2.0);
@@ -346,25 +341,13 @@ mod tests {
 
     #[test]
     fn test_from_triplets_bounds_check() {
-        let result = SparseMatrix::from_triplets(
-            vec![5],
-            vec![0],
-            vec![1.0],
-            3,
-            3,
-        );
+        let result = SparseMatrix::from_triplets(vec![5], vec![0], vec![1.0], 3, 3);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_from_triplets_length_mismatch() {
-        let result = SparseMatrix::from_triplets(
-            vec![0, 1],
-            vec![0],
-            vec![1.0],
-            3,
-            3,
-        );
+        let result = SparseMatrix::from_triplets(vec![0, 1], vec![0], vec![1.0], 3, 3);
         assert!(result.is_err());
     }
 
@@ -380,27 +363,14 @@ mod tests {
 
     #[test]
     fn test_density() {
-        let m = SparseMatrix::from_triplets(
-            vec![0, 1],
-            vec![0, 1],
-            vec![1.0, 2.0],
-            10,
-            10,
-        )
-        .unwrap();
+        let m =
+            SparseMatrix::from_triplets(vec![0, 1], vec![0, 1], vec![1.0, 2.0], 10, 10).unwrap();
         assert!((m.density() - 0.02).abs() < 1e-10);
     }
 
     #[test]
     fn test_to_dense() {
-        let m = SparseMatrix::from_triplets(
-            vec![0, 1],
-            vec![1, 0],
-            vec![3.0, 7.0],
-            2,
-            2,
-        )
-        .unwrap();
+        let m = SparseMatrix::from_triplets(vec![0, 1], vec![1, 0], vec![3.0, 7.0], 2, 2).unwrap();
         let dense = m.to_dense();
         assert_eq!(dense, vec![vec![0.0, 3.0], vec![7.0, 0.0]]);
     }
@@ -423,14 +393,9 @@ mod tests {
 
     #[test]
     fn test_row_col_nnz() {
-        let m = SparseMatrix::from_triplets(
-            vec![0, 0, 1],
-            vec![0, 1, 0],
-            vec![1.0, 2.0, 3.0],
-            2,
-            2,
-        )
-        .unwrap();
+        let m =
+            SparseMatrix::from_triplets(vec![0, 0, 1], vec![0, 1, 0], vec![1.0, 2.0, 3.0], 2, 2)
+                .unwrap();
         assert_eq!(m.row_nnz(0), 2);
         assert_eq!(m.row_nnz(1), 1);
         assert_eq!(m.col_nnz(0), 2);
@@ -439,28 +404,14 @@ mod tests {
 
     #[test]
     fn test_iter() {
-        let m = SparseMatrix::from_triplets(
-            vec![0, 1],
-            vec![0, 1],
-            vec![1.0, 2.0],
-            2,
-            2,
-        )
-        .unwrap();
+        let m = SparseMatrix::from_triplets(vec![0, 1], vec![0, 1], vec![1.0, 2.0], 2, 2).unwrap();
         let triplets: Vec<_> = m.iter().collect();
         assert_eq!(triplets, vec![(0, 0, 1.0), (1, 1, 2.0)]);
     }
 
     #[test]
     fn test_summary() {
-        let m = SparseMatrix::from_triplets(
-            vec![0],
-            vec![0],
-            vec![1.0],
-            100,
-            50,
-        )
-        .unwrap();
+        let m = SparseMatrix::from_triplets(vec![0], vec![0], vec![1.0], 100, 50).unwrap();
         assert_eq!(
             m.summary(),
             "SparseMatrix: 100\u{00d7}50, 1 nonzeros (0.02% density)"
@@ -531,14 +482,7 @@ mod tests {
 
     #[test]
     fn test_column_means() {
-        let m = SparseMatrix::from_triplets(
-            vec![0, 1],
-            vec![0, 0],
-            vec![4.0, 6.0],
-            2,
-            2,
-        )
-        .unwrap();
+        let m = SparseMatrix::from_triplets(vec![0, 1], vec![0, 0], vec![4.0, 6.0], 2, 2).unwrap();
         let means = m.column_means();
         assert!((means[0] - 5.0).abs() < 1e-10);
         assert!((means[1] - 0.0).abs() < 1e-10);
@@ -582,14 +526,8 @@ mod tests {
 
     #[test]
     fn test_map_values() {
-        let mut m = SparseMatrix::from_triplets(
-            vec![0, 1],
-            vec![0, 1],
-            vec![4.0, 9.0],
-            2,
-            2,
-        )
-        .unwrap();
+        let mut m =
+            SparseMatrix::from_triplets(vec![0, 1], vec![0, 1], vec![4.0, 9.0], 2, 2).unwrap();
         m.map_values(|v| v.sqrt());
         assert!((m.get(0, 0) - 2.0).abs() < 1e-10);
         assert!((m.get(1, 1) - 3.0).abs() < 1e-10);
@@ -604,14 +542,9 @@ mod tests {
 
     #[test]
     fn test_csr_single_row() {
-        let m = SparseMatrix::from_triplets(
-            vec![0, 0, 0],
-            vec![0, 2, 4],
-            vec![1.0, 2.0, 3.0],
-            1,
-            5,
-        )
-        .unwrap();
+        let m =
+            SparseMatrix::from_triplets(vec![0, 0, 0], vec![0, 2, 4], vec![1.0, 2.0, 3.0], 1, 5)
+                .unwrap();
 
         let (data, indices, indptr) = m.to_csr();
         assert_eq!(data, vec![1.0, 2.0, 3.0]);

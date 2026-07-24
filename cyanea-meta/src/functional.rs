@@ -3,8 +3,8 @@
 //! Maps taxa to functional categories (KEGG/COG), aggregates to pathways,
 //! and computes functional diversity.
 
-use std::collections::HashMap;
 use crate::error::{MetaError, Result};
+use std::collections::HashMap;
 
 /// Functional category ID and its abundance.
 #[derive(Debug, Clone)]
@@ -127,9 +127,7 @@ pub fn pathway_abundance(
     function_pathways: &HashMap<String, Vec<String>>,
 ) -> Result<HashMap<String, f64>> {
     if functional_profile.is_empty() {
-        return Err(MetaError::Functional(
-            "functional profile is empty".into(),
-        ));
+        return Err(MetaError::Functional("functional profile is empty".into()));
     }
 
     let mut pathways: HashMap<String, f64> = HashMap::new();
@@ -160,9 +158,7 @@ pub fn pathway_abundance(
 /// Returns an error if profile is empty.
 pub fn functional_diversity(profile: &FunctionalProfile) -> Result<f64> {
     if profile.is_empty() {
-        return Err(MetaError::Functional(
-            "profile is empty".into(),
-        ));
+        return Err(MetaError::Functional("profile is empty".into()));
     }
 
     let total = profile.total_abundance();
@@ -223,7 +219,10 @@ mod tests {
 
         let mut function_pathways = HashMap::new();
         function_pathways.insert("K001".to_string(), vec!["path1".to_string()]);
-        function_pathways.insert("K002".to_string(), vec!["path1".to_string(), "path2".to_string()]);
+        function_pathways.insert(
+            "K002".to_string(),
+            vec!["path1".to_string(), "path2".to_string()],
+        );
 
         let pathways = pathway_abundance(&profile, &function_pathways).unwrap();
         // path1: 50 + 75 = 125

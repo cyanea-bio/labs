@@ -159,13 +159,12 @@ fn smooth_knn_dist(distances: &[f64], target: f64) -> f64 {
 
 fn compute_distance(a: &[f64], b: &[f64], metric: DistanceMetric) -> f64 {
     match metric {
-        DistanceMetric::Euclidean => {
-            a.iter()
-                .zip(b.iter())
-                .map(|(x, y)| (x - y).powi(2))
-                .sum::<f64>()
-                .sqrt()
-        }
+        DistanceMetric::Euclidean => a
+            .iter()
+            .zip(b.iter())
+            .map(|(x, y)| (x - y).powi(2))
+            .sum::<f64>()
+            .sqrt(),
         DistanceMetric::Cosine => {
             let dot: f64 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
             let norm_a: f64 = a.iter().map(|x| x * x).sum::<f64>().sqrt();
@@ -231,7 +230,11 @@ pub fn leiden(adata: &mut AnnData, config: &ClusterConfig) -> Result<()> {
     let mut assignments: Vec<usize> = (0..n).collect();
 
     // Total edge weight
-    let total_weight: f64 = conn.iter().filter(|(i, j, _)| i < j).map(|(_, _, w)| w).sum();
+    let total_weight: f64 = conn
+        .iter()
+        .filter(|(i, j, _)| i < j)
+        .map(|(_, _, w)| w)
+        .sum();
     if total_weight == 0.0 {
         let labels: Vec<String> = (0..n).map(|i| i.to_string()).collect();
         adata.add_obs_column(&config.key_added, ColumnData::Strings(labels))?;
@@ -584,19 +587,14 @@ mod tests {
     #[test]
     fn neighbors_missing_pca() {
         let x = MatrixData::Dense(vec![vec![1.0, 2.0]]);
-        let mut adata =
-            AnnData::new(x, vec!["c0".into()], vec!["g0".into(), "g1".into()]).unwrap();
+        let mut adata = AnnData::new(x, vec!["c0".into()], vec!["g0".into(), "g1".into()]).unwrap();
         let result = neighbors(&mut adata, &NeighborsConfig::default());
         assert!(result.is_err());
     }
 
     #[test]
     fn neighbors_cosine_metric() {
-        let pca = vec![
-            vec![1.0, 0.0],
-            vec![0.0, 1.0],
-            vec![1.0, 1.0],
-        ];
+        let pca = vec![vec![1.0, 0.0], vec![0.0, 1.0], vec![1.0, 1.0]];
         let mut adata = make_adata_with_pca(3, 2, pca);
         neighbors(
             &mut adata,

@@ -179,8 +179,17 @@ pub fn parse_wiggle_str(data: &str) -> Result<Vec<BedGraphRecord>> {
     // Current section state
     enum WigSection {
         None,
-        VariableStep { chrom: String, span: u64 },
-        FixedStep { chrom: String, _start: u64, step: u64, span: u64, current_pos: u64 },
+        VariableStep {
+            chrom: String,
+            span: u64,
+        },
+        FixedStep {
+            chrom: String,
+            _start: u64,
+            step: u64,
+            span: u64,
+            current_pos: u64,
+        },
     }
 
     let mut section = WigSection::None;
@@ -198,19 +207,13 @@ pub fn parse_wiggle_str(data: &str) -> Result<Vec<BedGraphRecord>> {
         if line.starts_with("variableStep") {
             let fields: Vec<&str> = line.split_whitespace().collect();
             let chrom = parse_wig_kv(&fields, "chrom").ok_or_else(|| {
-                CyaneaError::Parse(format!(
-                    "line {}: variableStep missing chrom",
-                    line_idx + 1
-                ))
+                CyaneaError::Parse(format!("line {}: variableStep missing chrom", line_idx + 1))
             })?;
             let span: u64 = parse_wig_kv(&fields, "span")
                 .map(|s| s.parse::<u64>())
                 .transpose()
                 .map_err(|_| {
-                    CyaneaError::Parse(format!(
-                        "line {}: invalid span value",
-                        line_idx + 1
-                    ))
+                    CyaneaError::Parse(format!("line {}: invalid span value", line_idx + 1))
                 })?
                 .unwrap_or(1);
 
@@ -224,47 +227,29 @@ pub fn parse_wiggle_str(data: &str) -> Result<Vec<BedGraphRecord>> {
         if line.starts_with("fixedStep") {
             let fields: Vec<&str> = line.split_whitespace().collect();
             let chrom = parse_wig_kv(&fields, "chrom").ok_or_else(|| {
-                CyaneaError::Parse(format!(
-                    "line {}: fixedStep missing chrom",
-                    line_idx + 1
-                ))
+                CyaneaError::Parse(format!("line {}: fixedStep missing chrom", line_idx + 1))
             })?;
             let start: u64 = parse_wig_kv(&fields, "start")
                 .ok_or_else(|| {
-                    CyaneaError::Parse(format!(
-                        "line {}: fixedStep missing start",
-                        line_idx + 1
-                    ))
+                    CyaneaError::Parse(format!("line {}: fixedStep missing start", line_idx + 1))
                 })?
                 .parse()
                 .map_err(|_| {
-                    CyaneaError::Parse(format!(
-                        "line {}: invalid start value",
-                        line_idx + 1
-                    ))
+                    CyaneaError::Parse(format!("line {}: invalid start value", line_idx + 1))
                 })?;
             let step: u64 = parse_wig_kv(&fields, "step")
                 .ok_or_else(|| {
-                    CyaneaError::Parse(format!(
-                        "line {}: fixedStep missing step",
-                        line_idx + 1
-                    ))
+                    CyaneaError::Parse(format!("line {}: fixedStep missing step", line_idx + 1))
                 })?
                 .parse()
                 .map_err(|_| {
-                    CyaneaError::Parse(format!(
-                        "line {}: invalid step value",
-                        line_idx + 1
-                    ))
+                    CyaneaError::Parse(format!("line {}: invalid step value", line_idx + 1))
                 })?;
             let span: u64 = parse_wig_kv(&fields, "span")
                 .map(|s| s.parse::<u64>())
                 .transpose()
                 .map_err(|_| {
-                    CyaneaError::Parse(format!(
-                        "line {}: invalid span value",
-                        line_idx + 1
-                    ))
+                    CyaneaError::Parse(format!("line {}: invalid span value", line_idx + 1))
                 })?
                 .unwrap_or(1);
 
@@ -375,9 +360,24 @@ chr2\t0\t50\t0.8
     #[test]
     fn bedgraph_roundtrip() {
         let original = vec![
-            BedGraphRecord { chrom: "chr1".into(), start: 0, end: 100, value: 1.5 },
-            BedGraphRecord { chrom: "chr1".into(), start: 100, end: 200, value: 2.0 },
-            BedGraphRecord { chrom: "chr2".into(), start: 50, end: 150, value: 3.7 },
+            BedGraphRecord {
+                chrom: "chr1".into(),
+                start: 0,
+                end: 100,
+                value: 1.5,
+            },
+            BedGraphRecord {
+                chrom: "chr1".into(),
+                start: 100,
+                end: 200,
+                value: 2.0,
+            },
+            BedGraphRecord {
+                chrom: "chr2".into(),
+                start: 50,
+                end: 150,
+                value: 3.7,
+            },
         ];
 
         let written = write_bedgraph_string(&original, Some("test"));

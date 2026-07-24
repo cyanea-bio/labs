@@ -40,7 +40,9 @@ pub struct DatingResult {
 pub fn strict_clock(tree: &PhyloTree, calibration: &Calibration) -> Result<DatingResult> {
     let n = tree.node_count();
     if calibration.node_id >= n {
-        return Err(CyaneaError::InvalidInput("calibration node out of range".into()));
+        return Err(CyaneaError::InvalidInput(
+            "calibration node out of range".into(),
+        ));
     }
     if calibration.age <= 0.0 {
         return Err(CyaneaError::InvalidInput(
@@ -55,8 +57,7 @@ pub fn strict_clock(tree: &PhyloTree, calibration: &Calibration) -> Result<Datin
         if node.is_root() {
             root_dist[id] = 0.0;
         } else {
-            root_dist[id] =
-                root_dist[node.parent.unwrap()] + node.branch_length.unwrap_or(0.0);
+            root_dist[id] = root_dist[node.parent.unwrap()] + node.branch_length.unwrap_or(0.0);
         }
     }
 
@@ -80,7 +81,11 @@ pub fn strict_clock(tree: &PhyloTree, calibration: &Calibration) -> Result<Datin
     let node_ages: Vec<f64> = (0..n)
         .map(|id| {
             let age = (max_dist - root_dist[id]) / rate;
-            if age < 0.0 { 0.0 } else { age }
+            if age < 0.0 {
+                0.0
+            } else {
+                age
+            }
         })
         .collect();
 
@@ -119,8 +124,7 @@ pub fn root_to_tip_regression(
     for id in tree.iter_preorder() {
         let node = tree.get_node(id).unwrap();
         if !node.is_root() {
-            root_dist[id] =
-                root_dist[node.parent.unwrap()] + node.branch_length.unwrap_or(0.0);
+            root_dist[id] = root_dist[node.parent.unwrap()] + node.branch_length.unwrap_or(0.0);
         }
     }
 
@@ -152,10 +156,7 @@ pub fn root_to_tip_regression(
 
     // Node ages: proportional to distance from root.
     // Max root-to-tip distance corresponds to most recent tip.
-    let max_date: f64 = tip_dates
-        .iter()
-        .map(|&(_, d)| d)
-        .fold(f64::MIN, f64::max);
+    let max_date: f64 = tip_dates.iter().map(|&(_, d)| d).fold(f64::MIN, f64::max);
 
     let node_ages: Vec<f64> = (0..n)
         .map(|id| {
@@ -163,7 +164,11 @@ pub fn root_to_tip_regression(
             // age = max_date - date(node)
             let node_date = root_age + root_dist[id] / rate;
             let age = max_date - node_date;
-            if age < 0.0 { 0.0 } else { age }
+            if age < 0.0 {
+                0.0
+            } else {
+                age
+            }
         })
         .collect();
 
@@ -177,8 +182,7 @@ mod tests {
     #[test]
     fn strict_clock_ultrametric() {
         // Ultrametric tree: all root-to-tip distances equal.
-        let tree =
-            PhyloTree::from_newick("((A:0.5,B:0.5):0.5,(C:0.5,D:0.5):0.5);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.5,B:0.5):0.5,(C:0.5,D:0.5):0.5);").unwrap();
         let root_id = tree.root();
         // Calibrate root at age 1.0.
         // We need a non-root node for calibration. Use internal node.
@@ -230,8 +234,7 @@ mod tests {
     #[test]
     fn root_to_tip_linear() {
         // Tree with tips at different distances matching linear relationship.
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.2):0.1,C:0.3);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.2):0.1,C:0.3);").unwrap();
         let a_id = tree
             .leaves()
             .into_iter()

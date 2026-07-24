@@ -87,7 +87,12 @@ impl Molecule {
             adjacency[bond.atom1].push((bond.atom2, bi));
             adjacency[bond.atom2].push((bond.atom1, bi));
         }
-        Molecule { name, atoms, bonds, adjacency }
+        Molecule {
+            name,
+            atoms,
+            bonds,
+            adjacency,
+        }
     }
 
     /// Number of atoms (including implicit hydrogens conceptually, but counting graph nodes).
@@ -126,7 +131,11 @@ impl Molecule {
     /// Total hydrogen count (implicit + explicit H atoms).
     pub fn total_hydrogen_count(&self) -> usize {
         let explicit: usize = self.atoms.iter().filter(|a| a.atomic_number == 1).count();
-        let implicit: usize = self.atoms.iter().map(|a| a.implicit_hydrogens as usize).sum();
+        let implicit: usize = self
+            .atoms
+            .iter()
+            .map(|a| a.implicit_hydrogens as usize)
+            .sum();
         explicit + implicit
     }
 }
@@ -141,7 +150,11 @@ impl Summarizable for Molecule {
     fn summary(&self) -> String {
         format!(
             "{}: {} atoms, {} bonds",
-            if self.name.is_empty() { "Molecule" } else { &self.name },
+            if self.name.is_empty() {
+                "Molecule"
+            } else {
+                &self.name
+            },
             self.atom_count(),
             self.bond_count()
         )
@@ -154,7 +167,13 @@ impl ContentAddressable for Molecule {
         // Sort atoms by (atomic_number, charge, isotope, aromatic, implicit_h)
         let mut sorted_atoms: Vec<_> = self.atoms.iter().enumerate().collect();
         sorted_atoms.sort_by_key(|(_, a)| {
-            (a.atomic_number, a.formal_charge, a.isotope, a.is_aromatic, a.implicit_hydrogens)
+            (
+                a.atomic_number,
+                a.formal_charge,
+                a.isotope,
+                a.is_aromatic,
+                a.implicit_hydrogens,
+            )
         });
         for (_, atom) in &sorted_atoms {
             hasher.update([atom.atomic_number]);
@@ -168,7 +187,11 @@ impl ContentAddressable for Molecule {
         // Sort bonds by (min_atom, max_atom, order)
         let mut sorted_bonds: Vec<_> = self.bonds.iter().collect();
         sorted_bonds.sort_by_key(|b| {
-            let (a, c) = if b.atom1 <= b.atom2 { (b.atom1, b.atom2) } else { (b.atom2, b.atom1) };
+            let (a, c) = if b.atom1 <= b.atom2 {
+                (b.atom1, b.atom2)
+            } else {
+                (b.atom2, b.atom1)
+            };
             (a, c, b.order as u8)
         });
         for bond in &sorted_bonds {
@@ -185,20 +208,43 @@ mod tests {
     use super::*;
 
     fn make_water() -> Molecule {
-        let atoms = vec![
-            MolAtom { atomic_number: 8, formal_charge: 0, isotope: None, is_aromatic: false, implicit_hydrogens: 2, chirality: Chirality::None },
-        ];
+        let atoms = vec![MolAtom {
+            atomic_number: 8,
+            formal_charge: 0,
+            isotope: None,
+            is_aromatic: false,
+            implicit_hydrogens: 2,
+            chirality: Chirality::None,
+        }];
         Molecule::new("water".into(), atoms, vec![])
     }
 
     fn make_ethane() -> Molecule {
         let atoms = vec![
-            MolAtom { atomic_number: 6, formal_charge: 0, isotope: None, is_aromatic: false, implicit_hydrogens: 3, chirality: Chirality::None },
-            MolAtom { atomic_number: 6, formal_charge: 0, isotope: None, is_aromatic: false, implicit_hydrogens: 3, chirality: Chirality::None },
+            MolAtom {
+                atomic_number: 6,
+                formal_charge: 0,
+                isotope: None,
+                is_aromatic: false,
+                implicit_hydrogens: 3,
+                chirality: Chirality::None,
+            },
+            MolAtom {
+                atomic_number: 6,
+                formal_charge: 0,
+                isotope: None,
+                is_aromatic: false,
+                implicit_hydrogens: 3,
+                chirality: Chirality::None,
+            },
         ];
-        let bonds = vec![
-            Bond { atom1: 0, atom2: 1, order: BondOrder::Single, is_aromatic: false, stereo: BondStereo::None },
-        ];
+        let bonds = vec![Bond {
+            atom1: 0,
+            atom2: 1,
+            order: BondOrder::Single,
+            is_aromatic: false,
+            stereo: BondStereo::None,
+        }];
         Molecule::new("ethane".into(), atoms, bonds)
     }
 

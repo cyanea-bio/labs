@@ -143,7 +143,12 @@ fn normalize_total(
 /// Returns a PyHvgResult with gene indices and normalized dispersions.
 #[pyfunction]
 #[pyo3(signature = (data, n_features, method="seurat_v3", n_top_genes=2000))]
-fn hvg(data: Vec<f64>, n_features: usize, method: &str, n_top_genes: usize) -> PyResult<PyHvgResult> {
+fn hvg(
+    data: Vec<f64>,
+    n_features: usize,
+    method: &str,
+    n_top_genes: usize,
+) -> PyResult<PyHvgResult> {
     let mut adata = build_adata(data, n_features)?;
     let hvg_method = match method {
         "cell_ranger" => HvgMethod::CellRanger,
@@ -289,8 +294,7 @@ fn cluster_impl(
     let dummy = vec![vec![0.0; 1]; n_obs];
     let obs_names: Vec<String> = (0..n_obs).map(|i| format!("cell_{i}")).collect();
     let var_names = vec!["dummy".to_string()];
-    let mut adata =
-        AnnData::new(MatrixData::Dense(dummy), obs_names, var_names).into_pyresult()?;
+    let mut adata = AnnData::new(MatrixData::Dense(dummy), obs_names, var_names).into_pyresult()?;
 
     let mut dist_sm = SparseMatrix::new(n_obs, n_obs);
     for (r, c, v) in distances {
@@ -372,8 +376,7 @@ fn diffusion_map(
         n_components,
         alpha: 1.0,
     };
-    let result =
-        cyanea_omics::sc_trajectory::diffusion_map(&mut adata, &config).into_pyresult()?;
+    let result = cyanea_omics::sc_trajectory::diffusion_map(&mut adata, &config).into_pyresult()?;
     Ok(PyDiffusionResult {
         components: result.components,
         eigenvalues: result.eigenvalues,
@@ -384,7 +387,11 @@ fn diffusion_map(
 ///
 /// Returns a PyDptResult with pseudotime values.
 #[pyfunction]
-fn dpt(components: Vec<Vec<f64>>, eigenvalues: Vec<f64>, root_cell: usize) -> PyResult<PyDptResult> {
+fn dpt(
+    components: Vec<Vec<f64>>,
+    eigenvalues: Vec<f64>,
+    root_cell: usize,
+) -> PyResult<PyDptResult> {
     let n_obs = components.len();
     if n_obs == 0 {
         return Err(pyo3::exceptions::PyValueError::new_err("empty components"));
@@ -392,8 +399,7 @@ fn dpt(components: Vec<Vec<f64>>, eigenvalues: Vec<f64>, root_cell: usize) -> Py
     let dummy = vec![vec![0.0; 1]; n_obs];
     let obs_names: Vec<String> = (0..n_obs).map(|i| format!("cell_{i}")).collect();
     let var_names = vec!["dummy".to_string()];
-    let mut adata =
-        AnnData::new(MatrixData::Dense(dummy), obs_names, var_names).into_pyresult()?;
+    let mut adata = AnnData::new(MatrixData::Dense(dummy), obs_names, var_names).into_pyresult()?;
     adata.add_obsm("X_diffmap", components).into_pyresult()?;
     let evals_str = eigenvalues
         .iter()
@@ -420,16 +426,12 @@ fn dpt(components: Vec<Vec<f64>>, eigenvalues: Vec<f64>, root_cell: usize) -> Py
 ///
 /// Takes sparse connectivities and cluster labels, returns connectivity between clusters.
 #[pyfunction]
-fn paga(
-    connectivities: Vec<(usize, usize, f64)>,
-    clusters: Vec<String>,
-) -> PyResult<PyPagaResult> {
+fn paga(connectivities: Vec<(usize, usize, f64)>, clusters: Vec<String>) -> PyResult<PyPagaResult> {
     let n_obs = clusters.len();
     let dummy = vec![vec![0.0; 1]; n_obs];
     let obs_names: Vec<String> = (0..n_obs).map(|i| format!("cell_{i}")).collect();
     let var_names = vec!["dummy".to_string()];
-    let mut adata =
-        AnnData::new(MatrixData::Dense(dummy), obs_names, var_names).into_pyresult()?;
+    let mut adata = AnnData::new(MatrixData::Dense(dummy), obs_names, var_names).into_pyresult()?;
     adata.add_obs("leiden", clusters).into_pyresult()?;
     let mut sm = SparseMatrix::new(n_obs, n_obs);
     for (r, c, v) in connectivities {
@@ -474,8 +476,7 @@ fn rank_genes_groups(
         padj_threshold: 1.0,
         n_genes: None,
     };
-    let results =
-        cyanea_omics::sc_markers::rank_genes_groups(&adata, &config).into_pyresult()?;
+    let results = cyanea_omics::sc_markers::rank_genes_groups(&adata, &config).into_pyresult()?;
     let markers: HashMap<String, Vec<PyMarkerGene>> = results
         .markers
         .iter()

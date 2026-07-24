@@ -1,8 +1,6 @@
 //! Integration tests for differential binding analysis.
 
-use cyanea_epi::differential::{
-    differential_peaks, count_reads_in_peaks, ma_plot_data,
-};
+use cyanea_epi::differential::{count_reads_in_peaks, differential_peaks, ma_plot_data};
 
 #[test]
 fn test_differential_analysis_clear_signal() {
@@ -10,9 +8,9 @@ fn test_differential_analysis_clear_signal() {
     // Samples 0-1: group 1 (high counts in peaks 0-1, low in peak 2)
     // Samples 2-3: group 2 (low counts in peaks 0-1, high in peak 2)
     let count_matrix = vec![
-        vec![100, 110, 10, 5],   // Peak 1: enriched in group 1
-        vec![50, 60, 10, 15],    // Peak 2: enriched in group 1
-        vec![5, 10, 100, 95],    // Peak 3: enriched in group 2
+        vec![100, 110, 10, 5], // Peak 1: enriched in group 1
+        vec![50, 60, 10, 15],  // Peak 2: enriched in group 1
+        vec![5, 10, 100, 95],  // Peak 3: enriched in group 2
     ];
 
     let conditions = vec![0, 0, 1, 1];
@@ -36,10 +34,7 @@ fn test_differential_analysis_clear_signal() {
 #[test]
 fn test_differential_no_difference() {
     // Same counts across conditions
-    let count_matrix = vec![
-        vec![50, 50, 50, 50],
-        vec![100, 100, 100, 100],
-    ];
+    let count_matrix = vec![vec![50, 50, 50, 50], vec![100, 100, 100, 100]];
 
     let conditions = vec![0, 0, 1, 1];
     let region_ids = vec!["peak1".to_string(), "peak2".to_string()];
@@ -119,13 +114,17 @@ fn test_ma_plot_data_generation() {
 fn test_size_factor_normalization() {
     // Count matrix with different sequencing depths
     let count_matrix = vec![
-        vec![10, 100],  // Peak 1: low counts in sample 1, high in sample 2
-        vec![20, 200],  // Peak 2: proportionally same as peak 1
-        vec![100, 50],  // Peak 3: opposite pattern
+        vec![10, 100], // Peak 1: low counts in sample 1, high in sample 2
+        vec![20, 200], // Peak 2: proportionally same as peak 1
+        vec![100, 50], // Peak 3: opposite pattern
     ];
 
     let conditions = vec![0, 1];
-    let region_ids = vec!["peak1".to_string(), "peak2".to_string(), "peak3".to_string()];
+    let region_ids = vec![
+        "peak1".to_string(),
+        "peak2".to_string(),
+        "peak3".to_string(),
+    ];
 
     let results = differential_peaks(&count_matrix, &conditions, &region_ids, 1.0).unwrap();
 
@@ -204,10 +203,7 @@ fn test_empty_group_error() {
 #[test]
 fn test_pseudocount_handling() {
     // Very low count data
-    let count_matrix = vec![
-        vec![1, 2, 0, 1],
-        vec![0, 1, 1, 0],
-    ];
+    let count_matrix = vec![vec![1, 2, 0, 1], vec![0, 1, 1, 0]];
 
     let conditions = vec![0, 0, 1, 1];
     let region_ids = vec!["peak1".to_string(), "peak2".to_string()];

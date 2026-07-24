@@ -16,9 +16,7 @@ pub fn silhouette_samples(data: &[&[f64]], labels: &[i32]) -> Result<Vec<f64>> {
         ));
     }
     if n < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "need at least 2 samples".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("need at least 2 samples".into()));
     }
 
     // Determine unique non-noise clusters
@@ -78,11 +76,7 @@ pub fn silhouette_samples(data: &[&[f64]], labels: &[i32]) -> Result<Vec<f64>> {
                 }
 
                 let max_ab = a.max(b);
-                Ok(if max_ab == 0.0 {
-                    0.0
-                } else {
-                    (b - a) / max_ab
-                })
+                Ok(if max_ab == 0.0 { 0.0 } else { (b - a) / max_ab })
             })
             .collect::<Result<Vec<f64>>>()?
     };
@@ -130,11 +124,7 @@ pub fn silhouette_samples(data: &[&[f64]], labels: &[i32]) -> Result<Vec<f64>> {
             }
 
             let max_ab = a.max(b);
-            scores[i] = if max_ab == 0.0 {
-                0.0
-            } else {
-                (b - a) / max_ab
-            };
+            scores[i] = if max_ab == 0.0 { 0.0 } else { (b - a) / max_ab };
         }
         scores
     };
@@ -209,12 +199,7 @@ mod tests {
 
     #[test]
     fn value_range() {
-        let data = vec![
-            vec![0.0],
-            vec![1.0],
-            vec![5.0],
-            vec![6.0],
-        ];
+        let data = vec![vec![0.0], vec![1.0], vec![5.0], vec![6.0]];
         let refs = make_refs(&data);
         let labels = vec![0, 0, 1, 1];
         let samples = silhouette_samples(&refs, &labels).unwrap();

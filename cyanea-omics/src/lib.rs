@@ -27,138 +27,136 @@
 //! ```
 
 pub mod acmg;
-pub mod clinical;
-pub mod genomic;
-pub mod haplotype;
-pub mod interval;
-pub mod interval_tree;
-pub mod coverage;
-pub mod expr;
-pub mod network;
-pub mod otu;
-pub mod sparse;
-pub mod variant;
 pub mod annotation;
-pub mod variant_annotation;
-pub mod single_cell;
-pub mod spatial;
-pub mod spatial_platforms;
-pub mod spatial_segmentation;
-pub mod spatial_domains;
-pub mod spatial_cellchat;
-pub mod spatial_deconvolution;
-pub mod genome_arithmetic;
+pub mod clinical;
 pub mod cnv;
-pub mod liftover;
-pub mod methylation;
-pub mod pharmacogenomics;
-pub mod microarray;
-pub mod hic;
+pub mod coverage;
 pub mod crispr;
+pub mod expr;
+pub mod genome_arithmetic;
+pub mod genomic;
 #[cfg(feature = "h5ad")]
 pub mod h5ad;
-#[cfg(feature = "zarr")]
-pub mod zarr;
+pub mod haplotype;
+pub mod hic;
+pub mod interval;
+pub mod interval_tree;
+pub mod liftover;
+pub mod methylation;
+pub mod microarray;
+pub mod network;
+pub mod otu;
+pub mod pharmacogenomics;
 #[cfg(feature = "single-cell")]
-pub mod sc_preprocess;
+pub mod sc_batch;
 #[cfg(feature = "single-cell")]
 pub mod sc_cluster;
 #[cfg(feature = "single-cell")]
-pub mod sc_trajectory;
+pub mod sc_integrate;
 #[cfg(feature = "single-cell")]
 pub mod sc_markers;
 #[cfg(feature = "single-cell")]
-pub mod sc_integrate;
-#[cfg(feature = "single-cell")]
 pub mod sc_mtx;
 #[cfg(feature = "single-cell")]
-pub mod sc_velocity;
+pub mod sc_preprocess;
 #[cfg(feature = "single-cell")]
-pub mod sc_batch;
+pub mod sc_trajectory;
+#[cfg(feature = "single-cell")]
+pub mod sc_velocity;
+pub mod single_cell;
+pub mod sparse;
+pub mod spatial;
+pub mod spatial_cellchat;
+pub mod spatial_deconvolution;
+pub mod spatial_domains;
+pub mod spatial_platforms;
+pub mod spatial_segmentation;
+pub mod variant;
+pub mod variant_annotation;
+#[cfg(feature = "zarr")]
+pub mod zarr;
 
+pub use annotation::{Exon, Gene, GeneType, Transcript};
 pub use cnv::{
-    BafSegment, CbsConfig, CnvSegment, SvBreakpoint, SvType,
     baf_segmentation, circular_binary_segmentation, detect_sv_breakpoints, merge_cnv_segments,
+    BafSegment, CbsConfig, CnvSegment, SvBreakpoint, SvType,
 };
-pub use genomic::{GenomicInterval, GenomicPosition, Strand};
-pub use interval::IntervalSet;
-pub use interval_tree::{Interval, IntervalTree};
 pub use coverage::RleCoverage;
 pub use expr::ExpressionMatrix;
-pub use sparse::SparseMatrix;
-pub use variant::{Variant, VariantFilter, VariantType, Zygosity};
-pub use annotation::{Exon, Gene, GeneType, Transcript};
-pub use variant_annotation::{
-    AnnotationConfig, Consequence, SpliceScore, VariantEffect,
-    annotate_variant, annotate_variants, score_splice_disruption,
-};
-pub use single_cell::ColumnData;
 pub use genome_arithmetic::{
-    ClosestResult, GenomeInfo, JaccardStats, StrandMode,
-    closest, complement, genome_info, intersect, intersect_report_a,
-    jaccard, jaccard_stats, make_sliding_windows, make_windows,
-    merge, subtract, union, windows_around,
+    closest, complement, genome_info, intersect, intersect_report_a, jaccard, jaccard_stats,
+    make_sliding_windows, make_windows, merge, subtract, union, windows_around, ClosestResult,
+    GenomeInfo, JaccardStats, StrandMode,
 };
-pub use liftover::{ChainFile, LiftoverResult, liftover, liftover_batch, parse_chain};
-pub use methylation::{
-    CpgIsland, CpgSite, DmRegion, DmrConfig,
-    bisulfite_convert, call_methylation, find_cpg_islands, find_dmrs,
-};
-pub use spatial::{
-    CooccurrenceResult, GearysC, LrInteraction, SpatialAutocorrelation, SpatialGraph, SpatialPoint,
-    cooccurrence, delaunay_neighbors, gearys_c, knn_spatial_neighbors, ligand_receptor_score,
-    morans_i,
-};
-pub use spatial_platforms::{
-    MerfishData, SlideseqData, VisiumData, VisiumScaleFactors,
-    merfish_to_spatial_points, slideseq_to_spatial_points, visium_to_spatial_points,
-};
-pub use spatial_segmentation::{
-    ExpansionParams, SegmentationResult, SegmentedCell,
-    expansion_segmentation, voronoi_segmentation, watershed_grid,
-};
-pub use spatial_domains::{
-    DomainParams, DomainResult, SpatialDomain, SpatiallyVariableGene,
-    detect_domains, find_spatially_variable_genes, hmrf_smooth,
-};
-pub use spatial_cellchat::{
-    CommParams, CommunicationResult, LrPair, PathwayCommunication,
-    aggregate_pathways, analyze_communication, demo_lr_database,
-};
-pub use spatial_deconvolution::{
-    CellTypeSignature, DeconvolutionResult, EnrichmentScore, SpotDeconvolution,
-    nnls_deconvolve, score_enrichment,
-};
-pub use otu::OtuTable;
-pub use network::{CentralityScores, Community, Graph};
+pub use genomic::{GenomicInterval, GenomicPosition, Strand};
 pub use haplotype::{
     haplotype_blocks, haplotype_diversity, phase_em, Haplotype, HaplotypeBlock, PhasedGenotypes,
 };
+pub use interval::IntervalSet;
+pub use interval_tree::{Interval, IntervalTree};
+pub use liftover::{liftover, liftover_batch, parse_chain, ChainFile, LiftoverResult};
+pub use methylation::{
+    bisulfite_convert, call_methylation, find_cpg_islands, find_dmrs, CpgIsland, CpgSite, DmRegion,
+    DmrConfig,
+};
+pub use network::{CentralityScores, Community, Graph};
+pub use otu::OtuTable;
+pub use single_cell::ColumnData;
+pub use sparse::SparseMatrix;
+pub use spatial::{
+    cooccurrence, delaunay_neighbors, gearys_c, knn_spatial_neighbors, ligand_receptor_score,
+    morans_i, CooccurrenceResult, GearysC, LrInteraction, SpatialAutocorrelation, SpatialGraph,
+    SpatialPoint,
+};
+pub use spatial_cellchat::{
+    aggregate_pathways, analyze_communication, demo_lr_database, CommParams, CommunicationResult,
+    LrPair, PathwayCommunication,
+};
+pub use spatial_deconvolution::{
+    nnls_deconvolve, score_enrichment, CellTypeSignature, DeconvolutionResult, EnrichmentScore,
+    SpotDeconvolution,
+};
+pub use spatial_domains::{
+    detect_domains, find_spatially_variable_genes, hmrf_smooth, DomainParams, DomainResult,
+    SpatialDomain, SpatiallyVariableGene,
+};
+pub use spatial_platforms::{
+    merfish_to_spatial_points, slideseq_to_spatial_points, visium_to_spatial_points, MerfishData,
+    SlideseqData, VisiumData, VisiumScaleFactors,
+};
+pub use spatial_segmentation::{
+    expansion_segmentation, voronoi_segmentation, watershed_grid, ExpansionParams,
+    SegmentationResult, SegmentedCell,
+};
+pub use variant::{Variant, VariantFilter, VariantType, Zygosity};
+pub use variant_annotation::{
+    annotate_variant, annotate_variants, score_splice_disruption, AnnotationConfig, Consequence,
+    SpliceScore, VariantEffect,
+};
 // Re-export ACMG/ClinVar types
 pub use acmg::{
-    auto_evidence, match_clinvar, parse_clinvar_tsv, AcmgClass, AcmgClassification,
-    AcmgCriterion, AcmgEvidence, ClinVarAnnotation, EvidenceStrength,
+    auto_evidence, match_clinvar, parse_clinvar_tsv, AcmgClass, AcmgClassification, AcmgCriterion,
+    AcmgEvidence, ClinVarAnnotation, EvidenceStrength,
 };
 
 // Re-export clinical genomics types
 pub use clinical::{
-    bethesda_markers, call_msi, compute_tmb, hla_compatibility, parse_hla_typing,
-    HlaAllele, HlaTypingResult, MsiLocus, MsiResult, MsiStatus, TmbCategory, TmbResult,
+    bethesda_markers, call_msi, compute_tmb, hla_compatibility, parse_hla_typing, HlaAllele,
+    HlaTypingResult, MsiLocus, MsiResult, MsiStatus, TmbCategory, TmbResult,
 };
 
 // Re-export Hi-C types
 pub use hic::{
     call_compartments, call_loops, call_tads, contacts_to_matrix, insulation_scores,
-    parse_cool_text, parse_pairs, write_pairs,
-    ChromatinLoop, Compartment, CompartmentResult, ContactMatrix, CoolHeader,
-    LoopParams, SparseContact, Tad, TadParams,
+    parse_cool_text, parse_pairs, write_pairs, ChromatinLoop, Compartment, CompartmentResult,
+    ContactMatrix, CoolHeader, LoopParams, SparseContact, Tad, TadParams,
 };
 
 // Re-export microarray analysis types
 pub use microarray::{
-    compute_beta, beta_to_m_value, diff_methylation, limma_diff_expr, m_value_to_beta,
-    median_polish, quantile_normalize, rma_normalize, swan_normalize,
-    DiffExprResult, DiffMethResult, InfiniumType, MethylationProbe,
+    beta_to_m_value, compute_beta, diff_methylation, limma_diff_expr, m_value_to_beta,
+    median_polish, quantile_normalize, rma_normalize, swan_normalize, DiffExprResult,
+    DiffMethResult, InfiniumType, MethylationProbe,
 };
 
 // Re-export pharmacogenomics types

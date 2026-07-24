@@ -34,7 +34,8 @@ pub fn fda_approved_drugs() -> Vec<DemoMolecule> {
         },
         DemoMolecule {
             name: "Atorvastatin",
-            smiles: "CC(C)C1=C(C(=C(N1CCC(CC(CC(=O)O)O)O)C2=CC=C(C=C2)F)C3=CC=CC=C3)C(=O)NC4=CC=CC=C4",
+            smiles:
+                "CC(C)C1=C(C(=C(N1CCC(CC(CC(=O)O)O)O)C2=CC=C(C=C2)F)C3=CC=CC=C3)C(=O)NC4=CC=CC=C4",
             molecular_weight: 558.64,
             logp: 4.5,
             hbd: 4,
@@ -88,7 +89,8 @@ pub fn fda_approved_drugs() -> Vec<DemoMolecule> {
         },
         DemoMolecule {
             name: "Doxorubicin",
-            smiles: "CC1C(C(CC(O1)OC2CC(CC3=C2C(=C4C(=C3O)C(=O)C5=CC=CC(=C5C4=O)OC)O)(C(=O)CO)O)N)O",
+            smiles:
+                "CC1C(C(CC(O1)OC2CC(CC3=C2C(=C4C(=C3O)C(=O)C5=CC=CC(=C5C4=O)OC)O)(C(=O)CO)O)N)O",
             molecular_weight: 543.52,
             logp: 1.3,
             hbd: 6,
@@ -131,19 +133,24 @@ pub struct DemoMolecule {
 impl DemoMolecule {
     /// Check Lipinski's Rule of Five compliance.
     pub fn lipinski_compliant(&self) -> bool {
-        self.molecular_weight <= 500.0
-            && self.logp <= 5.0
-            && self.hbd <= 5
-            && self.hba <= 10
+        self.molecular_weight <= 500.0 && self.logp <= 5.0 && self.hbd <= 5 && self.hba <= 10
     }
 
     /// Count Lipinski violations.
     pub fn lipinski_violations(&self) -> usize {
         let mut v = 0;
-        if self.molecular_weight > 500.0 { v += 1; }
-        if self.logp > 5.0 { v += 1; }
-        if self.hbd > 5 { v += 1; }
-        if self.hba > 10 { v += 1; }
+        if self.molecular_weight > 500.0 {
+            v += 1;
+        }
+        if self.logp > 5.0 {
+            v += 1;
+        }
+        if self.hbd > 5 {
+            v += 1;
+        }
+        if self.hba > 10 {
+            v += 1;
+        }
         v
     }
 }

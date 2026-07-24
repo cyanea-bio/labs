@@ -3,9 +3,7 @@
 //! Compares Smith-Waterman alignment and FM-index construction/search
 //! at multiple sequence lengths with identical scoring parameters.
 
-use criterion::{
-    black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput,
-};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 
 // --- Cyanea imports ---
 use cyanea_align::scoring::{ScoringMatrix, ScoringScheme};
@@ -66,51 +64,41 @@ fn bench_smith_waterman(c: &mut Criterion) {
         let target = mutate_dna(&query, 0.10, 137);
 
         // Cyanea: full SW with traceback
-        group.bench_with_input(
-            BenchmarkId::new("cyanea_full", len),
-            &len,
-            |b, _| {
-                b.iter(|| {
-                    smith_waterman(black_box(&query), black_box(&target), &cyanea_scoring)
-                        .unwrap()
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("cyanea_full", len), &len, |b, _| {
+            b.iter(|| {
+                smith_waterman(black_box(&query), black_box(&target), &cyanea_scoring).unwrap()
+            })
+        });
 
         // Cyanea: SIMD score-only (no traceback)
-        group.bench_with_input(
-            BenchmarkId::new("cyanea_simd_score", len),
-            &len,
-            |b, _| {
-                b.iter(|| {
-                    sw_simd_score(black_box(&query), black_box(&target), &cyanea_scoring)
-                        .unwrap()
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("cyanea_simd_score", len), &len, |b, _| {
+            b.iter(|| {
+                sw_simd_score(black_box(&query), black_box(&target), &cyanea_scoring).unwrap()
+            })
+        });
 
         // rust-bio: local alignment (pairwise::Aligner)
         // rust-bio uses: gap_open = open + extend for first gap base,
         // then gap_extend for subsequent bases.
         // To match our affine model (open=-5, extend=-2): pass gap_open=-5, gap_extend=-2.
-        group.bench_with_input(
-            BenchmarkId::new("rust_bio", len),
-            &len,
-            |b, _| {
-                b.iter(|| {
-                    let mut aligner = Aligner::with_capacity(
-                        query.len(),
-                        target.len(),
-                        -5i32,  // gap open
-                        -2i32,  // gap extend
-                        |a: u8, b: u8| {
-                            if a == b { 2i32 } else { -1i32 }
-                        },
-                    );
-                    aligner.local(black_box(&query), black_box(&target))
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("rust_bio", len), &len, |b, _| {
+            b.iter(|| {
+                let mut aligner = Aligner::with_capacity(
+                    query.len(),
+                    target.len(),
+                    -5i32, // gap open
+                    -2i32, // gap extend
+                    |a: u8, b: u8| {
+                        if a == b {
+                            2i32
+                        } else {
+                            -1i32
+                        }
+                    },
+                );
+                aligner.local(black_box(&query), black_box(&target))
+            })
+        });
     }
 
     group.finish();
@@ -129,32 +117,24 @@ fn bench_fmindex_build(c: &mut Criterion) {
         group.throughput(Throughput::Elements(len as u64));
 
         // Cyanea: single-step build
-        group.bench_with_input(
-            BenchmarkId::new("cyanea", len),
-            &len,
-            |b, _| {
-                b.iter(|| FmIndex::build(black_box(&text)))
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("cyanea", len), &len, |b, _| {
+            b.iter(|| FmIndex::build(black_box(&text)))
+        });
 
         // rust-bio: multi-step construction
         let mut text_sentinel = text.clone();
         text_sentinel.push(b'$');
         let alphabet = dna::n_alphabet();
 
-        group.bench_with_input(
-            BenchmarkId::new("rust_bio", len),
-            &len,
-            |b, _| {
-                b.iter(|| {
-                    let sa = suffix_array(black_box(&text_sentinel));
-                    let bwt_result = bwt(&text_sentinel, &sa);
-                    let less_arr = less(&bwt_result, &alphabet);
-                    let occ = Occ::new(&bwt_result, 3, &alphabet);
-                    FMIndex::new(bwt_result, less_arr, occ)
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("rust_bio", len), &len, |b, _| {
+            b.iter(|| {
+                let sa = suffix_array(black_box(&text_sentinel));
+                let bwt_result = bwt(&text_sentinel, &sa);
+                let less_arr = less(&bwt_result, &alphabet);
+                let occ = Occ::new(&bwt_result, 3, &alphabet);
+                FMIndex::new(bwt_result, less_arr, occ)
+            })
+        });
     }
 
     group.finish();
@@ -183,29 +163,21 @@ fn bench_fmindex_search(c: &mut Criterion) {
         let pattern = text[1000..1000 + pat_len].to_vec();
 
         // Cyanea: count
-        group.bench_with_input(
-            BenchmarkId::new("cyanea", pat_len),
-            &pat_len,
-            |b, _| {
-                b.iter(|| cyanea_fm.count(black_box(&pattern)))
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("cyanea", pat_len), &pat_len, |b, _| {
+            b.iter(|| cyanea_fm.count(black_box(&pattern)))
+        });
 
         // rust-bio: backward_search interval size
-        group.bench_with_input(
-            BenchmarkId::new("rust_bio", pat_len),
-            &pat_len,
-            |b, _| {
-                b.iter(|| {
-                    let result = bio_fm.backward_search(black_box(pattern.iter()));
-                    match result {
-                        BackwardSearchResult::Complete(interval) => interval.occ(&sa).len(),
-                        BackwardSearchResult::Partial(interval, _) => interval.occ(&sa).len(),
-                        BackwardSearchResult::Absent => 0,
-                    }
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("rust_bio", pat_len), &pat_len, |b, _| {
+            b.iter(|| {
+                let result = bio_fm.backward_search(black_box(pattern.iter()));
+                match result {
+                    BackwardSearchResult::Complete(interval) => interval.occ(&sa).len(),
+                    BackwardSearchResult::Partial(interval, _) => interval.occ(&sa).len(),
+                    BackwardSearchResult::Absent => 0,
+                }
+            })
+        });
     }
 
     group.finish();
@@ -217,29 +189,21 @@ fn bench_fmindex_search(c: &mut Criterion) {
         let pattern = text[1000..1000 + pat_len].to_vec();
 
         // Cyanea: search (returns positions)
-        group.bench_with_input(
-            BenchmarkId::new("cyanea", pat_len),
-            &pat_len,
-            |b, _| {
-                b.iter(|| cyanea_fm.search(black_box(&pattern)))
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("cyanea", pat_len), &pat_len, |b, _| {
+            b.iter(|| cyanea_fm.search(black_box(&pattern)))
+        });
 
         // rust-bio: backward_search + occ
-        group.bench_with_input(
-            BenchmarkId::new("rust_bio", pat_len),
-            &pat_len,
-            |b, _| {
-                b.iter(|| {
-                    let result = bio_fm.backward_search(black_box(pattern.iter()));
-                    match result {
-                        BackwardSearchResult::Complete(interval) => interval.occ(&sa),
-                        BackwardSearchResult::Partial(interval, _) => interval.occ(&sa),
-                        BackwardSearchResult::Absent => vec![],
-                    }
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("rust_bio", pat_len), &pat_len, |b, _| {
+            b.iter(|| {
+                let result = bio_fm.backward_search(black_box(pattern.iter()));
+                match result {
+                    BackwardSearchResult::Complete(interval) => interval.occ(&sa),
+                    BackwardSearchResult::Partial(interval, _) => interval.occ(&sa),
+                    BackwardSearchResult::Absent => vec![],
+                }
+            })
+        });
     }
 
     group.finish();

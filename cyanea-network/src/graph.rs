@@ -150,9 +150,10 @@ impl Graph {
     /// Add a node. Returns error if node ID already exists.
     pub fn add_node(&mut self, id: &str, label: &str) -> Result<()> {
         if self.nodes.contains_key(id) {
-            return Err(CyaneaError::InvalidInput(
-                format!("node '{}' already exists", id),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "node '{}' already exists",
+                id
+            )));
         }
         self.nodes.insert(id.to_string(), Node::new(id, label));
         self.adjacency.entry(id.to_string()).or_default();
@@ -162,9 +163,10 @@ impl Graph {
     /// Add a node with a [`Node`] struct.
     pub fn add_node_struct(&mut self, node: Node) -> Result<()> {
         if self.nodes.contains_key(&node.id) {
-            return Err(CyaneaError::InvalidInput(
-                format!("node '{}' already exists", node.id),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "node '{}' already exists",
+                node.id
+            )));
         }
         let id = node.id.clone();
         self.nodes.insert(id.clone(), node);
@@ -175,14 +177,16 @@ impl Graph {
     /// Add a weighted edge between two existing nodes.
     pub fn add_edge(&mut self, source: &str, target: &str, weight: f64) -> Result<()> {
         if !self.nodes.contains_key(source) {
-            return Err(CyaneaError::InvalidInput(
-                format!("source node '{}' not found", source),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "source node '{}' not found",
+                source
+            )));
         }
         if !self.nodes.contains_key(target) {
-            return Err(CyaneaError::InvalidInput(
-                format!("target node '{}' not found", target),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "target node '{}' not found",
+                target
+            )));
         }
 
         let edge_idx = self.edges.len();
@@ -206,14 +210,16 @@ impl Graph {
     /// Add an edge with an [`Edge`] struct.
     pub fn add_edge_struct(&mut self, edge: Edge) -> Result<()> {
         if !self.nodes.contains_key(&edge.source) {
-            return Err(CyaneaError::InvalidInput(
-                format!("source node '{}' not found", edge.source),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "source node '{}' not found",
+                edge.source
+            )));
         }
         if !self.nodes.contains_key(&edge.target) {
-            return Err(CyaneaError::InvalidInput(
-                format!("target node '{}' not found", edge.target),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "target node '{}' not found",
+                edge.target
+            )));
         }
 
         let edge_idx = self.edges.len();
@@ -238,9 +244,10 @@ impl Graph {
 
     /// Get neighbors of a node as (neighbor_id, edge_weight) pairs.
     pub fn neighbors(&self, node_id: &str) -> Result<Vec<(&str, f64)>> {
-        let adj = self.adjacency.get(node_id).ok_or_else(|| {
-            CyaneaError::InvalidInput(format!("node '{}' not found", node_id))
-        })?;
+        let adj = self
+            .adjacency
+            .get(node_id)
+            .ok_or_else(|| CyaneaError::InvalidInput(format!("node '{}' not found", node_id)))?;
 
         Ok(adj
             .iter()
@@ -250,18 +257,20 @@ impl Graph {
 
     /// Get the degree of a node (number of edges).
     pub fn degree(&self, node_id: &str) -> Result<usize> {
-        let adj = self.adjacency.get(node_id).ok_or_else(|| {
-            CyaneaError::InvalidInput(format!("node '{}' not found", node_id))
-        })?;
+        let adj = self
+            .adjacency
+            .get(node_id)
+            .ok_or_else(|| CyaneaError::InvalidInput(format!("node '{}' not found", node_id)))?;
         Ok(adj.len())
     }
 
     /// Get in-degree for directed graphs. Same as degree for undirected.
     pub fn in_degree(&self, node_id: &str) -> Result<usize> {
         if !self.nodes.contains_key(node_id) {
-            return Err(CyaneaError::InvalidInput(
-                format!("node '{}' not found", node_id),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "node '{}' not found",
+                node_id
+            )));
         }
         if self.graph_type == GraphType::Undirected {
             return self.degree(node_id);
@@ -308,9 +317,10 @@ impl Graph {
     /// Remove a node and all its edges.
     pub fn remove_node(&mut self, id: &str) -> Result<()> {
         if !self.nodes.contains_key(id) {
-            return Err(CyaneaError::InvalidInput(
-                format!("node '{}' not found", id),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "node '{}' not found",
+                id
+            )));
         }
 
         // Remove edges involving this node
@@ -349,9 +359,7 @@ impl Graph {
         }
 
         for edge in &self.edges {
-            if node_set.contains(edge.source.as_str())
-                && node_set.contains(edge.target.as_str())
-            {
+            if node_set.contains(edge.source.as_str()) && node_set.contains(edge.target.as_str()) {
                 sub.add_edge_struct(edge.clone())?;
             }
         }
@@ -379,14 +387,18 @@ impl Graph {
         let mut ids: Vec<String> = self.nodes.keys().cloned().collect();
         ids.sort();
         let n = ids.len();
-        let id_to_idx: HashMap<&str, usize> =
-            ids.iter().enumerate().map(|(i, s)| (s.as_str(), i)).collect();
+        let id_to_idx: HashMap<&str, usize> = ids
+            .iter()
+            .enumerate()
+            .map(|(i, s)| (s.as_str(), i))
+            .collect();
 
         let mut matrix = vec![vec![0.0; n]; n];
         for edge in &self.edges {
-            if let (Some(&i), Some(&j)) =
-                (id_to_idx.get(edge.source.as_str()), id_to_idx.get(edge.target.as_str()))
-            {
+            if let (Some(&i), Some(&j)) = (
+                id_to_idx.get(edge.source.as_str()),
+                id_to_idx.get(edge.target.as_str()),
+            ) {
                 matrix[i][j] = edge.weight;
                 if self.graph_type == GraphType::Undirected {
                     matrix[j][i] = edge.weight;
@@ -568,7 +580,9 @@ mod tests {
         let mut g = Graph::new(GraphType::Directed);
         g.add_node("A", "A").unwrap();
         g.add_node("B", "B").unwrap();
-        let edge = Edge::new("A", "B").with_type("activation").with_attr("source", "STRING");
+        let edge = Edge::new("A", "B")
+            .with_type("activation")
+            .with_attr("source", "STRING");
         g.add_edge_struct(edge).unwrap();
         assert_eq!(g.edges[0].edge_type.as_deref(), Some("activation"));
         assert_eq!(g.edges[0].attributes.get("source").unwrap(), "STRING");

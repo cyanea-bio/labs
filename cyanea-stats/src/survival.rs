@@ -440,11 +440,7 @@ pub fn kaplan_meier(times: &[f64], status: &[bool]) -> Result<KmResult> {
 /// let lr = log_rank_test(&times, &status, &groups).unwrap();
 /// assert_eq!(lr.degrees_of_freedom, 1);
 /// ```
-pub fn log_rank_test(
-    times: &[f64],
-    status: &[bool],
-    groups: &[usize],
-) -> Result<LogRankResult> {
+pub fn log_rank_test(times: &[f64], status: &[bool], groups: &[usize]) -> Result<LogRankResult> {
     let order = validate_and_sort(times, status)?;
     let n = times.len();
 
@@ -508,8 +504,7 @@ pub fn log_rank_test(
         if n_risk_total > 0 && d_total > 0 {
             for g in 0..n_groups {
                 observed[g] += d_per_group[g] as f64;
-                expected[g] +=
-                    risk_per_group[g] as f64 * d_total as f64 / n_risk_total as f64;
+                expected[g] += risk_per_group[g] as f64 * d_total as f64 / n_risk_total as f64;
             }
         }
 
@@ -599,9 +594,7 @@ pub fn cox_ph(
 
     let total_events = status.iter().filter(|&&s| s).count();
     if total_events == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "no events in the data".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("no events in the data".into()));
     }
 
     // Accessor for covariate j of subject i
@@ -676,8 +669,7 @@ pub fn cox_ph(
             for j in 0..p {
                 score[j] -= d * s1[j] / s0;
                 for k in 0..p {
-                    info[j * p + k] +=
-                        d * (s2[j * p + k] / s0 - (s1[j] * s1[k]) / (s0 * s0));
+                    info[j * p + k] += d * (s2[j * p + k] / s0 - (s1[j] * s1[k]) / (s0 * s0));
                 }
             }
         }
@@ -919,14 +911,8 @@ mod tests {
         for step in &km.steps {
             assert!(step.ci_lower >= 0.0, "CI lower < 0: {}", step.ci_lower);
             assert!(step.ci_upper <= 1.0, "CI upper > 1: {}", step.ci_upper);
-            assert!(
-                step.ci_lower <= step.survival + TOL,
-                "CI lower > survival"
-            );
-            assert!(
-                step.ci_upper >= step.survival - TOL,
-                "CI upper < survival"
-            );
+            assert!(step.ci_lower <= step.survival + TOL, "CI lower > survival");
+            assert!(step.ci_upper >= step.survival - TOL, "CI upper < survival");
         }
     }
 
@@ -944,7 +930,9 @@ mod tests {
     #[test]
     fn km_monotone_decreasing() {
         let times = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
-        let status = [true, true, true, false, true, false, true, true, false, true];
+        let status = [
+            true, true, true, false, true, false, true, true, false, true,
+        ];
         let km = kaplan_meier(&times, &status).unwrap();
 
         for i in 1..km.steps.len() {
@@ -967,7 +955,11 @@ mod tests {
 
         let lr = log_rank_test(&times, &status, &groups).unwrap();
         assert_eq!(lr.degrees_of_freedom, 1);
-        assert!(lr.p_value < 0.05, "expected significant, got p={}", lr.p_value);
+        assert!(
+            lr.p_value < 0.05,
+            "expected significant, got p={}",
+            lr.p_value
+        );
     }
 
     #[test]

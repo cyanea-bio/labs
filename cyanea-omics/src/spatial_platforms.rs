@@ -411,7 +411,15 @@ mod tests {
         let spot_coords: Vec<(f64, f64)> = (0..n_spots).map(|i| (i as f64 * 100.0, 0.0)).collect();
         let array_positions: Vec<(u32, u32)> = (0..n_spots).map(|i| (0, i as u32)).collect();
         let in_tissue = vec![true; n_spots];
-        VisiumData::new(genes, barcodes, counts, spot_coords, array_positions, in_tissue).unwrap()
+        VisiumData::new(
+            genes,
+            barcodes,
+            counts,
+            spot_coords,
+            array_positions,
+            in_tissue,
+        )
+        .unwrap()
     }
 
     #[test]

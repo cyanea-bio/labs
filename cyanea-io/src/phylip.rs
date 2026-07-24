@@ -101,15 +101,14 @@ pub fn parse_phylip(input: &str) -> Result<PhylipAlignment> {
         if seq.len() != n_sites {
             return Err(CyaneaError::Parse(format!(
                 "taxon '{}': expected {} sites, found {}",
-                seq_names[i], n_sites, seq.len()
+                seq_names[i],
+                n_sites,
+                seq.len()
             )));
         }
     }
 
-    let sequences: Vec<(String, String)> = seq_names
-        .into_iter()
-        .zip(seq_data)
-        .collect();
+    let sequences: Vec<(String, String)> = seq_names.into_iter().zip(seq_data).collect();
 
     Ok(PhylipAlignment {
         sequences,
@@ -171,7 +170,9 @@ pub fn parse_phylip_sequential(input: &str) -> Result<PhylipAlignment> {
         if seq.len() != n_sites {
             return Err(CyaneaError::Parse(format!(
                 "taxon '{}': expected {} sites, found {}",
-                name, n_sites, seq.len()
+                name,
+                n_sites,
+                seq.len()
             )));
         }
 
@@ -219,7 +220,12 @@ pub fn write_phylip(aln: &PhylipAlignment) -> String {
         return out;
     }
 
-    let max_name_len = aln.sequences.iter().map(|(n, _)| n.len()).max().unwrap_or(0);
+    let max_name_len = aln
+        .sequences
+        .iter()
+        .map(|(n, _)| n.len())
+        .max()
+        .unwrap_or(0);
     let pad = max_name_len + 2;
 
     let total_len = aln.n_sites;
@@ -302,9 +308,7 @@ fn parse_dimensions<'a, I: Iterator<Item = &'a str>>(
     Ok((n_taxa, n_sites))
 }
 
-fn skip_blank_lines<'a, I: Iterator<Item = &'a str>>(
-    lines: &mut std::iter::Peekable<I>,
-) -> bool {
+fn skip_blank_lines<'a, I: Iterator<Item = &'a str>>(lines: &mut std::iter::Peekable<I>) -> bool {
     let mut skipped = false;
     while let Some(line) = lines.peek() {
         if line.trim().is_empty() {

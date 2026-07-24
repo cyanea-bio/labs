@@ -49,21 +49,21 @@
 //! ```
 
 pub mod error;
-pub mod spectrum;
-pub mod peptide;
+pub mod fdr;
 pub mod mgf;
 pub mod mzml;
-pub mod search;
+pub mod mztab;
+pub mod peptide;
 pub mod protein;
 pub mod quantification;
-pub mod fdr;
-pub mod mztab;
+pub mod search;
+pub mod spectrum;
 
 // Re-export common types
 pub use error::{ProteomicsError, Result};
-pub use spectrum::{MassSpectrum, Peak, MsLevel, Precursor};
-pub use peptide::{Peptide, Protease, DigestConfig, Modification};
-pub use search::Psm;
-pub use protein::{ProteinGroup, ProteinEntry};
+pub use fdr::{FdrConfig, FdrResult};
+pub use peptide::{DigestConfig, Modification, Peptide, Protease};
+pub use protein::{ProteinEntry, ProteinGroup};
 pub use quantification::{ProteinQuant, QuantMethod, TmtPlex};
-pub use fdr::{FdrResult, FdrConfig};
+pub use search::Psm;
+pub use spectrum::{MassSpectrum, MsLevel, Peak, Precursor};

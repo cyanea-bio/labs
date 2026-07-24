@@ -255,7 +255,8 @@ pub fn call_svs(
     let clustered = cluster_svs(&mut raw_svs, config);
 
     // Filter by support
-    let filtered: Vec<StructuralVariant> = clustered.into_iter()
+    let filtered: Vec<StructuralVariant> = clustered
+        .into_iter()
         .filter(|sv| sv.support >= config.min_support)
         .collect();
 
@@ -269,7 +270,8 @@ pub fn cluster_svs(svs: &mut [StructuralVariant], config: &SvCallConfig) -> Vec<
     }
 
     svs.sort_by(|a, b| {
-        a.chrom.cmp(&b.chrom)
+        a.chrom
+            .cmp(&b.chrom)
             .then(a.sv_type.as_str().cmp(b.sv_type.as_str()))
             .then(a.start.cmp(&b.start))
     });
@@ -390,11 +392,26 @@ pub fn sv_summary(svs: &[StructuralVariant]) -> SvSummary {
 
     SvSummary {
         total: svs.len(),
-        insertions: svs.iter().filter(|sv| sv.sv_type == SvType::Insertion).count(),
-        deletions: svs.iter().filter(|sv| sv.sv_type == SvType::Deletion).count(),
-        inversions: svs.iter().filter(|sv| sv.sv_type == SvType::Inversion).count(),
-        duplications: svs.iter().filter(|sv| sv.sv_type == SvType::Duplication).count(),
-        breakends: svs.iter().filter(|sv| sv.sv_type == SvType::Breakend).count(),
+        insertions: svs
+            .iter()
+            .filter(|sv| sv.sv_type == SvType::Insertion)
+            .count(),
+        deletions: svs
+            .iter()
+            .filter(|sv| sv.sv_type == SvType::Deletion)
+            .count(),
+        inversions: svs
+            .iter()
+            .filter(|sv| sv.sv_type == SvType::Inversion)
+            .count(),
+        duplications: svs
+            .iter()
+            .filter(|sv| sv.sv_type == SvType::Duplication)
+            .count(),
+        breakends: svs
+            .iter()
+            .filter(|sv| sv.sv_type == SvType::Breakend)
+            .count(),
         mean_length: mean,
         median_length: median,
     }
@@ -405,8 +422,13 @@ mod tests {
     use super::*;
 
     fn make_split(
-        read: &str, chrom: &str, ref_start: u64, ref_end: u64,
-        query_start: u64, query_end: u64, is_reverse: bool,
+        read: &str,
+        chrom: &str,
+        ref_start: u64,
+        ref_end: u64,
+        query_start: u64,
+        query_end: u64,
+        is_reverse: bool,
     ) -> SplitAlignment {
         SplitAlignment {
             read_name: read.into(),
@@ -432,14 +454,27 @@ mod tests {
     #[test]
     fn test_deletion_from_splits() {
         // Read maps in two segments with a large gap in reference
-        let alns: Vec<SplitAlignment> = (0..5).flat_map(|i| {
-            vec![
-                make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
-                make_split(&format!("read_{}", i), "chr1", 5000, 6000, 1000, 2000, false),
-            ]
-        }).collect();
+        let alns: Vec<SplitAlignment> = (0..5)
+            .flat_map(|i| {
+                vec![
+                    make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
+                    make_split(
+                        &format!("read_{}", i),
+                        "chr1",
+                        5000,
+                        6000,
+                        1000,
+                        2000,
+                        false,
+                    ),
+                ]
+            })
+            .collect();
 
-        let config = SvCallConfig { min_support: 3, ..Default::default() };
+        let config = SvCallConfig {
+            min_support: 3,
+            ..Default::default()
+        };
         let svs = call_svs(&alns, &config).unwrap();
 
         assert!(!svs.is_empty());
@@ -449,14 +484,19 @@ mod tests {
     #[test]
     fn test_inversion_from_splits() {
         // Read maps forward then reverse on same chromosome
-        let alns: Vec<SplitAlignment> = (0..4).flat_map(|i| {
-            vec![
-                make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
-                make_split(&format!("read_{}", i), "chr1", 3000, 4000, 1000, 2000, true), // reversed!
-            ]
-        }).collect();
+        let alns: Vec<SplitAlignment> = (0..4)
+            .flat_map(|i| {
+                vec![
+                    make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
+                    make_split(&format!("read_{}", i), "chr1", 3000, 4000, 1000, 2000, true), // reversed!
+                ]
+            })
+            .collect();
 
-        let config = SvCallConfig { min_support: 3, ..Default::default() };
+        let config = SvCallConfig {
+            min_support: 3,
+            ..Default::default()
+        };
         let svs = call_svs(&alns, &config).unwrap();
 
         assert!(svs.iter().any(|sv| sv.sv_type == SvType::Inversion));
@@ -465,14 +505,27 @@ mod tests {
     #[test]
     fn test_breakend_from_splits() {
         // Read maps to different chromosomes
-        let alns: Vec<SplitAlignment> = (0..4).flat_map(|i| {
-            vec![
-                make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
-                make_split(&format!("read_{}", i), "chr5", 3000, 4000, 1000, 2000, false),
-            ]
-        }).collect();
+        let alns: Vec<SplitAlignment> = (0..4)
+            .flat_map(|i| {
+                vec![
+                    make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
+                    make_split(
+                        &format!("read_{}", i),
+                        "chr5",
+                        3000,
+                        4000,
+                        1000,
+                        2000,
+                        false,
+                    ),
+                ]
+            })
+            .collect();
 
-        let config = SvCallConfig { min_support: 3, ..Default::default() };
+        let config = SvCallConfig {
+            min_support: 3,
+            ..Default::default()
+        };
         let svs = call_svs(&alns, &config).unwrap();
 
         assert!(svs.iter().any(|sv| sv.sv_type == SvType::Breakend));
@@ -482,16 +535,20 @@ mod tests {
     fn test_svs_from_cigar() {
         let cigar = vec![
             ('M', 1000),
-            ('D', 500),  // 500bp deletion
+            ('D', 500), // 500bp deletion
             ('M', 500),
-            ('I', 200),  // 200bp insertion
+            ('I', 200), // 200bp insertion
             ('M', 1000),
         ];
 
         let svs = svs_from_cigar("chr1", 10000, &cigar, 50);
         assert_eq!(svs.len(), 2);
-        assert!(svs.iter().any(|sv| sv.sv_type == SvType::Deletion && sv.length == -500));
-        assert!(svs.iter().any(|sv| sv.sv_type == SvType::Insertion && sv.length == 200));
+        assert!(svs
+            .iter()
+            .any(|sv| sv.sv_type == SvType::Deletion && sv.length == -500));
+        assert!(svs
+            .iter()
+            .any(|sv| sv.sv_type == SvType::Insertion && sv.length == 200));
     }
 
     #[test]
@@ -505,12 +562,26 @@ mod tests {
     fn test_sv_summary() {
         let svs = vec![
             StructuralVariant {
-                chrom: "chr1".into(), start: 1000, end: 2000, sv_type: SvType::Deletion,
-                length: -1000, support: 5, quality: 60.0, genotype: "0/1".into(), inserted_seq: None,
+                chrom: "chr1".into(),
+                start: 1000,
+                end: 2000,
+                sv_type: SvType::Deletion,
+                length: -1000,
+                support: 5,
+                quality: 60.0,
+                genotype: "0/1".into(),
+                inserted_seq: None,
             },
             StructuralVariant {
-                chrom: "chr1".into(), start: 5000, end: 5001, sv_type: SvType::Insertion,
-                length: 500, support: 3, quality: 40.0, genotype: "0/1".into(), inserted_seq: None,
+                chrom: "chr1".into(),
+                start: 5000,
+                end: 5001,
+                sv_type: SvType::Insertion,
+                length: 500,
+                support: 3,
+                quality: 40.0,
+                genotype: "0/1".into(),
+                inserted_seq: None,
             },
         ];
 
@@ -531,32 +602,59 @@ mod tests {
     #[test]
     fn test_low_support_filtered() {
         // Only 2 reads support this SV, but min_support is 3
-        let alns: Vec<SplitAlignment> = (0..2).flat_map(|i| {
-            vec![
-                make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
-                make_split(&format!("read_{}", i), "chr1", 5000, 6000, 1000, 2000, false),
-            ]
-        }).collect();
+        let alns: Vec<SplitAlignment> = (0..2)
+            .flat_map(|i| {
+                vec![
+                    make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
+                    make_split(
+                        &format!("read_{}", i),
+                        "chr1",
+                        5000,
+                        6000,
+                        1000,
+                        2000,
+                        false,
+                    ),
+                ]
+            })
+            .collect();
 
-        let config = SvCallConfig { min_support: 3, ..Default::default() };
+        let config = SvCallConfig {
+            min_support: 3,
+            ..Default::default()
+        };
         let svs = call_svs(&alns, &config).unwrap();
         assert!(svs.is_empty());
     }
 
     #[test]
     fn test_low_mapq_filtered() {
-        let mut alns: Vec<SplitAlignment> = (0..5).flat_map(|i| {
-            vec![
-                make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
-                make_split(&format!("read_{}", i), "chr1", 5000, 6000, 1000, 2000, false),
-            ]
-        }).collect();
+        let mut alns: Vec<SplitAlignment> = (0..5)
+            .flat_map(|i| {
+                vec![
+                    make_split(&format!("read_{}", i), "chr1", 1000, 2000, 0, 1000, false),
+                    make_split(
+                        &format!("read_{}", i),
+                        "chr1",
+                        5000,
+                        6000,
+                        1000,
+                        2000,
+                        false,
+                    ),
+                ]
+            })
+            .collect();
         // Set all mapq to 5 (below threshold)
         for aln in &mut alns {
             aln.mapq = 5;
         }
 
-        let config = SvCallConfig { min_support: 3, min_mapq: 20, ..Default::default() };
+        let config = SvCallConfig {
+            min_support: 3,
+            min_mapq: 20,
+            ..Default::default()
+        };
         let svs = call_svs(&alns, &config).unwrap();
         assert!(svs.is_empty());
     }

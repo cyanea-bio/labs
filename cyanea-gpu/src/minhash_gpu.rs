@@ -132,10 +132,7 @@ fn compute_sketch_cpu(seq: &[u8], k: usize, sketch_size: usize) -> MinHashSketch
     use std::collections::BinaryHeap;
 
     if seq.len() < k {
-        return MinHashSketch {
-            hashes: vec![],
-            k,
-        };
+        return MinHashSketch { hashes: vec![], k };
     }
 
     // Use a max-heap of size sketch_size to keep track of the bottom-k hashes
@@ -233,10 +230,7 @@ fn gpu_minhash_metal(
 
     for seq in sequences {
         if seq.len() < k {
-            sketches.push(MinHashSketch {
-                hashes: vec![],
-                k,
-            });
+            sketches.push(MinHashSketch { hashes: vec![], k });
             continue;
         }
 
@@ -253,10 +247,8 @@ fn gpu_minhash_metal(
             4,
             MTLResourceOptions::StorageModeShared,
         );
-        let hashes_buf = device.new_buffer(
-            (n_kmers * 8) as u64,
-            MTLResourceOptions::StorageModeShared,
-        );
+        let hashes_buf =
+            device.new_buffer((n_kmers * 8) as u64, MTLResourceOptions::StorageModeShared);
         let valid_buf = device.new_buffer(4, MTLResourceOptions::StorageModeShared);
         unsafe {
             std::ptr::write_bytes(valid_buf.contents() as *mut u8, 0, 4);
@@ -325,8 +317,7 @@ mod tests {
         // Two sequences with completely different k-mer sets
         let seq1 = b"AAAAAAAAAA"; // only AA, AAA, AAAA k-mers
         let seq2 = b"CCCCCCCCCC"; // only CC, CCC, CCCC k-mers
-        let sketches =
-            gpu_minhash_cpu(&[seq1.as_slice(), seq2.as_slice()], 4, 100).unwrap();
+        let sketches = gpu_minhash_cpu(&[seq1.as_slice(), seq2.as_slice()], 4, 100).unwrap();
         let j = gpu_minhash_jaccard(&sketches[0], &sketches[1]).unwrap();
         assert!(j < 0.01, "Jaccard should be ~0.0, got {j}");
     }

@@ -420,7 +420,7 @@ mod tests {
 
         let hash = s.content_hash();
         assert_eq!(hash.len(), 64); // SHA-256 hex
-        // Deterministic
+                                    // Deterministic
         assert_eq!(hash, s.content_hash());
     }
 }

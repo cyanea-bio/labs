@@ -197,10 +197,7 @@ pub fn digest(seq: &[u8], enzymes: &[&RestrictionEnzyme]) -> Vec<Fragment> {
 
 /// Compute fragment sizes from digestion with one or more enzymes.
 pub fn fragment_sizes(seq: &[u8], enzymes: &[&RestrictionEnzyme]) -> Vec<usize> {
-    digest(seq, enzymes)
-        .into_iter()
-        .map(|f| f.length)
-        .collect()
+    digest(seq, enzymes).into_iter().map(|f| f.length).collect()
 }
 
 #[cfg(test)]
@@ -211,7 +208,10 @@ mod tests {
     fn ecori_cuts_correctly() {
         // EcoRI recognizes GAATTC, cuts between G and AATTC (offset 1).
         let seq = b"AAAGAATTCAAA";
-        let ecori = &common_enzymes().into_iter().find(|e| e.name == "EcoRI").unwrap();
+        let ecori = &common_enzymes()
+            .into_iter()
+            .find(|e| e.name == "EcoRI")
+            .unwrap();
         let sites = find_cut_sites(seq, ecori);
         assert_eq!(sites.len(), 1);
         assert_eq!(sites[0].position, 4); // 3 + 1
@@ -222,7 +222,10 @@ mod tests {
     fn blunt_end_enzyme() {
         // EcoRV: GATATC, cuts at 3/3 → blunt.
         let seq = b"AAAGATATCAAA";
-        let ecorv = &common_enzymes().into_iter().find(|e| e.name == "EcoRV").unwrap();
+        let ecorv = &common_enzymes()
+            .into_iter()
+            .find(|e| e.name == "EcoRV")
+            .unwrap();
         let sites = find_cut_sites(seq, ecorv);
         assert_eq!(sites.len(), 1);
         assert_eq!(sites[0].overhang, Overhang::Blunt);
@@ -231,7 +234,10 @@ mod tests {
     #[test]
     fn no_sites_single_fragment() {
         let seq = b"AAAAAAAAAA";
-        let ecori = &common_enzymes().into_iter().find(|e| e.name == "EcoRI").unwrap();
+        let ecori = &common_enzymes()
+            .into_iter()
+            .find(|e| e.name == "EcoRI")
+            .unwrap();
         let fragments = digest(seq, &[ecori]);
         assert_eq!(fragments.len(), 1);
         assert_eq!(fragments[0].length, 10);

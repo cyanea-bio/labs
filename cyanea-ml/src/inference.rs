@@ -396,12 +396,7 @@ mod tests {
     fn simple_2d_data() -> Vec<f64> {
         // 6 points: cluster A near (0,0), cluster B near (10,10)
         vec![
-            0.0, 0.0,
-            0.1, 0.0,
-            0.0, 0.1,
-            10.0, 10.0,
-            10.1, 10.0,
-            10.0, 10.1,
+            0.0, 0.0, 0.1, 0.0, 0.0, 0.1, 10.0, 10.0, 10.1, 10.0, 10.0, 10.1,
         ]
     }
 
@@ -503,13 +498,7 @@ mod tests {
     #[test]
     fn linreg_multivariate() {
         // y = 1*x1 + 2*x2 + 3
-        let data = vec![
-            1.0, 0.0,
-            0.0, 1.0,
-            1.0, 1.0,
-            2.0, 1.0,
-            1.0, 2.0,
-        ];
+        let data = vec![1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0];
         let targets = vec![4.0, 5.0, 6.0, 7.0, 8.0];
         let model = LinearRegression::fit(&data, 2, &targets).unwrap();
         assert!((model.weights[0] - 1.0).abs() < 1e-6);

@@ -27,6 +27,6 @@ pub mod epigenomics;
 pub mod genomics;
 pub mod metagenomics;
 pub mod phylogenetics;
-pub mod single_cell;
 pub mod protocols;
+pub mod single_cell;
 pub mod structural;

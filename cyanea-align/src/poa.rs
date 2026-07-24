@@ -317,11 +317,7 @@ impl PoaGraph {
     /// increase edge weight. For mismatches, we add a new node and record it
     /// in `aligned_to`. For insertions (sequence bases with no graph node),
     /// we add new nodes to the graph.
-    fn integrate_alignment(
-        &mut self,
-        seq: &[u8],
-        alignment: &[(Option<usize>, Option<usize>)],
-    ) {
+    fn integrate_alignment(&mut self, seq: &[u8], alignment: &[(Option<usize>, Option<usize>)]) {
         let mut prev_node: Option<usize> = None;
 
         for &(graph_node, seq_pos) in alignment {
@@ -489,10 +485,7 @@ impl PoaGraph {
         for (i, node) in self.nodes.iter().enumerate() {
             for (edge_idx, &succ) in node.successors.iter().enumerate() {
                 let w = node.weights[edge_idx];
-                dot.push_str(&format!(
-                    "    n{} -> n{} [label=\"{}\"];\n",
-                    i, succ, w
-                ));
+                dot.push_str(&format!("    n{} -> n{} [label=\"{}\"];\n", i, succ, w));
             }
         }
 

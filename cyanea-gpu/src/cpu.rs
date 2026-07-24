@@ -420,16 +420,14 @@ mod tests {
         assert!((mat[0 * 3 + 1] - 3.0).abs() < 1e-12); // d(0,1) = 3
         assert!((mat[0 * 3 + 2] - 4.0).abs() < 1e-12); // d(0,2) = 4
         assert!((mat[1 * 3 + 2] - 5.0).abs() < 1e-12); // d(1,2) = 5
-        // Diagonal is zero
+                                                       // Diagonal is zero
         assert!((mat[0]).abs() < 1e-12);
     }
 
     #[test]
     fn pairwise_manhattan() {
         let b = backend();
-        let data = b
-            .buffer_from_slice(&[0.0, 0.0, 3.0, 4.0])
-            .unwrap();
+        let data = b.buffer_from_slice(&[0.0, 0.0, 3.0, 4.0]).unwrap();
         let result = b
             .pairwise_distance_matrix(&data, 2, 2, DistanceMetricGpu::Manhattan)
             .unwrap();
@@ -441,9 +439,7 @@ mod tests {
     fn pairwise_cosine() {
         let b = backend();
         // (1,0) and (0,1) → cosine distance = 1.0
-        let data = b
-            .buffer_from_slice(&[1.0, 0.0, 0.0, 1.0])
-            .unwrap();
+        let data = b.buffer_from_slice(&[1.0, 0.0, 0.0, 1.0]).unwrap();
         let result = b
             .pairwise_distance_matrix(&data, 2, 2, DistanceMetricGpu::Cosine)
             .unwrap();

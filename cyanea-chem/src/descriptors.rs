@@ -73,7 +73,11 @@ fn count_paths(mol: &Molecule, length: usize) -> usize {
         visited[start] = false;
     }
     // Each path is counted twice (once from each end), except for length 0
-    if length > 0 { count / 2 } else { count }
+    if length > 0 {
+        count / 2
+    } else {
+        count
+    }
 }
 
 fn count_paths_dfs(
@@ -208,7 +212,14 @@ fn count_components(mol: &Molecule) -> usize {
 pub fn tpsa(mol: &Molecule) -> f64 {
     let mut area = 0.0;
     for (i, atom) in mol.atoms.iter().enumerate() {
-        let contribution = tpsa_contribution(mol, i, atom.atomic_number, atom.implicit_hydrogens, atom.formal_charge, atom.is_aromatic);
+        let contribution = tpsa_contribution(
+            mol,
+            i,
+            atom.atomic_number,
+            atom.implicit_hydrogens,
+            atom.formal_charge,
+            atom.is_aromatic,
+        );
         area += contribution;
     }
     area
@@ -233,13 +244,21 @@ fn tpsa_contribution(
         7 => {
             if charge > 0 {
                 // Charged nitrogen
-                if implicit_h >= 3 { return 27.64; } // [NH3+]
-                if implicit_h == 2 { return 25.59; } // [NH2+]=
-                if implicit_h == 1 { return 23.47; } // [NH+]
+                if implicit_h >= 3 {
+                    return 27.64;
+                } // [NH3+]
+                if implicit_h == 2 {
+                    return 25.59;
+                } // [NH2+]=
+                if implicit_h == 1 {
+                    return 23.47;
+                } // [NH+]
                 return 0.0;
             }
             if is_aromatic {
-                if implicit_h >= 1 { return 15.79; } // nH (pyrrole-like)
+                if implicit_h >= 1 {
+                    return 15.79;
+                } // nH (pyrrole-like)
                 return 12.89; // n (pyridine-like)
             }
             match (degree, implicit_h, has_double_bond) {
@@ -253,9 +272,13 @@ fn tpsa_contribution(
                 (3, 0, true) => 3.24,   // >N=
                 (1, 0, true) => 23.79,  // #N
                 _ => {
-                    if implicit_h >= 2 { 26.02 }
-                    else if implicit_h == 1 { 19.15 }
-                    else { 3.24 }
+                    if implicit_h >= 2 {
+                        26.02
+                    } else if implicit_h == 1 {
+                        19.15
+                    } else {
+                        3.24
+                    }
                 }
             }
         }
@@ -273,23 +296,37 @@ fn tpsa_contribution(
                 (2, 0, false) => 9.23,  // -O-
                 (1, 0, false) => 17.07, // -O (terminal, e.g. carboxylate)
                 _ => {
-                    if implicit_h >= 1 { 20.23 }
-                    else if has_double_bond { 17.07 }
-                    else { 9.23 }
+                    if implicit_h >= 1 {
+                        20.23
+                    } else if has_double_bond {
+                        17.07
+                    } else {
+                        9.23
+                    }
                 }
             }
         }
         // Sulfur contributions (minimal TPSA)
         16 => {
-            if implicit_h >= 1 { return 38.80; }
-            if has_double_bond { return 25.30; }
-            if degree >= 2 { return 25.30; }
+            if implicit_h >= 1 {
+                return 38.80;
+            }
+            if has_double_bond {
+                return 25.30;
+            }
+            if degree >= 2 {
+                return 25.30;
+            }
             0.0
         }
         // Phosphorus
         15 => {
-            if has_double_bond { return 34.14; }
-            if implicit_h >= 1 { return 23.47; }
+            if has_double_bond {
+                return 34.14;
+            }
+            if implicit_h >= 1 {
+                return 23.47;
+            }
             9.81
         }
         _ => 0.0,
@@ -313,7 +350,11 @@ pub fn wildman_crippen_logp(mol: &Molecule) -> (f64, f64) {
     }
 
     // Add implicit hydrogen contributions
-    let total_implicit_h: usize = mol.atoms.iter().map(|a| a.implicit_hydrogens as usize).sum();
+    let total_implicit_h: usize = mol
+        .atoms
+        .iter()
+        .map(|a| a.implicit_hydrogens as usize)
+        .sum();
     // H attached to C: logP ≈ 0.123, MR ≈ 1.057
     // H attached to heteroatom: logP ≈ -0.2677, MR ≈ 1.057
     for atom in &mol.atoms {
@@ -335,7 +376,11 @@ pub fn wildman_crippen_logp(mol: &Molecule) -> (f64, f64) {
 }
 
 /// Simplified Wildman-Crippen atom type classification.
-fn crippen_atom_contribution(mol: &Molecule, atom_idx: usize, ring_membership: &[bool]) -> (f64, f64) {
+fn crippen_atom_contribution(
+    mol: &Molecule,
+    atom_idx: usize,
+    ring_membership: &[bool],
+) -> (f64, f64) {
     let atom = &mol.atoms[atom_idx];
     let degree = mol.degree(atom_idx);
     let in_ring = ring_membership[atom_idx];
@@ -347,13 +392,20 @@ fn crippen_atom_contribution(mol: &Molecule, atom_idx: usize, ring_membership: &
         .any(|&(n, _)| mol.atoms[n].atomic_number != 6 && mol.atoms[n].atomic_number != 1);
 
     match atom.atomic_number {
-        6 => { // Carbon
+        6 => {
+            // Carbon
             if atom.is_aromatic {
-                if has_hetero_neighbor { (-0.14, 3.509) }
-                else { (0.296, 3.509) }
+                if has_hetero_neighbor {
+                    (-0.14, 3.509)
+                } else {
+                    (0.296, 3.509)
+                }
             } else if has_double_bond {
-                if has_hetero_neighbor { (-0.03, 3.509) }
-                else { (0.08, 3.509) }
+                if has_hetero_neighbor {
+                    (-0.03, 3.509)
+                } else {
+                    (0.08, 3.509)
+                }
             } else if in_ring {
                 (0.1441, 3.509)
             } else {
@@ -365,28 +417,45 @@ fn crippen_atom_contribution(mol: &Molecule, atom_idx: usize, ring_membership: &
                 }
             }
         }
-        7 => { // Nitrogen
-            if atom.is_aromatic { (-0.3187, 2.188) }
-            else if atom.formal_charge > 0 { (-1.0190, 2.188) }
-            else if has_double_bond { (-0.5262, 2.188) }
-            else { (-0.4458, 2.262) }
+        7 => {
+            // Nitrogen
+            if atom.is_aromatic {
+                (-0.3187, 2.188)
+            } else if atom.formal_charge > 0 {
+                (-1.0190, 2.188)
+            } else if has_double_bond {
+                (-0.5262, 2.188)
+            } else {
+                (-0.4458, 2.262)
+            }
         }
-        8 => { // Oxygen
-            if atom.formal_charge < 0 { (-1.189, 1.476) }
-            else if has_double_bond { (-0.3339, 1.476) }
-            else if degree >= 2 { (-0.2893, 1.476) }
-            else { (-0.3567, 1.476) }
+        8 => {
+            // Oxygen
+            if atom.formal_charge < 0 {
+                (-1.189, 1.476)
+            } else if has_double_bond {
+                (-0.3339, 1.476)
+            } else if degree >= 2 {
+                (-0.2893, 1.476)
+            } else {
+                (-0.3567, 1.476)
+            }
         }
-        9 => (0.4118, 1.108),    // F
-        15 => (0.2836, 6.920),   // P
-        16 => { // S
-            if has_double_bond { (-0.1084, 7.365) }
-            else if atom.formal_charge != 0 { (-0.5188, 7.365) }
-            else { (0.6237, 7.365) }
+        9 => (0.4118, 1.108),  // F
+        15 => (0.2836, 6.920), // P
+        16 => {
+            // S
+            if has_double_bond {
+                (-0.1084, 7.365)
+            } else if atom.formal_charge != 0 {
+                (-0.5188, 7.365)
+            } else {
+                (0.6237, 7.365)
+            }
         }
-        17 => (0.6895, 5.853),   // Cl
-        35 => (0.8813, 8.927),   // Br
-        53 => (1.050, 13.940),   // I
+        17 => (0.6895, 5.853), // Cl
+        35 => (0.8813, 8.927), // Br
+        53 => (1.050, 13.940), // I
         _ => (0.0, 0.0),
     }
 }
@@ -423,7 +492,8 @@ pub fn bertz_ct(mol: &Molecule) -> f64 {
     let i_bonds = shannon_entropy(&bond_counts);
 
     // Atom type distribution (by atomic number in bond neighborhoods)
-    let mut atom_env_counts: std::collections::HashMap<(u8, u8, bool), usize> = std::collections::HashMap::new();
+    let mut atom_env_counts: std::collections::HashMap<(u8, u8, bool), usize> =
+        std::collections::HashMap::new();
     for (i, atom) in mol.atoms.iter().enumerate() {
         let key = (atom.atomic_number, mol.degree(i) as u8, atom.is_aromatic);
         *atom_env_counts.entry(key).or_insert(0) += 1;
@@ -524,9 +594,13 @@ pub fn chi_connectivity(mol: &Molecule) -> Vec<f64> {
     let mut chi2 = 0.0;
     for i in 0..n {
         for &(j, _) in &mol.adjacency[i] {
-            if j <= i { continue; }
+            if j <= i {
+                continue;
+            }
             for &(k, _) in &mol.adjacency[j] {
-                if k <= i || k == i { continue; }
+                if k <= i || k == i {
+                    continue;
+                }
                 let di = degrees[i];
                 let dj = degrees[j];
                 let dk = degrees[k];
@@ -543,13 +617,19 @@ pub fn chi_connectivity(mol: &Molecule) -> Vec<f64> {
     for i in 0..n {
         visited[i] = true;
         for &(j, _) in &mol.adjacency[i] {
-            if visited[j] { continue; }
+            if visited[j] {
+                continue;
+            }
             visited[j] = true;
             for &(k, _) in &mol.adjacency[j] {
-                if visited[k] { continue; }
+                if visited[k] {
+                    continue;
+                }
                 visited[k] = true;
                 for &(l, _) in &mol.adjacency[k] {
-                    if visited[l] { continue; }
+                    if visited[l] {
+                        continue;
+                    }
                     let di = degrees[i];
                     let dj = degrees[j];
                     let dk = degrees[k];
@@ -584,9 +664,9 @@ pub fn fraction_sp3(mol: &Molecule) -> f64 {
                 return false;
             }
             // sp3 carbon: no double/triple bonds, not aromatic
-            !mol.adjacency[*i]
-                .iter()
-                .any(|&(_, bi)| matches!(mol.bonds[bi].order, BondOrder::Double | BondOrder::Triple))
+            !mol.adjacency[*i].iter().any(|&(_, bi)| {
+                matches!(mol.bonds[bi].order, BondOrder::Double | BondOrder::Triple)
+            })
         })
         .count();
 
@@ -637,7 +717,8 @@ pub fn ring_count_details(mol: &Molecule) -> RingDetails {
                 for j in (i + 1)..containing_rings.len() {
                     let ri = &rings[containing_rings[i]];
                     let rj = &rings[containing_rings[j]];
-                    let shared: Vec<usize> = ri.iter().filter(|a| rj.contains(a)).copied().collect();
+                    let shared: Vec<usize> =
+                        ri.iter().filter(|a| rj.contains(a)).copied().collect();
                     if shared.len() > 1 {
                         is_spiro = false;
                         break 'outer;
@@ -692,9 +773,17 @@ pub fn estate_indices(mol: &Molecule) -> Vec<f64> {
                 return 0.0;
             }
             let valence_electrons = match atom.atomic_number {
-                6 => 4, 7 => 5, 8 => 6, 9 => 7,
-                15 => 5, 16 => 6, 17 => 7, 35 => 7, 53 => 7,
-                14 => 4, 5 => 3,
+                6 => 4,
+                7 => 5,
+                8 => 6,
+                9 => 7,
+                15 => 5,
+                16 => 6,
+                17 => 7,
+                35 => 7,
+                53 => 7,
+                14 => 4,
+                5 => 3,
                 _ => atom.atomic_number as usize,
             };
             let delta_v = valence_electrons as f64 - atom.implicit_hydrogens as f64;
@@ -707,7 +796,9 @@ pub fn estate_indices(mol: &Molecule) -> Vec<f64> {
     for i in 0..n {
         let mut perturbation = 0.0;
         for j in 0..n {
-            if i == j { continue; }
+            if i == j {
+                continue;
+            }
             let d = dist[i][j];
             if d != usize::MAX && d > 0 {
                 perturbation += (intrinsic[i] - intrinsic[j]) / (d as f64).powi(2);
@@ -779,7 +870,11 @@ pub fn autocorrelation_descriptors(mol: &Molecule) -> AutocorrelationResult {
         }
     }
 
-    AutocorrelationResult { moreau_broto, moran, geary }
+    AutocorrelationResult {
+        moreau_broto,
+        moran,
+        geary,
+    }
 }
 
 /// Compute all descriptors as a named vector.

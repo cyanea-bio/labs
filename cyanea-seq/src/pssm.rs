@@ -236,16 +236,18 @@ mod tests {
         let pssm = PssmDna::from_counts(&counts, 0.0, uniform_bg()).unwrap();
         let consensus = pssm.score(b"ACG", &dna_mapping).unwrap();
         let mismatch = pssm.score(b"TTA", &dna_mapping).unwrap();
-        assert!(consensus > mismatch, "consensus {} should beat mismatch {}", consensus, mismatch);
+        assert!(
+            consensus > mismatch,
+            "consensus {} should beat mismatch {}",
+            consensus,
+            mismatch
+        );
         assert!(consensus > 0.0);
     }
 
     #[test]
     fn score_known_motif() {
-        let counts = vec![
-            [50.0, 0.0, 0.0, 0.0],
-            [0.0, 50.0, 0.0, 0.0],
-        ];
+        let counts = vec![[50.0, 0.0, 0.0, 0.0], [0.0, 50.0, 0.0, 0.0]];
         let pssm = PssmDna::from_counts(&counts, 1.0, uniform_bg()).unwrap();
         let s = pssm.score(b"AC", &dna_mapping).unwrap();
         // freq = 51/54 ≈ 0.944, ln(0.944/0.25) ≈ 1.329 per position
@@ -264,8 +266,16 @@ mod tests {
         let hits = pssm.scan(seq, 0.0, &dna_mapping);
         // "ACG" appears at positions 2 and 7
         let positions: Vec<usize> = hits.iter().map(|&(p, _)| p).collect();
-        assert!(positions.contains(&2), "expected hit at 2, got {:?}", positions);
-        assert!(positions.contains(&7), "expected hit at 7, got {:?}", positions);
+        assert!(
+            positions.contains(&2),
+            "expected hit at 2, got {:?}",
+            positions
+        );
+        assert!(
+            positions.contains(&7),
+            "expected hit at 7, got {:?}",
+            positions
+        );
     }
 
     #[test]
@@ -273,7 +283,11 @@ mod tests {
         let counts = vec![[25.0, 25.0, 25.0, 25.0]];
         let pssm = PssmDna::from_counts(&counts, 0.0, uniform_bg()).unwrap();
         let ic = pssm.information_content();
-        assert!(ic[0].abs() < 1e-10, "uniform IC should be ~0, got {}", ic[0]);
+        assert!(
+            ic[0].abs() < 1e-10,
+            "uniform IC should be ~0, got {}",
+            ic[0]
+        );
     }
 
     #[test]
@@ -282,7 +296,11 @@ mod tests {
         let counts = vec![[1000.0, 0.0, 0.0, 0.0]];
         let pssm = PssmDna::from_counts(&counts, 0.01, uniform_bg()).unwrap();
         let ic = pssm.information_content();
-        assert!((ic[0] - 2.0).abs() < 0.05, "conserved IC should be ~2 bits, got {}", ic[0]);
+        assert!(
+            (ic[0] - 2.0).abs() < 0.05,
+            "conserved IC should be ~2 bits, got {}",
+            ic[0]
+        );
     }
 
     #[test]
@@ -317,10 +335,7 @@ mod tests {
 
     #[test]
     fn min_max_score_bounds() {
-        let counts = vec![
-            [100.0, 1.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0, 100.0],
-        ];
+        let counts = vec![[100.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 100.0]];
         let pssm = PssmDna::from_counts(&counts, 0.0, uniform_bg()).unwrap();
         let best = pssm.score(b"AT", &dna_mapping).unwrap();
         let worst = pssm.score(b"TA", &dna_mapping).unwrap();

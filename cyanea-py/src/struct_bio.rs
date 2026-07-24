@@ -38,9 +38,10 @@ impl Structure {
 
     /// Assign secondary structure (simplified 4-state) for the first chain.
     fn secondary_structure(&self) -> PyResult<Vec<SecondaryStructureAssignment>> {
-        let chain = self.inner.chains.first().ok_or_else(|| {
-            pyo3::exceptions::PyValueError::new_err("structure has no chains")
-        })?;
+        let chain =
+            self.inner.chains.first().ok_or_else(|| {
+                pyo3::exceptions::PyValueError::new_err("structure has no chains")
+            })?;
         let ss = cyanea_struct::assign_secondary_structure(chain).into_pyresult()?;
         Ok(ss
             .assignments
@@ -121,10 +122,7 @@ fn rmsd(coords1: Vec<[f64; 3]>, coords2: Vec<[f64; 3]>) -> PyResult<f64> {
 
 /// Kabsch optimal superposition. Returns (rmsd, aligned_coords).
 #[pyfunction]
-fn kabsch_align(
-    moving: Vec<[f64; 3]>,
-    target: Vec<[f64; 3]>,
-) -> PyResult<(f64, Vec<[f64; 3]>)> {
+fn kabsch_align(moving: Vec<[f64; 3]>, target: Vec<[f64; 3]>) -> PyResult<(f64, Vec<[f64; 3]>)> {
     let target_pts: Vec<cyanea_struct::Point3D> = target
         .iter()
         .map(|c| cyanea_struct::Point3D::new(c[0], c[1], c[2]))
@@ -133,8 +131,7 @@ fn kabsch_align(
         .iter()
         .map(|c| cyanea_struct::Point3D::new(c[0], c[1], c[2]))
         .collect();
-    let result =
-        cyanea_struct::kabsch_points(&target_pts, &moving_pts).into_pyresult()?;
+    let result = cyanea_struct::kabsch_points(&target_pts, &moving_pts).into_pyresult()?;
     let aligned: Vec<[f64; 3]> = result
         .transformed_coords
         .iter()

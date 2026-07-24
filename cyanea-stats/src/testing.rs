@@ -6,7 +6,7 @@
 use cyanea_core::{CyaneaError, Result, Scored, Summarizable};
 
 use crate::descriptive;
-use crate::distribution::{betai, ln_gamma, ChiSquared, FDistribution, Normal, Distribution};
+use crate::distribution::{betai, ln_gamma, ChiSquared, Distribution, FDistribution, Normal};
 use crate::rank::{rank, RankMethod};
 
 /// Result of a hypothesis test.
@@ -208,7 +208,9 @@ pub fn fisher_exact(table: &[[usize; 2]; 2]) -> Result<TestResult> {
     let n = a + b + c + d;
 
     if n == 0 {
-        return Err(CyaneaError::InvalidInput("fisher_exact: table is all zeros".into()));
+        return Err(CyaneaError::InvalidInput(
+            "fisher_exact: table is all zeros".into(),
+        ));
     }
 
     let p_observed = hypergeometric_pmf(a, a + b, a + c, n);
@@ -239,11 +241,15 @@ pub fn fisher_exact(table: &[[usize; 2]; 2]) -> Result<TestResult> {
 ///
 /// Probability of drawing exactly `k` successes from a population of `total`
 /// containing `success_pop` successes, in a sample of size `sample_size`.
-pub(crate) fn hypergeometric_pmf(k: usize, sample_size: usize, success_pop: usize, total: usize) -> f64 {
+pub(crate) fn hypergeometric_pmf(
+    k: usize,
+    sample_size: usize,
+    success_pop: usize,
+    total: usize,
+) -> f64 {
     // P = C(K,k) * C(N-K, n-k) / C(N, n)
     // Compute in log-space to avoid overflow.
-    let log_p = ln_choose(success_pop, k)
-        + ln_choose(total - success_pop, sample_size - k)
+    let log_p = ln_choose(success_pop, k) + ln_choose(total - success_pop, sample_size - k)
         - ln_choose(total, sample_size);
     log_p.exp()
 }
@@ -277,7 +283,9 @@ pub fn chi_squared_test(observed: &[f64], nrows: usize, ncols: usize) -> Result<
 
     let total: f64 = observed.iter().sum();
     if total == 0.0 {
-        return Err(CyaneaError::InvalidInput("chi_squared_test: all counts are zero".into()));
+        return Err(CyaneaError::InvalidInput(
+            "chi_squared_test: all counts are zero".into(),
+        ));
     }
 
     // Row and column sums
@@ -330,9 +338,10 @@ pub fn anova_oneway(groups: &[&[f64]]) -> Result<TestResult> {
     }
     for (i, g) in groups.iter().enumerate() {
         if g.is_empty() {
-            return Err(CyaneaError::InvalidInput(
-                format!("anova_oneway: group {} is empty", i),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "anova_oneway: group {} is empty",
+                i
+            )));
         }
     }
 

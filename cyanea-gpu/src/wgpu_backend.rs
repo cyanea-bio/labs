@@ -87,17 +87,16 @@ impl WgpuBackend {
             source: wgpu::ShaderSource::Wgsl(MATMUL_WGSL.into()),
         });
 
-        let make_pipeline =
-            |module: &wgpu::ShaderModule, entry: &str| -> wgpu::ComputePipeline {
-                device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
-                    label: Some(entry),
-                    layout: None,
-                    module,
-                    entry_point: Some(entry),
-                    compilation_options: Default::default(),
-                    cache: None,
-                })
-            };
+        let make_pipeline = |module: &wgpu::ShaderModule, entry: &str| -> wgpu::ComputePipeline {
+            device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+                label: Some(entry),
+                layout: None,
+                module,
+                entry_point: Some(entry),
+                compilation_options: Default::default(),
+                cache: None,
+            })
+        };
 
         let reduce_sum_pipeline = make_pipeline(&reduce_module, "reduce_sum");
         let reduce_min_pipeline = make_pipeline(&reduce_module, "reduce_min");
@@ -270,11 +269,7 @@ impl Backend for WgpuBackend {
 
     fn buffer_from_slice(&self, data: &[f64]) -> Result<Buffer> {
         let wgpu_buf = self.upload_f32(data);
-        Ok(Buffer::from_wgpu(
-            Some(data.to_vec()),
-            wgpu_buf,
-            data.len(),
-        ))
+        Ok(Buffer::from_wgpu(Some(data.to_vec()), wgpu_buf, data.len()))
     }
 
     fn buffer_zeros(&self, len: usize) -> Result<Buffer> {
@@ -341,12 +336,7 @@ impl Backend for WgpuBackend {
     }
 
     fn reduce_max(&self, buf: &Buffer) -> Result<f64> {
-        self.run_reduce(
-            buf,
-            &self.reduce_max_pipeline,
-            f32::NEG_INFINITY,
-            f32::max,
-        )
+        self.run_reduce(buf, &self.reduce_max_pipeline, f32::NEG_INFINITY, f32::max)
     }
 
     fn pairwise_distance_matrix(

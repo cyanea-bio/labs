@@ -318,10 +318,8 @@ pub fn reconstruct_sequences(
 
     let mut results = Vec::with_capacity(seq_len);
     for col in 0..seq_len {
-        let leaf_states: Vec<(NodeId, u8)> = alignment
-            .iter()
-            .map(|&(id, seq)| (id, seq[col]))
-            .collect();
+        let leaf_states: Vec<(NodeId, u8)> =
+            alignment.iter().map(|&(id, seq)| (id, seq[col])).collect();
         results.push(fitch(tree, &leaf_states)?);
     }
     Ok(results)

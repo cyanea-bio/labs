@@ -158,10 +158,7 @@ fn set_element_keys(fp: &mut Fingerprint, counts: &[u32; 120], mol: &Molecule) {
     }
 
     // Key 122: At least 2 different elements (beyond H)
-    let distinct_heavy: u32 = counts[2..120]
-        .iter()
-        .filter(|&&c| c > 0)
-        .count() as u32;
+    let distinct_heavy: u32 = counts[2..120].iter().filter(|&&c| c > 0).count() as u32;
     if distinct_heavy >= 2 {
         fp.set_bit(122);
     }
@@ -285,10 +282,10 @@ fn set_ring_keys(fp: &mut Fingerprint, rings: &[Vec<usize>], mol: &Molecule) {
     for ring in rings {
         let size = ring.len();
         match size {
-            3 => fp.set_bit(145), // Key 145: 3-membered ring
-            4 => fp.set_bit(146), // Key 146: 4-membered ring
-            5 => fp.set_bit(147), // Key 147: 5-membered ring
-            6 => fp.set_bit(148), // Key 148: 6-membered ring
+            3 => fp.set_bit(145),              // Key 145: 3-membered ring
+            4 => fp.set_bit(146),              // Key 146: 4-membered ring
+            5 => fp.set_bit(147),              // Key 147: 5-membered ring
+            6 => fp.set_bit(148),              // Key 148: 6-membered ring
             _ if size >= 7 => fp.set_bit(149), // Key 149: 7+ membered ring
             _ => {}
         }
@@ -804,12 +801,7 @@ fn set_functional_group_keys(fp: &mut Fingerprint, mol: &Molecule) {
 // ---------------------------------------------------------------------------
 
 /// Set fingerprint bits for count-threshold MACCS keys.
-fn set_count_keys(
-    fp: &mut Fingerprint,
-    counts: &[u32; 120],
-    rings: &[Vec<usize>],
-    mol: &Molecule,
-) {
+fn set_count_keys(fp: &mut Fingerprint, counts: &[u32; 120], rings: &[Vec<usize>], mol: &Molecule) {
     // Key 155: >= 2 oxygen atoms
     if counts[O as usize] >= 2 {
         fp.set_bit(155);
@@ -923,12 +915,22 @@ fn set_count_keys(
     }
 
     // Key 46: Degree >= 3 atom present (branching point)
-    if mol.atoms.iter().enumerate().any(|(i, _)| mol.degree(i) >= 3) {
+    if mol
+        .atoms
+        .iter()
+        .enumerate()
+        .any(|(i, _)| mol.degree(i) >= 3)
+    {
         fp.set_bit(46);
     }
 
     // Key 47: Degree >= 4 atom present
-    if mol.atoms.iter().enumerate().any(|(i, _)| mol.degree(i) >= 4) {
+    if mol
+        .atoms
+        .iter()
+        .enumerate()
+        .any(|(i, _)| mol.degree(i) >= 4)
+    {
         fp.set_bit(47);
     }
 
@@ -1006,7 +1008,10 @@ mod tests {
         // Halogen present (key 120)
         assert!(fp.get_bit(120), "chlorobenzene should have halogen key");
         // Aromatic ring (key 162)
-        assert!(fp.get_bit(162), "chlorobenzene should have aromatic ring key");
+        assert!(
+            fp.get_bit(162),
+            "chlorobenzene should have aromatic ring key"
+        );
         // C-Cl bond (key 15)
         assert!(fp.get_bit(15), "chlorobenzene should have C-Cl bond key");
     }

@@ -12,10 +12,7 @@ use crate::quantification::ProteinQuant;
 /// Write protein-level results in mzTab format.
 ///
 /// Produces the PRH (protein header) and PRT (protein rows) sections.
-pub fn write_mztab_proteins(
-    groups: &[ProteinGroup],
-    quants: Option<&[ProteinQuant]>,
-) -> String {
+pub fn write_mztab_proteins(groups: &[ProteinGroup], quants: Option<&[ProteinQuant]>) -> String {
     let mut out = String::new();
 
     // Metadata section
@@ -108,17 +105,15 @@ mod tests {
 
     #[test]
     fn test_write_mztab_proteins() {
-        let groups = vec![
-            ProteinGroup {
-                accessions: vec!["P12345".to_string()],
-                unique_peptides: vec!["AAAK".to_string(), "BBBK".to_string()],
-                shared_peptides: vec!["CCCK".to_string()],
-                psm_count: 5,
-                best_score: 42.5,
-                coverage: 0.35,
-                is_decoy: false,
-            },
-        ];
+        let groups = vec![ProteinGroup {
+            accessions: vec!["P12345".to_string()],
+            unique_peptides: vec!["AAAK".to_string(), "BBBK".to_string()],
+            shared_peptides: vec!["CCCK".to_string()],
+            psm_count: 5,
+            best_score: 42.5,
+            coverage: 0.35,
+            is_decoy: false,
+        }];
 
         let output = write_mztab_proteins(&groups, None);
         assert!(output.contains("MTD\tmzTab-version\t1.0.0"));

@@ -42,7 +42,10 @@ pub fn parse_cram(path: impl AsRef<Path>, config: &CramConfig) -> Result<Vec<Sam
         .build_from_reader(std::io::BufReader::new(file));
 
     let header = reader.read_header().map_err(|e| {
-        CyaneaError::Parse(format!("{}: failed to read CRAM header: {e}", path.display()))
+        CyaneaError::Parse(format!(
+            "{}: failed to read CRAM header: {e}",
+            path.display()
+        ))
     })?;
 
     let mut records = Vec::new();
@@ -90,16 +93,12 @@ fn build_repository(config: &CramConfig) -> Result<noodles_fasta::Repository> {
                     format!("reference FASTA {}: {}", ref_path.display(), e),
                 ))
             })?;
-            let mut fasta_reader =
-                noodles_fasta::io::Reader::new(std::io::BufReader::new(file));
+            let mut fasta_reader = noodles_fasta::io::Reader::new(std::io::BufReader::new(file));
             let records: Vec<noodles_fasta::Record> = fasta_reader
                 .records()
                 .collect::<std::result::Result<Vec<_>, _>>()
                 .map_err(|e| {
-                    CyaneaError::Parse(format!(
-                        "reference FASTA {}: {e}",
-                        ref_path.display()
-                    ))
+                    CyaneaError::Parse(format!("reference FASTA {}: {e}", ref_path.display()))
                 })?;
             Ok(noodles_fasta::Repository::new(records))
         }
@@ -150,10 +149,7 @@ fn convert_record(
         .unwrap_or(0);
 
     // Mapping quality (returns Option<MappingQuality> directly)
-    let mapq = record
-        .mapping_quality()
-        .map(|m| u8::from(m))
-        .unwrap_or(255);
+    let mapq = record.mapping_quality().map(|m| u8::from(m)).unwrap_or(255);
 
     // CIGAR string — reconstruct from features
     let cigar = {
@@ -173,7 +169,11 @@ fn convert_record(
                     }
                 }
             }
-            if s.is_empty() { "*".to_string() } else { s }
+            if s.is_empty() {
+                "*".to_string()
+            } else {
+                s
+            }
         }
     };
 
@@ -249,9 +249,7 @@ mod tests {
     use noodles_core::Position;
     use noodles_sam::alignment::record::Flags;
     use noodles_sam::alignment::record::MappingQuality;
-    use noodles_sam::alignment::record_buf::{
-        QualityScores as QualBuf, Sequence as SeqBuf,
-    };
+    use noodles_sam::alignment::record_buf::{QualityScores as QualBuf, Sequence as SeqBuf};
     use noodles_sam::header::record::value::map::ReferenceSequence;
     use noodles_sam::header::record::value::Map;
     use std::num::NonZeroUsize;
@@ -336,7 +334,13 @@ mod tests {
     }
 
     impl TestRec {
-        fn mapped(qname: &'static str, ref_id: usize, pos: usize, mapq: u8, seq: &'static str) -> Self {
+        fn mapped(
+            qname: &'static str,
+            ref_id: usize,
+            pos: usize,
+            mapq: u8,
+            seq: &'static str,
+        ) -> Self {
             Self {
                 qname,
                 flag: 0,

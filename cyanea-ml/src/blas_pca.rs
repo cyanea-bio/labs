@@ -65,9 +65,7 @@ pub(super) fn pca_ndarray(
         components,
         explained_variance: eigenvalues,
         explained_variance_ratio,
-        transformed: transformed
-            .into_raw_vec_and_offset()
-            .0,
+        transformed: transformed.into_raw_vec_and_offset().0,
         mean,
         n_features,
         n_components,
@@ -75,11 +73,7 @@ pub(super) fn pca_ndarray(
 }
 
 /// Power iteration using ndarray matrix-vector multiply.
-fn ndarray_power_iteration(
-    matrix: &Array2<f64>,
-    max_iter: usize,
-    tol: f64,
-) -> (f64, Array1<f64>) {
+fn ndarray_power_iteration(matrix: &Array2<f64>, max_iter: usize, tol: f64) -> (f64, Array1<f64>) {
     let n = matrix.nrows();
 
     // Initialize with deterministic non-zero vector
@@ -106,10 +100,7 @@ fn ndarray_power_iteration(
         let w_normalized = &w / wnorm;
 
         // Check convergence
-        let diff = (&v - &w_normalized)
-            .mapv(|x| x * x)
-            .sum()
-            .sqrt();
+        let diff = (&v - &w_normalized).mapv(|x| x * x).sum().sqrt();
 
         v = w_normalized;
         eigenvalue = new_eigenvalue;

@@ -40,31 +40,31 @@ pub use cluster::{
     dbscan, hierarchical, kmeans, DbscanConfig, DbscanResult, HierarchicalConfig,
     HierarchicalResult, KMeansConfig, KMeansResult, Linkage, MergeStep,
 };
+pub use cross_validation::{
+    cross_validate_kfold, cross_validate_loo, cross_validate_stratified, CvResult, FoldResult,
+};
 pub use distance::{
     compute_distance, cosine_distance, cosine_similarity, euclidean, hamming, manhattan,
     pairwise_distances, DistanceMatrix, DistanceMetric,
 };
 pub use encoding::{label_encode, one_hot_encode, Alphabet};
 pub use evaluate::{silhouette_samples, silhouette_score};
+pub use feature_selection::{
+    lasso_selection, mutual_information, mutual_information_top_k, recursive_feature_elimination,
+    variance_threshold, FeatureSelection, LassoResult,
+};
+pub use forest::{RandomForest, RandomForestConfig};
+pub use gbdt::{GbdtConfig, GradientBoostedTrees};
+pub use hmm::HmmModel;
+pub use inference::{KnnConfig, KnnModel, LinearRegression};
+pub use kmer::{KmerCounter, KmerCounts};
 pub use metrics::{
     accuracy, f1_macro, f1_score, f1_weighted, matthews_corrcoef, pr_auc, pr_curve, roc_auc,
     roc_curve, ConfusionMatrix, PrCurve, PrPoint, RocCurve, RocPoint,
 };
-pub use cross_validation::{
-    cross_validate_kfold, cross_validate_loo, cross_validate_stratified, CvResult, FoldResult,
-};
-pub use kmer::{KmerCounter, KmerCounts};
 pub use normalize::{
     l2_normalize, l2_normalize_columns, min_max, min_max_columns, z_score, z_score_columns,
 };
 pub use reduction::{pca, tsne, PcaConfig, PcaResult, TsneConfig, TsneResult};
-pub use umap::{umap, UmapConfig, UmapInit, UmapResult};
-pub use hmm::HmmModel;
-pub use inference::{KnnConfig, KnnModel, LinearRegression};
 pub use tree::DecisionTree;
-pub use forest::{RandomForest, RandomForestConfig};
-pub use gbdt::{GbdtConfig, GradientBoostedTrees};
-pub use feature_selection::{
-    variance_threshold, mutual_information, mutual_information_top_k,
-    recursive_feature_elimination, lasso_selection, FeatureSelection, LassoResult,
-};
+pub use umap::{umap, UmapConfig, UmapInit, UmapResult};

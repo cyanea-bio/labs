@@ -34,11 +34,7 @@ fn codon_index(codon: &[u8]) -> Option<usize> {
 /// Convert an index in [0, 64) back to a codon (as DNA: A/C/G/T).
 fn index_to_codon(idx: usize) -> [u8; 3] {
     const BASES: [u8; 4] = [b'A', b'C', b'G', b'T'];
-    [
-        BASES[idx >> 4],
-        BASES[(idx >> 2) & 3],
-        BASES[idx & 3],
-    ]
+    [BASES[idx >> 4], BASES[(idx >> 2) & 3], BASES[idx & 3]]
 }
 
 // ---------------------------------------------------------------------------
@@ -73,12 +69,10 @@ pub enum GeneticCodeId {
 
 /// Standard genetic code (NCBI Table 1).
 const TABLE1_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S',
-    b'I', b'I', b'M', b'I', b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P',
-    b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L', b'E', b'D', b'E', b'D',
-    b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'*', b'C', b'W', b'C',
-    b'L', b'F', b'L', b'F',
+    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S', b'I', b'I', b'M', b'I',
+    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
+    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
+    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'*', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
 ];
 
 const TABLE1_STARTS: [bool; 64] = {
@@ -91,12 +85,10 @@ const TABLE1_STARTS: [bool; 64] = {
 /// Vertebrate mitochondrial (NCBI Table 2).
 /// UGA=Trp, AGA=Stop, AGG=Stop, AUA=Met
 const TABLE2_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'*', b'S', b'*', b'S',
-    b'M', b'I', b'M', b'I', b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P',
-    b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L', b'E', b'D', b'E', b'D',
-    b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C',
-    b'L', b'F', b'L', b'F',
+    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'*', b'S', b'*', b'S', b'M', b'I', b'M', b'I',
+    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
+    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
+    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
 ];
 
 const TABLE2_STARTS: [bool; 64] = {
@@ -112,12 +104,10 @@ const TABLE2_STARTS: [bool; 64] = {
 /// Yeast mitochondrial (NCBI Table 3).
 /// CUG=Thr (not Leu), UGA=Trp, CUA=Thr (not Leu)
 const TABLE3_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S',
-    b'M', b'I', b'M', b'I', b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P',
-    b'R', b'R', b'R', b'R', b'T', b'L', b'T', b'L', b'E', b'D', b'E', b'D',
-    b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C',
-    b'L', b'F', b'L', b'F',
+    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S', b'M', b'I', b'M', b'I',
+    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'T', b'L', b'T', b'L',
+    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
+    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
 ];
 
 const TABLE3_STARTS: [bool; 64] = {
@@ -130,12 +120,10 @@ const TABLE3_STARTS: [bool; 64] = {
 /// Mycoplasma/Spiroplasma (NCBI Table 4).
 /// UGA=Trp
 const TABLE4_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S',
-    b'I', b'I', b'M', b'I', b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P',
-    b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L', b'E', b'D', b'E', b'D',
-    b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C',
-    b'L', b'F', b'L', b'F',
+    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S', b'I', b'I', b'M', b'I',
+    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
+    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
+    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
 ];
 
 const TABLE4_STARTS: [bool; 64] = {
@@ -149,12 +137,10 @@ const TABLE4_STARTS: [bool; 64] = {
 /// Invertebrate mitochondrial (NCBI Table 5).
 /// AGA=Ser, AGG=Ser, UGA=Trp, AUA=Met
 const TABLE5_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'S', b'S', b'S', b'S',
-    b'M', b'I', b'M', b'I', b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P',
-    b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L', b'E', b'D', b'E', b'D',
-    b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C',
-    b'L', b'F', b'L', b'F',
+    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'S', b'S', b'S', b'S', b'M', b'I', b'M', b'I',
+    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
+    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
+    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
 ];
 
 const TABLE5_STARTS: [bool; 64] = {
@@ -168,12 +154,10 @@ const TABLE5_STARTS: [bool; 64] = {
 /// Ciliate nuclear (NCBI Table 6).
 /// UAA=Gln, UAG=Gln (not Stop)
 const TABLE6_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S',
-    b'I', b'I', b'M', b'I', b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P',
-    b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L', b'E', b'D', b'E', b'D',
-    b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'Q', b'Y', b'Q', b'Y', b'S', b'S', b'S', b'S', b'*', b'C', b'W', b'C',
-    b'L', b'F', b'L', b'F',
+    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S', b'I', b'I', b'M', b'I',
+    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
+    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
+    b'Q', b'Y', b'Q', b'Y', b'S', b'S', b'S', b'S', b'*', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
 ];
 
 const TABLE6_STARTS: [bool; 64] = {
@@ -436,9 +420,7 @@ impl CodonUsage {
         }
 
         // Find all synonymous codons
-        let synonymous: Vec<usize> = (0..64)
-            .filter(|&i| code.aa_at(i) == aa)
-            .collect();
+        let synonymous: Vec<usize> = (0..64).filter(|&i| code.aa_at(i) == aa).collect();
         let n_syn = synonymous.len() as f64;
         let total_syn: u64 = synonymous.iter().map(|&i| self.counts[i]).sum();
 
@@ -460,9 +442,7 @@ impl CodonUsage {
 
         // Group codons by amino acid
         for aa in b"ACDEFGHIKLMNPQRSTVWY".iter() {
-            let synonymous: Vec<usize> = (0..64)
-                .filter(|&i| code.aa_at(i) == *aa)
-                .collect();
+            let synonymous: Vec<usize> = (0..64).filter(|&i| code.aa_at(i) == *aa).collect();
             if synonymous.is_empty() {
                 continue;
             }
@@ -479,10 +459,7 @@ impl CodonUsage {
                 })
                 .collect();
 
-            let max_rscu = rscu_vals
-                .iter()
-                .cloned()
-                .fold(0.0f64, f64::max);
+            let max_rscu = rscu_vals.iter().cloned().fold(0.0f64, f64::max);
 
             if max_rscu > 0.0 {
                 for (k, &idx) in synonymous.iter().enumerate() {

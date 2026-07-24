@@ -108,8 +108,8 @@ pub fn parse_fastq_file(path: impl AsRef<Path>) -> Result<Vec<FastqRecord>> {
     while let Some(record) = reader.next() {
         let record = record.map_err(|e| CyaneaError::Parse(e.to_string()))?;
 
-        let raw_id = std::str::from_utf8(record.id())
-            .map_err(|e| CyaneaError::Parse(e.to_string()))?;
+        let raw_id =
+            std::str::from_utf8(record.id()).map_err(|e| CyaneaError::Parse(e.to_string()))?;
 
         // Split "name description" on first whitespace
         let (name, description) = match raw_id.split_once(char::is_whitespace) {
@@ -230,8 +230,7 @@ mod tests {
     fn annotated_trait() {
         let seq = DnaSequence::new(b"ACGT").unwrap();
         let qual = QualityScores::from_raw(vec![30, 30, 30, 30]);
-        let record =
-            FastqRecord::new("read1".into(), Some("sample A".into()), seq, qual).unwrap();
+        let record = FastqRecord::new("read1".into(), Some("sample A".into()), seq, qual).unwrap();
         assert_eq!(record.name(), "read1");
         assert_eq!(record.description(), Some("sample A"));
     }

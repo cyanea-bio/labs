@@ -135,7 +135,14 @@ impl Summarizable for DsspAssignment {
             "Chain {} DSSP: {} residue(s) — H:{} G:{} I:{} E:{} B:{} T:{} S:{} C:{}",
             self.chain_id,
             self.states.len(),
-            c.h, c.g, c.i, c.e, c.b, c.t, c.s, c.c,
+            c.h,
+            c.g,
+            c.i,
+            c.e,
+            c.b,
+            c.t,
+            c.s,
+            c.c,
         )
     }
 }
@@ -508,7 +515,8 @@ fn assign_helix(
                     // Only assign if current state is Coil or same type
                     // H takes precedence over G, G over I
                     if states[j] == DsspState::C
-                        || (state == DsspState::H && (states[j] == DsspState::G || states[j] == DsspState::I))
+                        || (state == DsspState::H
+                            && (states[j] == DsspState::G || states[j] == DsspState::I))
                         || (state == DsspState::G && states[j] == DsspState::I)
                     {
                         states[j] = state;
@@ -562,13 +570,10 @@ fn find_bridges(hbond: &[f64], n: usize) -> Vec<BetaBridge> {
 
             // Parallel bridge: NH(i)->CO(j-1) and NH(j)->CO(i)  (but different pattern)
             // Pattern 1: NH(i-1)->CO(j) and NH(j)->CO(i)
-            let para1 = i > 0
-                && hbond[(i - 1) * n + j] < threshold
-                && hbond[j * n + i] < threshold;
+            let para1 = i > 0 && hbond[(i - 1) * n + j] < threshold && hbond[j * n + i] < threshold;
             // Pattern 2: NH(i)->CO(j) and NH(j+1)->CO(i)
-            let para2 = j + 1 < n
-                && hbond[i * n + j] < threshold
-                && hbond[(j + 1) * n + i] < threshold;
+            let para2 =
+                j + 1 < n && hbond[i * n + j] < threshold && hbond[(j + 1) * n + i] < threshold;
 
             if para1 || para2 {
                 bridges.push(BetaBridge {
@@ -607,8 +612,8 @@ fn assign_bridges_and_strands(bridges: &[BetaBridge], _n: usize, states: &mut [D
             continue;
         }
         // Check if this residue has an adjacent bridge residue
-        let has_neighbor = (i > 0 && bridge_residues[i - 1])
-            || (i + 1 < n && bridge_residues[i + 1]);
+        let has_neighbor =
+            (i > 0 && bridge_residues[i - 1]) || (i + 1 < n && bridge_residues[i + 1]);
         if has_neighbor {
             states[i] = DsspState::E;
         }
@@ -618,8 +623,8 @@ fn assign_bridges_and_strands(bridges: &[BetaBridge], _n: usize, states: &mut [D
     let strand_residues: Vec<bool> = states.iter().map(|s| *s == DsspState::E).collect();
     for i in 0..n {
         if states[i] == DsspState::B {
-            let has_e_neighbor = (i > 0 && strand_residues[i - 1])
-                || (i + 1 < n && strand_residues[i + 1]);
+            let has_e_neighbor =
+                (i > 0 && strand_residues[i - 1]) || (i + 1 < n && strand_residues[i + 1]);
             if has_e_neighbor {
                 states[i] = DsspState::E;
             }
@@ -761,16 +766,8 @@ mod tests {
             let angle = i as f64 * angle_per_res;
             let z = i as f64 * rise;
 
-            let ca_pos = Point3D::new(
-                r * (angle + 0.3).cos(),
-                r * (angle + 0.3).sin(),
-                z + 0.4,
-            );
-            let c_pos = Point3D::new(
-                r * (angle + 0.6).cos(),
-                r * (angle + 0.6).sin(),
-                z + 0.8,
-            );
+            let ca_pos = Point3D::new(r * (angle + 0.3).cos(), r * (angle + 0.3).sin(), z + 0.4);
+            let c_pos = Point3D::new(r * (angle + 0.6).cos(), r * (angle + 0.6).sin(), z + 0.8);
 
             // Place O near N(i+4) so that dist(O_i, N_{i+4}) < 3.5Å.
             // We place O 2.5Å from C along the C→N(i+4) direction, giving
@@ -909,7 +906,11 @@ mod tests {
         let chain = Chain::new('A', residues);
         let ss = assign_secondary_structure(&chain).unwrap();
         let (_, e, _, _) = ss.counts();
-        assert!(e > 0, "should detect sheet residues, got: {:?}", ss.assignments);
+        assert!(
+            e > 0,
+            "should detect sheet residues, got: {:?}",
+            ss.assignments
+        );
     }
 
     #[test]

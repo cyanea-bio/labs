@@ -31,9 +31,7 @@ impl Contig {
     /// Create a new contig and compute metrics.
     pub fn new(id: &str, sequence: Vec<u8>, coverage: f64) -> Result<Self> {
         if sequence.is_empty() {
-            return Err(MetaError::Binning(
-                "contig sequence is empty".into(),
-            ));
+            return Err(MetaError::Binning("contig sequence is empty".into()));
         }
 
         let length = sequence.len();
@@ -168,20 +166,20 @@ impl Bin {
 /// Returns an error if contigs is empty or n_clusters is 0.
 pub fn bin_contigs(contigs: &[Contig], n_clusters: usize) -> Result<Vec<Bin>> {
     if contigs.is_empty() {
-        return Err(MetaError::Binning(
-            "no contigs to bin".into(),
-        ));
+        return Err(MetaError::Binning("no contigs to bin".into()));
     }
 
     if n_clusters == 0 {
-        return Err(MetaError::Binning(
-            "n_clusters must be positive".into(),
-        ));
+        return Err(MetaError::Binning("n_clusters must be positive".into()));
     }
 
     // Simplified: use coverage-based clustering
     let mut coverage_sorted = contigs.to_vec();
-    coverage_sorted.sort_by(|a, b| a.coverage.partial_cmp(&b.coverage).unwrap_or(std::cmp::Ordering::Equal));
+    coverage_sorted.sort_by(|a, b| {
+        a.coverage
+            .partial_cmp(&b.coverage)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     let mut bins = Vec::new();
     let contigs_per_bin = (coverage_sorted.len() + n_clusters - 1) / n_clusters;

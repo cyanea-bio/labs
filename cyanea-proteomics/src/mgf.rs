@@ -93,7 +93,8 @@ pub fn parse_mgf(text: &str) -> Result<Vec<MassSpectrum>> {
             title = val.to_string();
         } else if let Some(val) = line.strip_prefix("PEPMASS=") {
             let parts: Vec<&str> = val.split_whitespace().collect();
-            pepmass = parts[0].parse::<f64>()
+            pepmass = parts[0]
+                .parse::<f64>()
                 .map_err(|_| ProteomicsError::Parse(format!("invalid PEPMASS: {}", val)))?;
             if parts.len() > 1 {
                 pep_intensity = parts[1].parse::<f64>().ok();
@@ -102,7 +103,8 @@ pub fn parse_mgf(text: &str) -> Result<Vec<MassSpectrum>> {
             let val = val.trim_end_matches('+').trim_end_matches('-');
             charge = val.parse::<i32>().ok();
         } else if let Some(val) = line.strip_prefix("RTINSECONDS=") {
-            rt = val.parse::<f64>()
+            rt = val
+                .parse::<f64>()
                 .map_err(|_| ProteomicsError::Parse(format!("invalid RTINSECONDS: {}", val)))?;
         } else if line.contains('=') {
             // Unknown header field — skip
@@ -110,17 +112,21 @@ pub fn parse_mgf(text: &str) -> Result<Vec<MassSpectrum>> {
             // Peak line: mz intensity
             let parts: Vec<&str> = line.split_whitespace().collect();
             if parts.len() >= 2 {
-                let mz = parts[0].parse::<f64>()
+                let mz = parts[0]
+                    .parse::<f64>()
                     .map_err(|_| ProteomicsError::Parse(format!("invalid m/z: {}", parts[0])))?;
-                let intensity = parts[1].parse::<f64>()
-                    .map_err(|_| ProteomicsError::Parse(format!("invalid intensity: {}", parts[1])))?;
+                let intensity = parts[1].parse::<f64>().map_err(|_| {
+                    ProteomicsError::Parse(format!("invalid intensity: {}", parts[1]))
+                })?;
                 peaks.push(Peak { mz, intensity });
             }
         }
     }
 
     if in_block {
-        return Err(ProteomicsError::Parse("unterminated BEGIN IONS block".into()));
+        return Err(ProteomicsError::Parse(
+            "unterminated BEGIN IONS block".into(),
+        ));
     }
 
     Ok(spectra)

@@ -29,17 +29,17 @@
 //! assert!(v["ok"]["score"].as_i64().unwrap() > 0);
 //! ```
 
-pub mod error;
-pub mod seq;
 pub mod align;
-pub mod stats;
-pub mod ml;
-pub mod core_utils;
 pub mod chem;
-pub mod struct_bio;
-pub mod phylo;
+pub mod core_utils;
+pub mod error;
 pub mod io;
+pub mod ml;
 pub mod omics;
+pub mod phylo;
+pub mod seq;
+pub mod stats;
+pub mod struct_bio;
 
 /// Crate version (set from Cargo.toml at compile time).
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -48,49 +48,38 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // seq
 pub use seq::{
-    parse_fasta, parse_fasta_bytes, gc_content, gc_content_json,
-    reverse_complement, transcribe, translate, validate, parse_fastq,
-    parse_paired_fastq, parse_interleaved_fastq, trim_fastq, trim_paired_fastq,
-    minhash_sketch, minhash_compare, JsMinHashSketch, JsMinHashComparison,
-    rna_fold_nussinov, rna_fold_zuker, protein_props, simulate_reads,
-    codon_usage, assembly_stats_json,
-    JsRnaStructure, JsProteinProperties, JsSimulatedRead, JsCodonUsage, JsAssemblyStats,
+    assembly_stats_json, codon_usage, gc_content, gc_content_json, minhash_compare, minhash_sketch,
+    parse_fasta, parse_fasta_bytes, parse_fastq, parse_interleaved_fastq, parse_paired_fastq,
+    protein_props, reverse_complement, rna_fold_nussinov, rna_fold_zuker, simulate_reads,
+    transcribe, translate, trim_fastq, trim_paired_fastq, validate, JsAssemblyStats, JsCodonUsage,
+    JsMinHashComparison, JsMinHashSketch, JsProteinProperties, JsRnaStructure, JsSimulatedRead,
 };
 
 // align
-pub use align::{align_dna, align_dna_custom, align_protein, align_batch};
 pub use align::{
-    parse_cigar, validate_cigar, cigar_stats, cigar_to_alignment, alignment_to_cigar,
-    generate_md_tag, merge_cigar, reverse_cigar, collapse_cigar, hard_clip_to_soft, split_cigar,
-    progressive_msa, poa_consensus, align_banded,
-    JsMsaResult, JsPoaConsensus,
+    align_banded, alignment_to_cigar, cigar_stats, cigar_to_alignment, collapse_cigar,
+    generate_md_tag, hard_clip_to_soft, merge_cigar, parse_cigar, poa_consensus, progressive_msa,
+    reverse_cigar, split_cigar, validate_cigar, JsMsaResult, JsPoaConsensus,
 };
+pub use align::{align_batch, align_dna, align_dna_custom, align_protein};
 
 // stats
 pub use stats::{
-    describe, pearson, spearman, t_test, t_test_two_sample,
-    mann_whitney_u, bonferroni, benjamini_hochberg,
-    kaplan_meier, log_rank_test, cox_ph,
-    wright_fisher, permutation_test, bootstrap_ci,
-    shannon_index, simpson_index, bray_curtis,
-    fst_hudson, tajimas_d,
-    JsDescriptiveStats, JsTestResult,
-    JsKmStep, JsKmResult, JsLogRankResult, JsCoxPhResult,
-    JsWrightFisherResult, JsTajimaD, JsFstResult,
+    benjamini_hochberg, bonferroni, bootstrap_ci, bray_curtis, cox_ph, describe, fst_hudson,
+    kaplan_meier, log_rank_test, mann_whitney_u, pearson, permutation_test, shannon_index,
+    simpson_index, spearman, t_test, t_test_two_sample, tajimas_d, wright_fisher, JsCoxPhResult,
+    JsDescriptiveStats, JsFstResult, JsKmResult, JsKmStep, JsLogRankResult, JsTajimaD,
+    JsTestResult, JsWrightFisherResult,
 };
 
 // ml
 pub use ml::{
-    kmer_count, euclidean_distance, manhattan_distance, hamming_distance, cosine_similarity,
-    umap, pca, tsne, kmeans,
-    random_forest_classify, gbdt_regression, gbdt_classify,
-    hmm_viterbi, hmm_likelihood,
-    confusion_matrix, roc_curve, pr_curve,
-    cross_validate_rf, feature_importance_variance,
-    JsKmerCounts, JsUmapResult, JsPcaResult, JsTsneResult, JsKmeansResult,
-    JsRandomForestResult, JsGbdtRegressionResult, JsGbdtClassifyResult,
-    JsHmmViterbiResult, JsConfusionMatrix, JsRocCurve, JsRocPoint, JsPrCurve, JsPrPoint,
-    JsCvResult, JsFeatureSelection,
+    confusion_matrix, cosine_similarity, cross_validate_rf, euclidean_distance,
+    feature_importance_variance, gbdt_classify, gbdt_regression, hamming_distance, hmm_likelihood,
+    hmm_viterbi, kmeans, kmer_count, manhattan_distance, pca, pr_curve, random_forest_classify,
+    roc_curve, tsne, umap, JsConfusionMatrix, JsCvResult, JsFeatureSelection, JsGbdtClassifyResult,
+    JsGbdtRegressionResult, JsHmmViterbiResult, JsKmeansResult, JsKmerCounts, JsPcaResult,
+    JsPrCurve, JsPrPoint, JsRandomForestResult, JsRocCurve, JsRocPoint, JsTsneResult, JsUmapResult,
 };
 
 // core
@@ -100,48 +89,40 @@ pub use core_utils::{zstd_compress, zstd_decompress};
 
 // chem
 pub use chem::{
-    smiles_properties, canonical, smiles_fingerprint, tanimoto, smiles_substructure,
-    parse_sdf, maccs_fingerprint, tanimoto_maccs,
-    JsMolecularProperties, JsFingerprint, JsSubstructureResult,
-    JsSdfMolecule, JsMaccsFingerprint,
+    canonical, maccs_fingerprint, parse_sdf, smiles_fingerprint, smiles_properties,
+    smiles_substructure, tanimoto, tanimoto_maccs, JsFingerprint, JsMaccsFingerprint,
+    JsMolecularProperties, JsSdfMolecule, JsSubstructureResult,
 };
 
 // struct_bio
 pub use struct_bio::{
-    pdb_info, pdb_secondary_structure, rmsd,
-    contact_map, ramachandran_analysis, parse_mmcif, kabsch_align,
-    JsStructureInfo, JsChainInfo, JsSecondaryStructure, JsSSAssignment,
-    JsContactMap, JsRamachandranEntry, JsMmcifInfo, JsKabschResult,
+    contact_map, kabsch_align, parse_mmcif, pdb_info, pdb_secondary_structure,
+    ramachandran_analysis, rmsd, JsChainInfo, JsContactMap, JsKabschResult, JsMmcifInfo,
+    JsRamachandranEntry, JsSSAssignment, JsSecondaryStructure, JsStructureInfo,
 };
 
 // phylo
 pub use phylo::{
-    newick_info, evolutionary_distance, build_upgma, build_nj, rf_distance,
-    parse_nexus, write_nexus, simulate_evolution,
-    simulate_coalescent, simulate_coalescent_growth,
-    JsTreeInfo, JsRFDistance,
-    JsNexusFile, JsNamedTree, JsSimulatedAlignment, JsCoalescentTree,
+    build_nj, build_upgma, evolutionary_distance, newick_info, parse_nexus, rf_distance,
+    simulate_coalescent, simulate_coalescent_growth, simulate_evolution, write_nexus,
+    JsCoalescentTree, JsNamedTree, JsNexusFile, JsRFDistance, JsSimulatedAlignment, JsTreeInfo,
 };
 
 // io
 pub use io::{
-    pileup_from_sam, depth_stats_from_sam, pileup_to_mpileup_text,
-    parse_vcf_text, parse_bed_text, parse_gff3_text, parse_blast_xml,
-    parse_bedgraph, parse_gfa, ncbi_fetch_url,
-    JsPileupColumn, JsPileup, JsDepthStats,
-    JsVcfVariant, JsBedRecord, JsGff3Gene,
-    JsBlastXmlHit, JsBlastXmlResult, JsBedGraphRecord,
-    JsGfaGraph, JsGfaSegment,
+    depth_stats_from_sam, ncbi_fetch_url, parse_bed_text, parse_bedgraph, parse_blast_xml,
+    parse_gfa, parse_gff3_text, parse_vcf_text, pileup_from_sam, pileup_to_mpileup_text,
+    JsBedGraphRecord, JsBedRecord, JsBlastXmlHit, JsBlastXmlResult, JsDepthStats, JsGfaGraph,
+    JsGfaSegment, JsGff3Gene, JsPileup, JsPileupColumn, JsVcfVariant,
 };
 
 // omics
 pub use omics::{
-    merge_intervals, intersect_intervals, subtract_intervals, complement_intervals,
-    closest_intervals, jaccard_intervals, make_windows,
-    liftover_interval, annotate_variant, cbs_segment,
-    bisulfite_convert, find_cpg_islands, morans_i, gearys_c,
-    JsGenomicInterval, JsVariantEffect, JsCnvSegment, JsCpgIsland,
-    JsSpatialAutocorrelation, JsLiftoverResult, JsJaccard, JsClosestResult, JsGearysC,
+    annotate_variant, bisulfite_convert, cbs_segment, closest_intervals, complement_intervals,
+    find_cpg_islands, gearys_c, intersect_intervals, jaccard_intervals, liftover_interval,
+    make_windows, merge_intervals, morans_i, subtract_intervals, JsClosestResult, JsCnvSegment,
+    JsCpgIsland, JsGearysC, JsGenomicInterval, JsJaccard, JsLiftoverResult,
+    JsSpatialAutocorrelation, JsVariantEffect,
 };
 
 #[cfg(test)]

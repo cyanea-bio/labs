@@ -45,7 +45,14 @@ fn bench_nw_sw(c: &mut Criterion) {
         let t = mutate_dna(&q, 0.1);
 
         group.bench_with_input(BenchmarkId::new("nw", len), &len, |b, _| {
-            b.iter(|| align(black_box(&q), black_box(&t), AlignmentMode::Global, &scoring))
+            b.iter(|| {
+                align(
+                    black_box(&q),
+                    black_box(&t),
+                    AlignmentMode::Global,
+                    &scoring,
+                )
+            })
         });
 
         group.bench_with_input(BenchmarkId::new("sw", len), &len, |b, _| {
@@ -92,7 +99,10 @@ fn bench_batch(c: &mut Criterion) {
             (q, t)
         })
         .collect();
-    let pair_refs: Vec<(&[u8], &[u8])> = pairs.iter().map(|(q, t)| (q.as_slice(), t.as_slice())).collect();
+    let pair_refs: Vec<(&[u8], &[u8])> = pairs
+        .iter()
+        .map(|(q, t)| (q.as_slice(), t.as_slice()))
+        .collect();
 
     group.bench_function("1000_pairs_100bp", |b| {
         b.iter(|| align_batch(black_box(&pair_refs), AlignmentMode::Local, &scoring))

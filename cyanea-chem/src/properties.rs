@@ -117,9 +117,7 @@ pub fn molecular_formula(mol: &Molecule) -> String {
 pub fn hbd_count(mol: &Molecule) -> usize {
     mol.atoms
         .iter()
-        .filter(|a| {
-            (a.atomic_number == 7 || a.atomic_number == 8) && a.implicit_hydrogens > 0
-        })
+        .filter(|a| (a.atomic_number == 7 || a.atomic_number == 8) && a.implicit_hydrogens > 0)
         .count()
 }
 
@@ -195,7 +193,8 @@ fn is_amide_bond(mol: &Molecule, a1: usize, a2: usize) -> bool {
         if neighbor == n_idx {
             continue;
         }
-        if mol.atoms[neighbor].atomic_number == 8 && mol.bonds[bond_idx].order == BondOrder::Double {
+        if mol.atoms[neighbor].atomic_number == 8 && mol.bonds[bond_idx].order == BondOrder::Double
+        {
             return true;
         }
     }
@@ -245,7 +244,11 @@ mod tests {
         let mol = parse_smiles("CC(=O)Oc1ccccc1C(=O)O").unwrap();
         let props = compute_properties(&mol);
         // C9H8O4, MW ≈ 180.16
-        assert!((props.molecular_weight - 180.16).abs() < 0.1, "MW={}", props.molecular_weight);
+        assert!(
+            (props.molecular_weight - 180.16).abs() < 0.1,
+            "MW={}",
+            props.molecular_weight
+        );
         assert_eq!(props.formula, "C9H8O4");
         assert_eq!(props.ring_count, 1);
         assert_eq!(props.aromatic_ring_count, 1);

@@ -209,10 +209,7 @@ impl ColumnBuilder {
 // ---------------------------------------------------------------------------
 
 /// Walk a single alignment record and deposit bases/qualities into columns.
-fn walk_read(
-    record: &SamRecord,
-    columns: &mut HashMap<u64, ColumnBuilder>,
-) -> Result<()> {
+fn walk_read(record: &SamRecord, columns: &mut HashMap<u64, ColumnBuilder>) -> Result<()> {
     let ops = parse_cigar_ops(&record.cigar)?;
     if ops.is_empty() {
         return Ok(());
@@ -251,7 +248,10 @@ fn walk_read(
                         0
                     };
 
-                    columns.entry(ref_pos).or_insert_with(ColumnBuilder::new).add(base, q, mapq);
+                    columns
+                        .entry(ref_pos)
+                        .or_insert_with(ColumnBuilder::new)
+                        .add(base, q, mapq);
                     ref_pos += 1;
                     query_pos += 1;
                 }
@@ -299,7 +299,10 @@ fn walk_read(
                 // Deletions consume ref — deposit deletion markers.
                 for _ in 0..len {
                     let del_base = if reverse { b'#' } else { b'*' };
-                    columns.entry(ref_pos).or_insert_with(ColumnBuilder::new).add(del_base, 0, mapq);
+                    columns
+                        .entry(ref_pos)
+                        .or_insert_with(ColumnBuilder::new)
+                        .add(del_base, 0, mapq);
                     ref_pos += 1;
                 }
             }
@@ -376,11 +379,7 @@ pub fn pileup_region(
 }
 
 /// Build a Pileup from a set of records on the same reference.
-fn build_pileup(
-    rname: &str,
-    records: &[&SamRecord],
-    ref_seq: Option<&[u8]>,
-) -> Result<Pileup> {
+fn build_pileup(rname: &str, records: &[&SamRecord], ref_seq: Option<&[u8]>) -> Result<Pileup> {
     let mut columns: HashMap<u64, ColumnBuilder> = HashMap::new();
 
     for rec in records {
@@ -718,7 +717,9 @@ mod tests {
     #[test]
     fn test_pileup_deletion() {
         // 2M2D2M on sequence ACGT — positions 0,1 get A,C; positions 2,3 get deletions; positions 4,5 get G,T
-        let records = vec![make_record("r1", 0, "chr1", 1, 60, "2M2D2M", "ACGT", "IIII")];
+        let records = vec![make_record(
+            "r1", 0, "chr1", 1, 60, "2M2D2M", "ACGT", "IIII",
+        )];
         let pileups = pileup(&records, None).unwrap();
         assert_eq!(pileups[0].columns.len(), 6);
 
@@ -839,7 +840,7 @@ mod tests {
         reference.insert("chr1".to_string(), b"AAAA".to_vec());
 
         let records = vec![
-            make_record("r1", 0, "chr1", 1, 60, "4M", "AAAA", "IIII"),  // fwd
+            make_record("r1", 0, "chr1", 1, 60, "4M", "AAAA", "IIII"), // fwd
             make_record("r2", 16, "chr1", 1, 60, "4M", "AAAA", "IIII"), // rev
         ];
         let pileups = pileup(&records, Some(&reference)).unwrap();
@@ -857,7 +858,7 @@ mod tests {
         reference.insert("chr1".to_string(), b"AAAA".to_vec());
 
         let records = vec![
-            make_record("r1", 0, "chr1", 1, 60, "4M", "CCCC", "IIII"),  // fwd, mismatch
+            make_record("r1", 0, "chr1", 1, 60, "4M", "CCCC", "IIII"), // fwd, mismatch
             make_record("r2", 16, "chr1", 1, 60, "4M", "CCCC", "IIII"), // rev, mismatch
         ];
         let pileups = pileup(&records, Some(&reference)).unwrap();
@@ -1023,7 +1024,7 @@ mod tests {
     #[test]
     fn test_pileup_reverse_strand_bases() {
         let records = vec![
-            make_record("r1", 0, "chr1", 1, 60, "4M", "ACGT", "IIII"),  // forward
+            make_record("r1", 0, "chr1", 1, 60, "4M", "ACGT", "IIII"), // forward
             make_record("r2", 16, "chr1", 1, 60, "4M", "ACGT", "IIII"), // reverse
         ];
         let pileups = pileup(&records, None).unwrap();
@@ -1142,7 +1143,9 @@ mod tests {
 
     #[test]
     fn test_deletion_has_mapping_quality() {
-        let records = vec![make_record("r1", 0, "chr1", 1, 42, "2M1D2M", "ACGT", "IIII")];
+        let records = vec![make_record(
+            "r1", 0, "chr1", 1, 42, "2M1D2M", "ACGT", "IIII",
+        )];
         let pileups = pileup(&records, None).unwrap();
 
         // The deletion position should also have mapq

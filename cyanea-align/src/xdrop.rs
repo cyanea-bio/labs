@@ -248,13 +248,12 @@ fn extend_dp(
         match tb[ci][cj] {
             0 => {
                 // diagonal
-                let op = if query[ci - 1].to_ascii_uppercase()
-                    == target[cj - 1].to_ascii_uppercase()
-                {
-                    CigarOp::Match(1)
-                } else {
-                    CigarOp::Mismatch(1)
-                };
+                let op =
+                    if query[ci - 1].to_ascii_uppercase() == target[cj - 1].to_ascii_uppercase() {
+                        CigarOp::Match(1)
+                    } else {
+                        CigarOp::Mismatch(1)
+                    };
                 push_cigar(&mut cigar, op);
                 ci -= 1;
                 cj -= 1;
@@ -631,9 +630,13 @@ mod tests {
 
     #[test]
     fn identical_sequences() {
-        let result =
-            xdrop_extend_right(b"ACGTACGT", b"ACGTACGT", &dna_scheme(), &XDropParams::default())
-                .unwrap();
+        let result = xdrop_extend_right(
+            b"ACGTACGT",
+            b"ACGTACGT",
+            &dna_scheme(),
+            &XDropParams::default(),
+        )
+        .unwrap();
         assert_eq!(result.score, 16); // 8 matches * 2
         assert_eq!(result.query_len, 8);
         assert_eq!(result.target_len, 8);
@@ -680,9 +683,13 @@ mod tests {
 
     #[test]
     fn left_extension_reversal() {
-        let result =
-            xdrop_extend_left(b"ACGTACGT", b"ACGTACGT", &dna_scheme(), &XDropParams::default())
-                .unwrap();
+        let result = xdrop_extend_left(
+            b"ACGTACGT",
+            b"ACGTACGT",
+            &dna_scheme(),
+            &XDropParams::default(),
+        )
+        .unwrap();
         assert_eq!(result.score, 16);
         assert_eq!(result.query_len, 8);
     }
@@ -708,16 +715,27 @@ mod tests {
 
     #[test]
     fn seed_extend_out_of_bounds() {
-        let result =
-            xdrop_seed_extend(b"ACGT", b"ACGT", 3, 3, 5, &dna_scheme(), &XDropParams::default());
+        let result = xdrop_seed_extend(
+            b"ACGT",
+            b"ACGT",
+            3,
+            3,
+            5,
+            &dna_scheme(),
+            &XDropParams::default(),
+        );
         assert!(result.is_err());
     }
 
     #[test]
     fn zdrop_extend() {
-        let result =
-            zdrop_extend_right(b"ACGTACGT", b"ACGTACGT", &dna_scheme(), &ZDropParams::default())
-                .unwrap();
+        let result = zdrop_extend_right(
+            b"ACGTACGT",
+            b"ACGTACGT",
+            &dna_scheme(),
+            &ZDropParams::default(),
+        )
+        .unwrap();
         assert_eq!(result.score, 16);
         assert!(!result.dropped);
     }

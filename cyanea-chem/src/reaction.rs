@@ -183,8 +183,14 @@ fn build_product(
 
     // Process product bonds: check for new bonds between mapped atoms
     for bond in &reaction.product_template.bonds {
-        let a1_map = reaction.product_maps.iter().find(|&&(idx, _)| idx == bond.atom1);
-        let a2_map = reaction.product_maps.iter().find(|&&(idx, _)| idx == bond.atom2);
+        let a1_map = reaction
+            .product_maps
+            .iter()
+            .find(|&&(idx, _)| idx == bond.atom1);
+        let a2_map = reaction
+            .product_maps
+            .iter()
+            .find(|&&(idx, _)| idx == bond.atom2);
 
         if let (Some(&(_, map1)), Some(&(_, map2))) = (a1_map, a2_map) {
             if let (Some(&t1), Some(&t2)) = (map_to_target.get(&map1), map_to_target.get(&map2)) {
@@ -223,14 +229,26 @@ fn build_product(
 
     // Check for bonds in reactant but not in product (bonds to remove)
     for bond in &reaction.reactant_pattern.bonds {
-        let a1_map = reaction.reactant_maps.iter().find(|&&(idx, _)| idx == bond.atom1);
-        let a2_map = reaction.reactant_maps.iter().find(|&&(idx, _)| idx == bond.atom2);
+        let a1_map = reaction
+            .reactant_maps
+            .iter()
+            .find(|&&(idx, _)| idx == bond.atom1);
+        let a2_map = reaction
+            .reactant_maps
+            .iter()
+            .find(|&&(idx, _)| idx == bond.atom2);
 
         if let (Some(&(_, map1)), Some(&(_, map2))) = (a1_map, a2_map) {
             // Check if this bond exists in product template
             let in_product = reaction.product_template.bonds.iter().any(|pb| {
-                let pb1_map = reaction.product_maps.iter().find(|&&(idx, _)| idx == pb.atom1);
-                let pb2_map = reaction.product_maps.iter().find(|&&(idx, _)| idx == pb.atom2);
+                let pb1_map = reaction
+                    .product_maps
+                    .iter()
+                    .find(|&&(idx, _)| idx == pb.atom1);
+                let pb2_map = reaction
+                    .product_maps
+                    .iter()
+                    .find(|&&(idx, _)| idx == pb.atom2);
                 match (pb1_map, pb2_map) {
                     (Some(&(_, m1)), Some(&(_, m2))) => {
                         (m1 == map1 && m2 == map2) || (m1 == map2 && m2 == map1)
@@ -241,7 +259,8 @@ fn build_product(
 
             if !in_product {
                 // Remove this bond
-                if let (Some(&t1), Some(&t2)) = (map_to_target.get(&map1), map_to_target.get(&map2)) {
+                if let (Some(&t1), Some(&t2)) = (map_to_target.get(&map1), map_to_target.get(&map2))
+                {
                     for (bi, b) in bonds.iter().enumerate() {
                         if (b.atom1 == t1 && b.atom2 == t2) || (b.atom1 == t2 && b.atom2 == t1) {
                             bonds_to_remove.insert(bi);
@@ -395,13 +414,14 @@ pub fn enumerate_reactions(
 /// Uses maximum common substructure (MCS) to find corresponding atoms,
 /// then heuristically assigns remaining unmapped atoms.
 pub fn atom_atom_map(reactant: &Molecule, product: &Molecule) -> AtomAtomMapping {
-    let mcs = crate::scaffold::maximum_common_substructure(reactant, product, 1000)
-        .unwrap_or_else(|_| crate::scaffold::McsResult {
+    let mcs = crate::scaffold::maximum_common_substructure(reactant, product, 1000).unwrap_or_else(
+        |_| crate::scaffold::McsResult {
             mcs_atoms: 0,
             mcs_bonds: 0,
             mapping_a: Vec::new(),
             mapping_b: Vec::new(),
-        });
+        },
+    );
 
     let mut mapping: Vec<(usize, usize)> = Vec::new();
     let mut mapped_reactant = std::collections::HashSet::new();
@@ -430,9 +450,10 @@ pub fn atom_atom_map(reactant: &Molecule, product: &Molecule) -> AtomAtomMapping
 
     for &ri in &unmapped_r {
         let r_elem = reactant.atoms[ri].atomic_number;
-        if let Some(pos) = still_unmapped_p.iter().position(|&pi| {
-            product.atoms[pi].atomic_number == r_elem
-        }) {
+        if let Some(pos) = still_unmapped_p
+            .iter()
+            .position(|&pi| product.atoms[pi].atomic_number == r_elem)
+        {
             let pi = still_unmapped_p.remove(pos);
             mapping.push((ri, pi));
         } else {
@@ -454,21 +475,39 @@ pub fn atom_atom_map(reactant: &Molecule, product: &Molecule) -> AtomAtomMapping
 /// Common retrosynthetic transforms as (name, forward SMIRKS).
 /// For retrosynthesis, we apply the reverse (product → reactants).
 const RETRO_TRANSFORMS: &[(&str, &str)] = &[
-    ("Amide bond formation", "[C:1](=O)[NH:2]>>[C:1](=O)O.[NH2:2]"),
+    (
+        "Amide bond formation",
+        "[C:1](=O)[NH:2]>>[C:1](=O)O.[NH2:2]",
+    ),
     ("Ester hydrolysis", "[C:1](=O)[O:2]>>[C:1](=O)O.[OH:2]"),
     ("Suzuki coupling", "[c:1][c:2]>>[c:1]B(O)O.[c:2]Br"),
     ("Reductive amination", "[C:1][NH:2]>>[C:1]=O.[NH2:2]"),
     ("Williamson ether", "[C:1][O:2][C:3]>>[C:1]Br.[OH:2][C:3]"),
-    ("Fischer esterification", "[C:1](=O)[O:2][C:3]>>[C:1](=O)O.[OH:2][C:3]"),
+    (
+        "Fischer esterification",
+        "[C:1](=O)[O:2][C:3]>>[C:1](=O)O.[OH:2][C:3]",
+    ),
     ("N-alkylation", "[N:1][C:2]>>[NH:1].[C:2]Br"),
     ("Grignard addition", "[C:1]([OH:2])[C:3]>>[C:1]=O.[C:3]MgBr"),
-    ("Michael addition", "[C:1][C:2][C:3](=O)>>[C:1]=[C:2].[C:3](=O)"),
-    ("Aldol condensation", "[C:1]([OH:2])[C:3][C:4](=O)>>[C:1](=O).[C:3][C:4](=O)"),
+    (
+        "Michael addition",
+        "[C:1][C:2][C:3](=O)>>[C:1]=[C:2].[C:3](=O)",
+    ),
+    (
+        "Aldol condensation",
+        "[C:1]([OH:2])[C:3][C:4](=O)>>[C:1](=O).[C:3][C:4](=O)",
+    ),
     ("Wittig olefination", "[C:1]=[C:2]>>[C:1]=O.[C:2]"),
-    ("Diels-Alder", "[C:1]1[C:2]=[C:3][C:4][C:5]=[C:6]1>>[C:1]=[C:2][C:3]=[C:4].[C:5]=[C:6]"),
+    (
+        "Diels-Alder",
+        "[C:1]1[C:2]=[C:3][C:4][C:5]=[C:6]1>>[C:1]=[C:2][C:3]=[C:4].[C:5]=[C:6]",
+    ),
     ("Heck coupling", "[c:1][C:2]=[C:3]>>[c:1]Br.[C:2]=[C:3]"),
     ("Buchwald-Hartwig", "[c:1][N:2]>>[c:1]Br.[NH:2]"),
-    ("Sonogashira coupling", "[c:1][C:2]#[C:3]>>[c:1]Br.[C:2]#[C:3]"),
+    (
+        "Sonogashira coupling",
+        "[c:1][C:2]#[C:3]>>[c:1]Br.[C:2]#[C:3]",
+    ),
 ];
 
 /// Find retrosynthetic disconnections for a target molecule.
@@ -632,7 +671,10 @@ mod tests {
     fn retrosynthetic_amide() {
         let mol = parse_smiles("CC(=O)NC").unwrap();
         let disconnections = retrosynthetic_disconnections(&mol);
-        let names: Vec<&str> = disconnections.iter().map(|d| d.transform_name.as_str()).collect();
+        let names: Vec<&str> = disconnections
+            .iter()
+            .map(|d| d.transform_name.as_str())
+            .collect();
         assert!(
             names.contains(&"Amide bond formation"),
             "expected amide disconnection, got {:?}",
@@ -644,7 +686,10 @@ mod tests {
     fn retrosynthetic_ester() {
         let mol = parse_smiles("CC(=O)OC").unwrap();
         let disconnections = retrosynthetic_disconnections(&mol);
-        let names: Vec<&str> = disconnections.iter().map(|d| d.transform_name.as_str()).collect();
+        let names: Vec<&str> = disconnections
+            .iter()
+            .map(|d| d.transform_name.as_str())
+            .collect();
         // Should find ester hydrolysis or Fischer esterification
         assert!(
             names.iter().any(|n| n.contains("ster")),
@@ -665,7 +710,11 @@ mod tests {
         let mol = parse_smiles("CC(=O)NC").unwrap();
         let disconnections = retrosynthetic_disconnections(&mol);
         for d in &disconnections {
-            assert!(!d.precursors.is_empty(), "disconnection {} has no precursors", d.transform_name);
+            assert!(
+                !d.precursors.is_empty(),
+                "disconnection {} has no precursors",
+                d.transform_name
+            );
         }
     }
 
@@ -702,9 +751,14 @@ mod tests {
         let mol = parse_smiles("COCC").unwrap();
         let disconnections = retrosynthetic_disconnections(&mol);
         // Should find Williamson ether synthesis
-        let names: Vec<&str> = disconnections.iter().map(|d| d.transform_name.as_str()).collect();
+        let names: Vec<&str> = disconnections
+            .iter()
+            .map(|d| d.transform_name.as_str())
+            .collect();
         assert!(
-            names.iter().any(|n| n.contains("ether") || n.contains("Williamson")),
+            names
+                .iter()
+                .any(|n| n.contains("ether") || n.contains("Williamson")),
             "expected ether disconnection, got {:?}",
             names
         );
@@ -715,6 +769,9 @@ mod tests {
         let mol = parse_smiles("CNCC").unwrap();
         let disconnections = retrosynthetic_disconnections(&mol);
         // Should find reductive amination or N-alkylation
-        assert!(!disconnections.is_empty(), "expected at least one disconnection");
+        assert!(
+            !disconnections.is_empty(),
+            "expected at least one disconnection"
+        );
     }
 }

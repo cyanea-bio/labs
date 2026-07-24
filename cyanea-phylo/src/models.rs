@@ -168,9 +168,7 @@ impl GtrParams {
                 for j in 0..4 {
                     let mut sum = 0.0;
                     for k in 0..4 {
-                        sum += eigenvectors[i][k]
-                            * (eigenvalues[k] * t).exp()
-                            * eigenvectors[j][k];
+                        sum += eigenvectors[i][k] * (eigenvalues[k] * t).exp() * eigenvectors[j][k];
                     }
                     p[i][j] = inv_sqrt_pi[i] * sum * sqrt_pi[j];
                 }
@@ -660,8 +658,7 @@ mod tests {
     #[test]
     fn gtr_equal_rates_matches_jc69() {
         // GTR with equal rates and uniform frequencies should match JC69.
-        let params =
-            GtrParams::new([1.0; 6], [0.25; 4]).unwrap();
+        let params = GtrParams::new([1.0; 6], [0.25; 4]).unwrap();
         let prob_fn = params.probability_fn();
         for &t in &[0.01, 0.1, 0.5, 1.0] {
             let gtr_p = prob_fn(t);
@@ -684,8 +681,7 @@ mod tests {
 
     #[test]
     fn gtr_rows_sum_to_one() {
-        let params =
-            GtrParams::new([1.0, 2.0, 1.0, 1.0, 2.0, 1.0], [0.3, 0.2, 0.2, 0.3]).unwrap();
+        let params = GtrParams::new([1.0, 2.0, 1.0, 1.0, 2.0, 1.0], [0.3, 0.2, 0.2, 0.3]).unwrap();
         let prob_fn = params.probability_fn();
         for &t in &[0.0, 0.01, 0.1, 0.5, 1.0, 5.0] {
             let p = prob_fn(t);
@@ -704,8 +700,7 @@ mod tests {
 
     #[test]
     fn gtr_t_zero_is_identity() {
-        let params =
-            GtrParams::new([1.0, 3.0, 1.0, 1.0, 3.0, 1.0], [0.3, 0.2, 0.2, 0.3]).unwrap();
+        let params = GtrParams::new([1.0, 3.0, 1.0, 1.0, 3.0, 1.0], [0.3, 0.2, 0.2, 0.3]).unwrap();
         let p = gtr_probability(&params, 0.0);
         for i in 0..4 {
             for j in 0..4 {

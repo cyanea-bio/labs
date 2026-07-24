@@ -10,10 +10,10 @@
 /// Returns (gene_names, cell_barcodes, count_matrix) where matrix is genes × cells.
 pub fn demo_pbmc_50() -> DemoSingleCell {
     let genes = vec![
-        "CD3D", "CD3E", "IL7R", "CD8A", "CD8B",    // T cell markers
-        "CD19", "MS4A1", "CD79A", "CD79B", "PAX5",   // B cell markers
+        "CD3D", "CD3E", "IL7R", "CD8A", "CD8B", // T cell markers
+        "CD19", "MS4A1", "CD79A", "CD79B", "PAX5", // B cell markers
         "CD14", "LYZ", "FCGR3A", "S100A8", "S100A9", // Monocyte markers
-        "ACTB", "GAPDH", "B2M", "MALAT1", "TMSB4X",  // Housekeeping
+        "ACTB", "GAPDH", "B2M", "MALAT1", "TMSB4X", // Housekeeping
     ];
 
     let cells: Vec<String> = (0..50).map(|i| format!("CELL_{:03}", i)).collect();
@@ -24,12 +24,20 @@ pub fn demo_pbmc_50() -> DemoSingleCell {
     // Seed-based pseudo-random for reproducibility
     let mut rng = 42u64;
     let next = |state: &mut u64| -> f64 {
-        *state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        *state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         ((*state >> 33) as f64) / (u32::MAX as f64)
     };
 
     for cell in 0..50 {
-        let cell_type = if cell < 20 { 0 } else if cell < 35 { 1 } else { 2 };
+        let cell_type = if cell < 20 {
+            0
+        } else if cell < 35 {
+            1
+        } else {
+            2
+        };
 
         for gene in 0..20 {
             let base = next(&mut rng) * 2.0; // background noise

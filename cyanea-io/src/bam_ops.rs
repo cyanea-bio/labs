@@ -410,10 +410,7 @@ pub fn alignment_stats(records: &[SamRecord]) -> AlignmentStats {
 
     for rec in records {
         // Insert sizes from proper pairs (first in pair only, positive TLEN)
-        if rec.flag & FLAG_PROPER_PAIR != 0
-            && rec.flag & FLAG_FIRST_IN_PAIR != 0
-            && rec.tlen > 0
-        {
+        if rec.flag & FLAG_PROPER_PAIR != 0 && rec.flag & FLAG_FIRST_IN_PAIR != 0 && rec.tlen > 0 {
             insert_sizes.push(rec.tlen as f64);
         }
 
@@ -478,9 +475,8 @@ pub fn alignment_stats(records: &[SamRecord]) -> AlignmentStats {
         0.0
     } else {
         let mean = insert_size_mean;
-        let variance =
-            insert_sizes.iter().map(|x| (x - mean).powi(2)).sum::<f64>()
-                / (insert_sizes.len() - 1) as f64;
+        let variance = insert_sizes.iter().map(|x| (x - mean).powi(2)).sum::<f64>()
+            / (insert_sizes.len() - 1) as f64;
         variance.sqrt()
     };
 

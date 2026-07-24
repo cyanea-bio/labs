@@ -179,16 +179,10 @@ pub fn parse_gfa_str(data: &str) -> Result<GfaGraph> {
                     )));
                 }
                 let from_orient = fields[2].chars().next().ok_or_else(|| {
-                    CyaneaError::Parse(format!(
-                        "line {}: empty from_orient field",
-                        line_idx + 1
-                    ))
+                    CyaneaError::Parse(format!("line {}: empty from_orient field", line_idx + 1))
                 })?;
                 let to_orient = fields[4].chars().next().ok_or_else(|| {
-                    CyaneaError::Parse(format!(
-                        "line {}: empty to_orient field",
-                        line_idx + 1
-                    ))
+                    CyaneaError::Parse(format!("line {}: empty to_orient field", line_idx + 1))
                 })?;
 
                 links.push(GfaLink {
@@ -209,14 +203,8 @@ pub fn parse_gfa_str(data: &str) -> Result<GfaGraph> {
                     )));
                 }
                 let name = fields[1].to_string();
-                let segs: Vec<String> = fields[2]
-                    .split(',')
-                    .map(|s| s.to_string())
-                    .collect();
-                let overlaps: Vec<String> = fields[3]
-                    .split(',')
-                    .map(|s| s.to_string())
-                    .collect();
+                let segs: Vec<String> = fields[2].split(',').map(|s| s.to_string()).collect();
+                let overlaps: Vec<String> = fields[3].split(',').map(|s| s.to_string()).collect();
 
                 paths.push(GfaPath {
                     name,
@@ -282,11 +270,7 @@ pub fn write_gfa_string(graph: &GfaGraph) -> String {
     for link in &graph.links {
         out.push_str(&format!(
             "L\t{}\t{}\t{}\t{}\t{}\n",
-            link.from_segment,
-            link.from_orient,
-            link.to_segment,
-            link.to_orient,
-            link.overlap
+            link.from_segment, link.from_orient, link.to_segment, link.to_orient, link.overlap
         ));
     }
 
@@ -400,10 +384,7 @@ P\tpath2\ts3+,s1-\t*
         assert_eq!(graph.paths.len(), 2);
 
         assert_eq!(graph.paths[0].name, "path1");
-        assert_eq!(
-            graph.paths[0].segments,
-            vec!["s1+", "s2+", "s3-"]
-        );
+        assert_eq!(graph.paths[0].segments, vec!["s1+", "s2+", "s3-"]);
         assert_eq!(graph.paths[0].overlaps, vec!["4M", "0M"]);
 
         assert_eq!(graph.paths[1].name, "path2");

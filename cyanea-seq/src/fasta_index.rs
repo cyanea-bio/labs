@@ -213,10 +213,7 @@ impl IndexedFastaReader {
     /// Open a FASTA file and automatically load its `.fai` sidecar index.
     pub fn open(fasta_path: &Path) -> Result<Self> {
         let fai_path = fasta_path.with_extension({
-            let mut ext = fasta_path
-                .extension()
-                .unwrap_or_default()
-                .to_os_string();
+            let mut ext = fasta_path.extension().unwrap_or_default().to_os_string();
             ext.push(".fai");
             ext
         });
@@ -226,9 +223,10 @@ impl IndexedFastaReader {
 
     /// Fetch bases `[start, end)` from the named sequence.
     pub fn fetch(&mut self, name: &str, start: usize, end: usize) -> Result<Vec<u8>> {
-        let entry = self.index.get(name).ok_or_else(|| {
-            CyaneaError::InvalidInput(format!("sequence not found: {}", name))
-        })?;
+        let entry = self
+            .index
+            .get(name)
+            .ok_or_else(|| CyaneaError::InvalidInput(format!("sequence not found: {}", name)))?;
 
         if start > end || end > entry.length {
             return Err(CyaneaError::InvalidInput(format!(
@@ -277,9 +275,7 @@ impl IndexedFastaReader {
         let length = self
             .index
             .get(name)
-            .ok_or_else(|| {
-                CyaneaError::InvalidInput(format!("sequence not found: {}", name))
-            })?
+            .ok_or_else(|| CyaneaError::InvalidInput(format!("sequence not found: {}", name)))?
             .length;
         self.fetch(name, 0, length)
     }

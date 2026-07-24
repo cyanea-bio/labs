@@ -63,10 +63,14 @@ fn test_tmt_quantification_pipeline() {
     let reporters = TmtPlex::Tmt6.reporter_mzs();
     let channel_values = vec![100.0, 200.0, 300.0, 150.0, 250.0, 175.0];
 
-    let peaks: Vec<Peak> = reporters.iter()
+    let peaks: Vec<Peak> = reporters
+        .iter()
         .zip(channel_values.iter())
         .map(|(&mz, &intensity)| Peak { mz, intensity })
-        .chain(std::iter::once(Peak { mz: 300.0, intensity: 5000.0 }))
+        .chain(std::iter::once(Peak {
+            mz: 300.0,
+            intensity: 5000.0,
+        }))
         .collect();
 
     let spec = MassSpectrum::new("tmt_scan", MsLevel::Ms2, 100.0, peaks).unwrap();
@@ -111,7 +115,7 @@ fn test_protein_inference_full() {
     ];
 
     let proteins = vec![
-        ProteinEntry::new("Prot_A", b"MAAAKBBBK"),     // has AAAK, BBBK
+        ProteinEntry::new("Prot_A", b"MAAAKBBBK"), // has AAAK, BBBK
         ProteinEntry::new("Prot_B", b"MBBBKCCCKDDDK"), // has BBBK, CCCK, DDDK
     ];
 

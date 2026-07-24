@@ -104,7 +104,9 @@ impl LongRead {
         if self.sequence.is_empty() {
             return 0.0;
         }
-        let gc = self.sequence.iter()
+        let gc = self
+            .sequence
+            .iter()
             .filter(|&&b| b == b'G' || b == b'C' || b == b'g' || b == b'c')
             .count();
         gc as f64 / self.sequence.len() as f64
@@ -178,10 +180,15 @@ pub fn longread_stats(reads: &[LongRead]) -> Result<LongReadStats> {
     let q30_count = reads.iter().filter(|r| r.mean_quality() >= 30.0).count();
 
     let mean_passes = if reads.iter().any(|r| r.num_passes.is_some()) {
-        let (sum, count) = reads.iter()
+        let (sum, count) = reads
+            .iter()
             .filter_map(|r| r.num_passes)
             .fold((0u64, 0u64), |(s, c), p| (s + p as u64, c + 1));
-        if count > 0 { Some(sum as f64 / count as f64) } else { None }
+        if count > 0 {
+            Some(sum as f64 / count as f64)
+        } else {
+            None
+        }
     } else {
         None
     };
@@ -229,16 +236,19 @@ pub struct CorrectedRead {
 /// multiple overlapping reads.
 pub fn self_correct(read: &LongRead, k: usize) -> Result<CorrectedRead> {
     if read.len() < k {
-        return Err(CyaneaError::InvalidInput(
-            format!("read length {} shorter than k={}", read.len(), k),
-        ));
+        return Err(CyaneaError::InvalidInput(format!(
+            "read length {} shorter than k={}",
+            read.len(),
+            k
+        )));
     }
     if k < 3 || k > 31 {
         return Err(CyaneaError::InvalidInput("k must be 3-31".into()));
     }
 
     // Build k-mer frequency table
-    let mut kmer_counts: std::collections::HashMap<Vec<u8>, usize> = std::collections::HashMap::new();
+    let mut kmer_counts: std::collections::HashMap<Vec<u8>, usize> =
+        std::collections::HashMap::new();
     for window in read.sequence.windows(k) {
         *kmer_counts.entry(window.to_vec()).or_insert(0) += 1;
     }
@@ -356,7 +366,8 @@ pub fn simple_consensus(reads: &[&[u8]]) -> Result<Vec<u8>> {
             }
         }
 
-        let best = counts[..4].iter()
+        let best = counts[..4]
+            .iter()
             .enumerate()
             .max_by_key(|(_, &c)| c)
             .map(|(i, _)| i)
@@ -423,13 +434,16 @@ pub fn simulate_long_reads(reference: &[u8], config: &LongReadSimConfig) -> Resu
         LongReadPlatform::NanoporeDuplex => 0.005,
     };
 
-    let num_reads = ((reference.len() as f64 * config.coverage) / config.mean_length as f64).ceil() as usize;
+    let num_reads =
+        ((reference.len() as f64 * config.coverage) / config.mean_length as f64).ceil() as usize;
     let mut reads = Vec::with_capacity(num_reads);
 
     // Simple LCG PRNG
     let mut rng_state = config.seed;
     let lcg_next = |state: &mut u64| -> u64 {
-        *state = state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        *state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
         *state
     };
 
@@ -471,12 +485,7 @@ pub fn simulate_long_reads(reference: &[u8], config: &LongReadSimConfig) -> Resu
             qual[j] = q.min(60);
         }
 
-        let mut read = LongRead::new(
-            format!("sim_longread_{}", i),
-            seq,
-            qual,
-            config.platform,
-        )?;
+        let mut read = LongRead::new(format!("sim_longread_{}", i), seq, qual, config.platform)?;
 
         if config.platform == LongReadPlatform::PacBioHiFi {
             read.num_passes = Some(config.num_passes);
@@ -548,7 +557,8 @@ pub fn trim_adapters(
 
         // Check start of read
         let start_region = &seq[..adapter_len.min(seq.len())];
-        let start_mismatches = start_region.iter()
+        let start_mismatches = start_region
+            .iter()
             .zip(adapter.sequence.iter())
             .filter(|(a, b)| a != b)
             .count();
@@ -564,7 +574,8 @@ pub fn trim_adapters(
         if adapter_len <= seq.len() {
             let end_start = seq.len() - adapter_len;
             let end_region = &seq[end_start..];
-            let end_mismatches = end_region.iter()
+            let end_mismatches = end_region
+                .iter()
                 .zip(adapter.sequence.iter())
                 .filter(|(a, b)| a != b)
                 .count();
@@ -615,7 +626,12 @@ mod tests {
 
     #[test]
     fn test_quality_mismatch_error() {
-        let result = LongRead::new("r1", vec![b'A', b'C'], vec![30], LongReadPlatform::PacBioHiFi);
+        let result = LongRead::new(
+            "r1",
+            vec![b'A', b'C'],
+            vec![30],
+            LongReadPlatform::PacBioHiFi,
+        );
         assert!(result.is_err());
     }
 
@@ -634,7 +650,8 @@ mod tests {
 
     #[test]
     fn test_error_rate_default_no_quality() {
-        let read = LongRead::new("r1", b"ACGT".to_vec(), vec![], LongReadPlatform::PacBioCLR).unwrap();
+        let read =
+            LongRead::new("r1", b"ACGT".to_vec(), vec![], LongReadPlatform::PacBioCLR).unwrap();
         assert!((read.error_rate() - 0.13).abs() < 1e-10);
     }
 

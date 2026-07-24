@@ -123,7 +123,9 @@ pub fn parse_efetch_fasta(response: &str) -> Result<Vec<(String, Vec<u8>)>> {
         records.push((header, seq));
     }
     if records.is_empty() {
-        return Err(CyaneaError::Parse("no FASTA records found in response".into()));
+        return Err(CyaneaError::Parse(
+            "no FASTA records found in response".into(),
+        ));
     }
     Ok(records)
 }
@@ -375,9 +377,9 @@ pub fn parse_refget_metadata(json: &str) -> Result<RefgetMetadata> {
     }
 
     // Find the metadata object.
-    let meta_start = json.find("\"metadata\"").ok_or_else(|| {
-        CyaneaError::Parse("refget metadata: missing \"metadata\" key".into())
-    })?;
+    let meta_start = json
+        .find("\"metadata\"")
+        .ok_or_else(|| CyaneaError::Parse("refget metadata: missing \"metadata\" key".into()))?;
     let meta_body = &json[meta_start..];
 
     let md5 = extract_string(meta_body, "md5")?.to_string();
@@ -394,9 +396,7 @@ pub fn parse_refget_metadata(json: &str) -> Result<RefgetMetadata> {
             while let Some(obj_start) = rest.find('{') {
                 let obj_body = &rest[obj_start..];
                 let obj_end = obj_body.find('}').ok_or_else(|| {
-                    CyaneaError::Parse(
-                        "refget metadata: unterminated alias object".into(),
-                    )
+                    CyaneaError::Parse("refget metadata: unterminated alias object".into())
                 })?;
                 let obj_str = &obj_body[..=obj_end];
                 let na = extract_string(obj_str, "naming_authority")?.to_string();

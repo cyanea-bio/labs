@@ -97,10 +97,10 @@ impl FmIndex {
         // total_t = counts[3]
 
         let c_table = [
-            1,                                  // A: just '$' is smaller
-            1 + total_a,                        // C: '$' + all A's
-            1 + total_a + total_c,              // G: '$' + A's + C's
-            1 + total_a + total_c + total_g,    // T: '$' + A's + C's + G's
+            1,                               // A: just '$' is smaller
+            1 + total_a,                     // C: '$' + all A's
+            1 + total_a + total_c,           // G: '$' + A's + C's
+            1 + total_a + total_c + total_g, // T: '$' + A's + C's + G's
         ];
 
         Self {
@@ -188,7 +188,11 @@ impl FmIndex {
                 None => return (1, 0),
             };
 
-            let occ_before_top = if top == 0 { 0 } else { self.occ[top - 1][c_idx] };
+            let occ_before_top = if top == 0 {
+                0
+            } else {
+                self.occ[top - 1][c_idx]
+            };
             let occ_at_bottom = self.occ[bottom][c_idx];
 
             if occ_before_top >= occ_at_bottom {

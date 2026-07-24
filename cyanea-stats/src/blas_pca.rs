@@ -21,8 +21,7 @@ pub(super) fn pca_ndarray(
     for row in data {
         flat.extend_from_slice(row);
     }
-    let x = Array2::from_shape_vec((n_samples, n_features), flat)
-        .expect("shape already validated");
+    let x = Array2::from_shape_vec((n_samples, n_features), flat).expect("shape already validated");
 
     // Compute and subtract mean
     let mean_arr = x.mean_axis(ndarray::Axis(0)).unwrap();
@@ -55,7 +54,13 @@ pub(super) fn pca_ndarray(
 
     let explained_variance_ratio: Vec<f64> = eigenvalues
         .iter()
-        .map(|&e| if total_variance > 0.0 { e / total_variance } else { 0.0 })
+        .map(|&e| {
+            if total_variance > 0.0 {
+                e / total_variance
+            } else {
+                0.0
+            }
+        })
         .collect();
 
     // Project data onto components
@@ -64,12 +69,7 @@ pub(super) fn pca_ndarray(
             let row = centered.row(i);
             components
                 .iter()
-                .map(|comp| {
-                    row.iter()
-                        .zip(comp.iter())
-                        .map(|(a, b)| a * b)
-                        .sum()
-                })
+                .map(|comp| row.iter().zip(comp.iter()).map(|(a, b)| a * b).sum())
                 .collect()
         })
         .collect();

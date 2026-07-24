@@ -108,7 +108,10 @@ impl AcmgEvidence {
     /// Add a pathogenic very-strong criterion (PVS1).
     pub fn pvs1(mut self, desc: &str) -> Self {
         self.criteria.push(AcmgCriterion::new(
-            "PVS1", true, EvidenceStrength::VeryStrong, desc,
+            "PVS1",
+            true,
+            EvidenceStrength::VeryStrong,
+            desc,
         ));
         self
     }
@@ -116,7 +119,10 @@ impl AcmgEvidence {
     /// Add a pathogenic strong criterion.
     pub fn strong_pathogenic(mut self, code: &str, desc: &str) -> Self {
         self.criteria.push(AcmgCriterion::new(
-            code, true, EvidenceStrength::Strong, desc,
+            code,
+            true,
+            EvidenceStrength::Strong,
+            desc,
         ));
         self
     }
@@ -124,7 +130,10 @@ impl AcmgEvidence {
     /// Add a pathogenic moderate criterion.
     pub fn moderate_pathogenic(mut self, code: &str, desc: &str) -> Self {
         self.criteria.push(AcmgCriterion::new(
-            code, true, EvidenceStrength::Moderate, desc,
+            code,
+            true,
+            EvidenceStrength::Moderate,
+            desc,
         ));
         self
     }
@@ -132,7 +141,10 @@ impl AcmgEvidence {
     /// Add a pathogenic supporting criterion.
     pub fn supporting_pathogenic(mut self, code: &str, desc: &str) -> Self {
         self.criteria.push(AcmgCriterion::new(
-            code, true, EvidenceStrength::Supporting, desc,
+            code,
+            true,
+            EvidenceStrength::Supporting,
+            desc,
         ));
         self
     }
@@ -140,7 +152,10 @@ impl AcmgEvidence {
     /// Add a benign stand-alone criterion (BA1).
     pub fn ba1(mut self, desc: &str) -> Self {
         self.criteria.push(AcmgCriterion::new(
-            "BA1", false, EvidenceStrength::VeryStrong, desc,
+            "BA1",
+            false,
+            EvidenceStrength::VeryStrong,
+            desc,
         ));
         self
     }
@@ -148,7 +163,10 @@ impl AcmgEvidence {
     /// Add a benign strong criterion.
     pub fn strong_benign(mut self, code: &str, desc: &str) -> Self {
         self.criteria.push(AcmgCriterion::new(
-            code, false, EvidenceStrength::Strong, desc,
+            code,
+            false,
+            EvidenceStrength::Strong,
+            desc,
         ));
         self
     }
@@ -156,7 +174,10 @@ impl AcmgEvidence {
     /// Add a benign supporting criterion.
     pub fn supporting_benign(mut self, code: &str, desc: &str) -> Self {
         self.criteria.push(AcmgCriterion::new(
-            code, false, EvidenceStrength::Supporting, desc,
+            code,
+            false,
+            EvidenceStrength::Supporting,
+            desc,
         ));
         self
     }
@@ -220,8 +241,13 @@ impl AcmgEvidence {
 
 /// Apply the ACMG combining rules from evidence counts.
 fn classify_from_counts(
-    pvs: usize, ps: usize, pm: usize, pp: usize,
-    ba: usize, bs: usize, bp: usize,
+    pvs: usize,
+    ps: usize,
+    pm: usize,
+    pp: usize,
+    ba: usize,
+    bs: usize,
+    bp: usize,
 ) -> AcmgClass {
     // Benign rules (checked first — BA1 is stand-alone)
     if ba >= 1 {
@@ -288,7 +314,12 @@ pub fn auto_evidence(
         variant.variant_type(),
         VariantType::Insertion | VariantType::Deletion
     ) && variant.ref_allele.len() != variant.alt_alleles[0].len()
-        && (variant.ref_allele.len().abs_diff(variant.alt_alleles[0].len()) % 3 != 0);
+        && (variant
+            .ref_allele
+            .len()
+            .abs_diff(variant.alt_alleles[0].len())
+            % 3
+            != 0);
 
     // PVS1: null variant in LOF gene
     if is_null && is_lof_gene {
@@ -302,7 +333,10 @@ pub fn auto_evidence(
         } else if freq > 0.01 {
             ev = ev.strong_benign("BS1", &format!("Allele frequency {:.4} > 1%", freq));
         } else if freq < 0.0001 {
-            ev = ev.moderate_pathogenic("PM2", &format!("Absent/rare in population (AF={:.6})", freq));
+            ev = ev.moderate_pathogenic(
+                "PM2",
+                &format!("Absent/rare in population (AF={:.6})", freq),
+            );
         }
     } else {
         ev = ev.moderate_pathogenic("PM2", "Absent from population databases");
@@ -345,23 +379,27 @@ pub fn match_clinvar(
     variant: &Variant,
     annotations: &[(String, u64, Vec<u8>, Vec<u8>, ClinVarAnnotation)],
 ) -> Option<ClinVarAnnotation> {
-    annotations.iter().find_map(|(chrom, pos, ref_a, alt_a, ann)| {
-        if variant.chrom == *chrom
-            && variant.position == *pos
-            && variant.ref_allele == *ref_a
-            && variant.alt_alleles[0] == *alt_a
-        {
-            Some(ann.clone())
-        } else {
-            None
-        }
-    })
+    annotations
+        .iter()
+        .find_map(|(chrom, pos, ref_a, alt_a, ann)| {
+            if variant.chrom == *chrom
+                && variant.position == *pos
+                && variant.ref_allele == *ref_a
+                && variant.alt_alleles[0] == *alt_a
+            {
+                Some(ann.clone())
+            } else {
+                None
+            }
+        })
 }
 
 /// Parse simple ClinVar TSV format.
 ///
 /// Expected columns: chrom, pos, ref, alt, significance, review_status, conditions, submitter_count, star_rating
-pub fn parse_clinvar_tsv(content: &str) -> Result<Vec<(String, u64, Vec<u8>, Vec<u8>, ClinVarAnnotation)>> {
+pub fn parse_clinvar_tsv(
+    content: &str,
+) -> Result<Vec<(String, u64, Vec<u8>, Vec<u8>, ClinVarAnnotation)>> {
     let mut results = Vec::new();
 
     for line in content.lines() {
@@ -457,8 +495,7 @@ mod tests {
 
     #[test]
     fn test_benign_ba1() {
-        let ev = AcmgEvidence::new()
-            .ba1("AF > 5% in gnomAD");
+        let ev = AcmgEvidence::new().ba1("AF > 5% in gnomAD");
         let result = ev.classify();
         assert_eq!(result.classification, AcmgClass::Benign);
     }

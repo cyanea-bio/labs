@@ -91,9 +91,7 @@ impl DistanceMatrix {
     pub fn from_points(data: &[&[f64]], metric: DistanceMetric) -> Result<Self> {
         let n = data.len();
         if n < 2 {
-            return Err(CyaneaError::InvalidInput(
-                "need at least 2 points".into(),
-            ));
+            return Err(CyaneaError::InvalidInput("need at least 2 points".into()));
         }
         let dim = data[0].len();
         if dim == 0 {
@@ -187,10 +185,7 @@ impl Summarizable for DistanceMatrix {
 }
 
 /// Convenience alias for [`DistanceMatrix::from_points`].
-pub fn pairwise_distances(
-    data: &[&[f64]],
-    metric: DistanceMetric,
-) -> Result<DistanceMatrix> {
+pub fn pairwise_distances(data: &[&[f64]], metric: DistanceMetric) -> Result<DistanceMatrix> {
     DistanceMatrix::from_points(data, metric)
 }
 

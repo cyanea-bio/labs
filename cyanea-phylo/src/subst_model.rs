@@ -155,9 +155,7 @@ impl SubstitutionModel for GtrModel {
 ///
 /// Returns (eigenvalues, eigenvectors) where eigenvectors\[i\]\[k\] is the
 /// i-th component of the k-th eigenvector.
-pub(crate) fn eigen_decompose(
-    matrix: &[Vec<f64>],
-) -> (Vec<f64>, Vec<Vec<f64>>, Vec<Vec<f64>>) {
+pub(crate) fn eigen_decompose(matrix: &[Vec<f64>]) -> (Vec<f64>, Vec<Vec<f64>>, Vec<Vec<f64>>) {
     let n = matrix.len();
     let mut a: Vec<Vec<f64>> = matrix.to_vec();
 
@@ -232,11 +230,7 @@ pub(crate) fn eigen_decompose(
 /// Uses eigendecomposition of the symmetrized rate matrix:
 /// B = diag(sqrt(pi)) * Q * diag(1/sqrt(pi)), then
 /// P(t) = diag(1/sqrt(pi)) * U * exp(Lambda*t) * U^T * diag(sqrt(pi))
-pub(crate) fn transition_probs_eigen(
-    q: &[Vec<f64>],
-    freqs: &[f64],
-    t: f64,
-) -> Vec<Vec<f64>> {
+pub(crate) fn transition_probs_eigen(q: &[Vec<f64>], freqs: &[f64], t: f64) -> Vec<Vec<f64>> {
     let n = q.len();
 
     let sqrt_pi: Vec<f64> = freqs.iter().map(|&f| f.sqrt()).collect();
@@ -258,9 +252,7 @@ pub(crate) fn transition_probs_eigen(
         for j in 0..n {
             let mut sum = 0.0;
             for k in 0..n {
-                sum += eigenvectors[i][k]
-                    * (eigenvalues[k] * t).exp()
-                    * eigenvectors[j][k];
+                sum += eigenvectors[i][k] * (eigenvalues[k] * t).exp() * eigenvectors[j][k];
             }
             p[i][j] = inv_sqrt_pi[i] * sum * sqrt_pi[j];
             if p[i][j] < 0.0 {
@@ -290,10 +282,7 @@ fn transpose(m: &[Vec<f64>]) -> Vec<Vec<f64>> {
 ///
 /// Q\[i\]\[j\] = S\[i\]\[j\] * pi\[j\] for i != j, rows sum to 0,
 /// normalized so -sum(pi_i * Q_ii) = 1.
-pub(crate) fn build_rate_matrix(
-    exchangeabilities: &[Vec<f64>],
-    freqs: &[f64],
-) -> Vec<Vec<f64>> {
+pub(crate) fn build_rate_matrix(exchangeabilities: &[Vec<f64>], freqs: &[f64]) -> Vec<Vec<f64>> {
     let n = freqs.len();
     let mut q = vec![vec![0.0; n]; n];
 
@@ -335,7 +324,11 @@ mod tests {
                     assert!(
                         (trait_p[i][j] - orig_p[i][j]).abs() < 1e-12,
                         "JC69 mismatch at ({},{}) t={}: {} vs {}",
-                        i, j, t, trait_p[i][j], orig_p[i][j]
+                        i,
+                        j,
+                        t,
+                        trait_p[i][j],
+                        orig_p[i][j]
                     );
                 }
             }
@@ -344,11 +337,7 @@ mod tests {
 
     #[test]
     fn gtr_trait_matches_original() {
-        let params = GtrParams::new(
-            [1.0, 2.0, 1.0, 1.0, 2.0, 1.0],
-            [0.3, 0.2, 0.2, 0.3],
-        )
-        .unwrap();
+        let params = GtrParams::new([1.0, 2.0, 1.0, 1.0, 2.0, 1.0], [0.3, 0.2, 0.2, 0.3]).unwrap();
         let model = GtrModel::new(params.clone());
         for &t in &[0.01, 0.1, 0.5, 1.0] {
             let trait_p = model.transition_probs(t);
@@ -358,7 +347,11 @@ mod tests {
                     assert!(
                         (trait_p[i][j] - orig_p[i][j]).abs() < 1e-6,
                         "GTR mismatch at ({},{}) t={}: {} vs {}",
-                        i, j, t, trait_p[i][j], orig_p[i][j]
+                        i,
+                        j,
+                        t,
+                        trait_p[i][j],
+                        orig_p[i][j]
                     );
                 }
             }
@@ -368,10 +361,7 @@ mod tests {
     #[test]
     fn n_states_returns_4_for_nucleotide() {
         assert_eq!(Jc69Model::new().n_states(), 4);
-        assert_eq!(
-            Hky85Model::new(2.0, [0.25; 4]).unwrap().n_states(),
-            4
-        );
+        assert_eq!(Hky85Model::new(2.0, [0.25; 4]).unwrap().n_states(), 4);
         let params = GtrParams::new([1.0; 6], [0.25; 4]).unwrap();
         assert_eq!(GtrModel::new(params).n_states(), 4);
     }
@@ -382,17 +372,12 @@ mod tests {
             Box::new(Jc69Model::new()),
             Box::new(Hky85Model::new(2.0, [0.3, 0.2, 0.2, 0.3]).unwrap()),
             Box::new(GtrModel::new(
-                GtrParams::new([1.0, 2.0, 1.0, 1.0, 2.0, 1.0], [0.3, 0.2, 0.2, 0.3])
-                    .unwrap(),
+                GtrParams::new([1.0, 2.0, 1.0, 1.0, 2.0, 1.0], [0.3, 0.2, 0.2, 0.3]).unwrap(),
             )),
         ];
         for m in &models {
             let sum: f64 = m.frequencies().iter().sum();
-            assert!(
-                (sum - 1.0).abs() < 1e-10,
-                "frequencies sum to {}",
-                sum
-            );
+            assert!((sum - 1.0).abs() < 1e-10, "frequencies sum to {}", sum);
         }
     }
 
@@ -411,7 +396,10 @@ mod tests {
                     assert!(
                         (p[i][j] - expected).abs() < 1e-8,
                         "P(0)[{}][{}] = {}, expected {}",
-                        i, j, p[i][j], expected
+                        i,
+                        j,
+                        p[i][j],
+                        expected
                     );
                 }
             }
@@ -428,7 +416,9 @@ mod tests {
                 assert!(
                     (sum - 1.0).abs() < 1e-6,
                     "row {} sum = {} at t = {}",
-                    i, sum, t
+                    i,
+                    sum,
+                    t
                 );
             }
         }
@@ -452,10 +442,7 @@ mod tests {
     #[test]
     fn n_free_params_correct() {
         assert_eq!(Jc69Model::new().n_free_params(), 0);
-        assert_eq!(
-            Hky85Model::new(2.0, [0.25; 4]).unwrap().n_free_params(),
-            4
-        );
+        assert_eq!(Hky85Model::new(2.0, [0.25; 4]).unwrap().n_free_params(), 4);
         let params = GtrParams::new([1.0; 6], [0.25; 4]).unwrap();
         assert_eq!(GtrModel::new(params).n_free_params(), 8);
     }
@@ -472,11 +459,7 @@ mod tests {
         let q = build_rate_matrix(&s, &freqs);
         for (i, row) in q.iter().enumerate() {
             let sum: f64 = row.iter().sum();
-            assert!(
-                sum.abs() < 1e-10,
-                "row {} sums to {}",
-                i, sum
-            );
+            assert!(sum.abs() < 1e-10, "row {} sums to {}", i, sum);
         }
     }
 }

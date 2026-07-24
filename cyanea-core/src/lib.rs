@@ -8,12 +8,12 @@
 //! - **Compression** — zstd and gzip with algorithm auto-detection
 //! - **Memory mapping** — Zero-copy file access (std feature only)
 
+pub mod bitvec;
 pub mod error;
-pub mod traits;
+pub mod fenwick;
 pub mod hash;
 pub mod prob;
-pub mod bitvec;
-pub mod fenwick;
+pub mod traits;
 
 #[cfg(feature = "std")]
 pub mod compress;
@@ -21,8 +21,8 @@ pub mod compress;
 #[cfg(feature = "std")]
 pub mod mmap;
 
-pub use error::{CyaneaError, Result};
-pub use traits::*;
-pub use prob::{LogProb, PhredProb};
 pub use bitvec::{RankSelectBitVec, WaveletMatrix};
+pub use error::{CyaneaError, Result};
 pub use fenwick::FenwickTree;
+pub use prob::{LogProb, PhredProb};
+pub use traits::*;

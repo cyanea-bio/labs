@@ -119,7 +119,9 @@ pub fn parse_embl(input: &str) -> Result<Vec<EmblRecord>> {
                     let location = parts[1].trim().to_string();
                     builder.features.push((key, location));
                 } else if parts.len() == 1 {
-                    builder.features.push((parts[0].trim().to_string(), String::new()));
+                    builder
+                        .features
+                        .push((parts[0].trim().to_string(), String::new()));
                 }
             }
             // Qualifier lines (starting with /) are skipped for simplicity
@@ -166,8 +168,11 @@ pub fn write_embl(records: &[EmblRecord]) -> String {
 
     for rec in records {
         // ID line
-        out.push_str(&format!("ID   {}; SV 1; linear; DNA; STD; UNC; {} BP.\n",
-            rec.id, rec.sequence.len()));
+        out.push_str(&format!(
+            "ID   {}; SV 1; linear; DNA; STD; UNC; {} BP.\n",
+            rec.id,
+            rec.sequence.len()
+        ));
 
         // AC line
         out.push_str(&format!("AC   {};\n", rec.accession));
@@ -262,9 +267,7 @@ mod tests {
             accession: "V00497".to_string(),
             description: "Human beta-globin gene.".to_string(),
             sequence: "acgtacgtacgtacgt".to_string(),
-            features: vec![
-                ("gene".to_string(), "1..16".to_string()),
-            ],
+            features: vec![("gene".to_string(), "1..16".to_string())],
         };
 
         let written = write_embl(&[rec]);

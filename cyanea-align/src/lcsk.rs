@@ -177,9 +177,7 @@ pub fn lcsk_plusplus(matches: &[(usize, usize)], k: usize) -> (usize, Vec<(usize
     let mut a_coords: Vec<usize> = sorted.iter().map(|&(a, _)| a).collect();
     a_coords.sort_unstable();
     a_coords.dedup();
-    let compress = |val: usize| -> usize {
-        a_coords.binary_search(&val).unwrap_or_else(|x| x)
-    };
+    let compress = |val: usize| -> usize { a_coords.binary_search(&val).unwrap_or_else(|x| x) };
 
     // DP arrays.
     let mut dp: Vec<usize> = vec![0; n];
@@ -330,9 +328,7 @@ pub fn lcsk_plusplus(matches: &[(usize, usize)], k: usize) -> (usize, Vec<(usize
 /// ```
 pub fn sparse_align(seq_a: &[u8], seq_b: &[u8], k: usize) -> Result<SparseAlignResult> {
     if k == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "k must be greater than 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("k must be greater than 0".into()));
     }
     if seq_a.len() < k {
         return Err(CyaneaError::InvalidInput(format!(

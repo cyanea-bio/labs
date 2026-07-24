@@ -178,7 +178,9 @@ pub fn parse_cel_v3(data: &str) -> Result<CelFile> {
     }
 
     if intensities.is_empty() {
-        return Err(CyaneaError::Parse("no intensity data found in CEL file".into()));
+        return Err(CyaneaError::Parse(
+            "no intensity data found in CEL file".into(),
+        ));
     }
 
     if n_cells == 0 {
@@ -193,8 +195,16 @@ pub fn parse_cel_v3(data: &str) -> Result<CelFile> {
         rows,
         n_cells,
         intensities,
-        std_devs: if std_devs.is_empty() { None } else { Some(std_devs) },
-        n_pixels: if n_pixels.is_empty() { None } else { Some(n_pixels) },
+        std_devs: if std_devs.is_empty() {
+            None
+        } else {
+            Some(std_devs)
+        },
+        n_pixels: if n_pixels.is_empty() {
+            None
+        } else {
+            Some(n_pixels)
+        },
         outliers,
         masked,
         header,
@@ -298,7 +308,10 @@ pub fn parse_gpr(data: &str) -> Result<GprFile> {
     for _ in 0..n_header_lines {
         if let Some(line) = lines.next() {
             if let Some((key, val)) = line.split_once('=') {
-                header.push((key.trim().trim_matches('"').to_string(), val.trim().trim_matches('"').to_string()));
+                header.push((
+                    key.trim().trim_matches('"').to_string(),
+                    val.trim().trim_matches('"').to_string(),
+                ));
             }
         }
     }
@@ -313,9 +326,7 @@ pub fn parse_gpr(data: &str) -> Result<GprFile> {
         .collect();
 
     // Find column indices
-    let find_col = |name: &str| -> Option<usize> {
-        columns.iter().position(|c| c == name)
-    };
+    let find_col = |name: &str| -> Option<usize> { columns.iter().position(|c| c == name) };
 
     let idx_block = find_col("Block");
     let idx_row = find_col("Row");
@@ -434,13 +445,17 @@ pub fn parse_idat(data: &[u8]) -> Result<IdatFile> {
 
     // Magic bytes: "IDAT"
     if &data[0..4] != b"IDAT" {
-        return Err(CyaneaError::Parse("not an IDAT file (missing magic bytes)".into()));
+        return Err(CyaneaError::Parse(
+            "not an IDAT file (missing magic bytes)".into(),
+        ));
     }
 
     // Version (u64 LE at offset 4)
-    let version = u64::from_le_bytes(data[4..12].try_into().map_err(|_| {
-        CyaneaError::Parse("failed to read IDAT version".into())
-    })?);
+    let version = u64::from_le_bytes(
+        data[4..12]
+            .try_into()
+            .map_err(|_| CyaneaError::Parse("failed to read IDAT version".into()))?,
+    );
 
     if version != 3 && version != 1 {
         return Err(CyaneaError::Parse(format!(
@@ -451,7 +466,9 @@ pub fn parse_idat(data: &[u8]) -> Result<IdatFile> {
 
     // Number of fields (u32 LE at offset 12)
     if data.len() < 16 {
-        return Err(CyaneaError::Parse("IDAT truncated before field count".into()));
+        return Err(CyaneaError::Parse(
+            "IDAT truncated before field count".into(),
+        ));
     }
     let n_fields = u32::from_le_bytes(data[12..16].try_into().unwrap()) as usize;
 
@@ -460,7 +477,9 @@ pub fn parse_idat(data: &[u8]) -> Result<IdatFile> {
     let dir_entry_size = 10; // 2 + 8
     let dir_end = dir_start + n_fields * dir_entry_size;
     if data.len() < dir_end {
-        return Err(CyaneaError::Parse("IDAT truncated in field directory".into()));
+        return Err(CyaneaError::Parse(
+            "IDAT truncated in field directory".into(),
+        ));
     }
 
     let mut field_offsets: Vec<(u16, u64)> = Vec::with_capacity(n_fields);
@@ -579,7 +598,9 @@ pub fn parse_idat(data: &[u8]) -> Result<IdatFile> {
     }
 
     if mean_intensities.is_empty() {
-        return Err(CyaneaError::Parse("no intensity data found in IDAT file".into()));
+        return Err(CyaneaError::Parse(
+            "no intensity data found in IDAT file".into(),
+        ));
     }
 
     Ok(IdatFile {
@@ -662,7 +683,10 @@ pub fn write_cel_v3(cel: &CelFile) -> String {
             .and_then(|v| v.get(i))
             .copied()
             .unwrap_or(1);
-        lines.push(format!("{}\t{}\t{:.1}\t{:.1}\t{}", x, y, intensity, stdv, npix));
+        lines.push(format!(
+            "{}\t{}\t{:.1}\t{:.1}\t{}",
+            x, y, intensity, stdv, npix
+        ));
     }
     lines.push(String::new());
 

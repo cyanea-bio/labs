@@ -4,7 +4,7 @@
 //! against theoretical fragment ions from candidate peptides.
 
 use crate::error::Result;
-use crate::peptide::{fragment_ions, Peptide, IonType};
+use crate::peptide::{fragment_ions, IonType, Peptide};
 use crate::spectrum::MassSpectrum;
 
 /// A peptide-spectrum match (PSM).
@@ -133,7 +133,9 @@ pub fn score_peptide(
     let hyperscore = log_b_fact + log_y_fact + matched_intensity_sum.ln().max(0.0);
 
     let delta_mass = if let Some(ref pre) = spectrum.precursor {
-        pre.mz * charge as f64 - (charge as f64 * crate::peptide::PROTON_MASS) - peptide.molecular_weight()
+        pre.mz * charge as f64
+            - (charge as f64 * crate::peptide::PROTON_MASS)
+            - peptide.molecular_weight()
     } else {
         0.0
     };
@@ -161,7 +163,9 @@ pub fn search_spectrum(
     database: &[Peptide],
     config: &SearchConfig,
 ) -> Result<Option<Psm>> {
-    let charge = spectrum.precursor.as_ref()
+    let charge = spectrum
+        .precursor
+        .as_ref()
         .and_then(|p| p.charge)
         .unwrap_or(2);
 
@@ -169,7 +173,10 @@ pub fn search_spectrum(
 
     for peptide in database {
         if let Some(psm) = score_peptide(spectrum, peptide, charge, config)? {
-            if best.as_ref().map_or(true, |b| psm.hyperscore > b.hyperscore) {
+            if best
+                .as_ref()
+                .map_or(true, |b| psm.hyperscore > b.hyperscore)
+            {
                 best = Some(psm);
             }
         }
@@ -200,19 +207,22 @@ pub fn search_all(
 
 /// Generate a reversed-sequence decoy database from target peptides.
 pub fn generate_decoys(targets: &[Peptide]) -> Vec<Peptide> {
-    targets.iter().map(|p| {
-        let mut rev = p.sequence.clone();
-        // Reverse all but last AA (keep tryptic C-terminus)
-        if rev.len() > 1 {
-            let last = rev.len() - 1;
-            rev[..last].reverse();
-        }
-        Peptide {
-            sequence: rev,
-            modifications: Vec::new(),
-            missed_cleavages: p.missed_cleavages,
-        }
-    }).collect()
+    targets
+        .iter()
+        .map(|p| {
+            let mut rev = p.sequence.clone();
+            // Reverse all but last AA (keep tryptic C-terminus)
+            if rev.len() > 1 {
+                let last = rev.len() - 1;
+                rev[..last].reverse();
+            }
+            Peptide {
+                sequence: rev,
+                modifications: Vec::new(),
+                missed_cleavages: p.missed_cleavages,
+            }
+        })
+        .collect()
 }
 
 fn log_factorial(n: usize) -> f64 {
@@ -222,14 +232,20 @@ fn log_factorial(n: usize) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::spectrum::{Peak, MsLevel, Precursor, FragmentationMethod};
+    use crate::spectrum::{FragmentationMethod, MsLevel, Peak, Precursor};
 
     fn make_test_spectrum(peptide: &Peptide, charge: i32) -> MassSpectrum {
         // Generate theoretical ions and create a spectrum from some of them
         let ions = fragment_ions(peptide, 1);
-        let peaks: Vec<Peak> = ions.iter()
-            .filter(|i| i.neutral_loss.is_none() && (i.ion_type == IonType::B || i.ion_type == IonType::Y))
-            .map(|i| Peak { mz: i.mz, intensity: 1000.0 })
+        let peaks: Vec<Peak> = ions
+            .iter()
+            .filter(|i| {
+                i.neutral_loss.is_none() && (i.ion_type == IonType::B || i.ion_type == IonType::Y)
+            })
+            .map(|i| Peak {
+                mz: i.mz,
+                intensity: 1000.0,
+            })
             .collect();
 
         let pre_mz = peptide.mz(charge);
@@ -306,7 +322,16 @@ mod tests {
     #[test]
     fn test_search_all_skips_ms1() {
         let pep = Peptide::new(b"PEPTIDE").unwrap();
-        let ms1 = MassSpectrum::new("ms1", MsLevel::Ms1, 10.0, vec![Peak { mz: 100.0, intensity: 1000.0 }]).unwrap();
+        let ms1 = MassSpectrum::new(
+            "ms1",
+            MsLevel::Ms1,
+            10.0,
+            vec![Peak {
+                mz: 100.0,
+                intensity: 1000.0,
+            }],
+        )
+        .unwrap();
         let ms2 = make_test_spectrum(&pep, 2);
         let config = SearchConfig::default();
 

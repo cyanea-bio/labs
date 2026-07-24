@@ -40,9 +40,7 @@ pub struct ConcordanceFactors {
 /// Practical for up to ~50 taxa.
 pub fn astral_species_tree(gene_trees: &[PhyloTree]) -> Result<PhyloTree> {
     if gene_trees.is_empty() {
-        return Err(CyaneaError::InvalidInput(
-            "no gene trees provided".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("no gene trees provided".into()));
     }
 
     // Collect all taxa across gene trees.
@@ -112,10 +110,7 @@ pub fn astral_species_tree(gene_trees: &[PhyloTree]) -> Result<PhyloTree> {
         let bps = bipartitions(gt);
         for bp in bps {
             // Only include bipartitions with taxa we know about.
-            let filtered: BTreeSet<String> = bp
-                .into_iter()
-                .filter(|t| taxa.contains(t))
-                .collect();
+            let filtered: BTreeSet<String> = bp.into_iter().filter(|t| taxa.contains(t)).collect();
             if filtered.len() >= 2 && filtered.len() <= n - 2 {
                 *bipartition_scores.entry(filtered).or_insert(0.0) += 1.0;
             }
@@ -131,9 +126,9 @@ pub fn astral_species_tree(gene_trees: &[PhyloTree]) -> Result<PhyloTree> {
     for (bp, _score) in &scored {
         // Check compatibility: two bipartitions are compatible if one is a subset
         // of the other, or they are disjoint, or their complements are disjoint.
-        let compatible = accepted.iter().all(|existing| {
-            is_compatible(bp, existing, &taxa)
-        });
+        let compatible = accepted
+            .iter()
+            .all(|existing| is_compatible(bp, existing, &taxa));
 
         if compatible {
             accepted.push(bp.clone());
@@ -191,11 +186,8 @@ pub fn reconcile(
             continue;
         }
 
-        let child_mappings: Vec<NodeId> = node
-            .children
-            .iter()
-            .filter_map(|&c| gt_to_st[c])
-            .collect();
+        let child_mappings: Vec<NodeId> =
+            node.children.iter().filter_map(|&c| gt_to_st[c]).collect();
 
         if child_mappings.is_empty() {
             continue;
@@ -223,7 +215,10 @@ pub fn reconcile(
         let my_mapping = gt_to_st[id].unwrap();
 
         // Check if any child maps to the same species tree node (= duplication).
-        let is_dup = node.children.iter().any(|&c| gt_to_st[c] == Some(my_mapping));
+        let is_dup = node
+            .children
+            .iter()
+            .any(|&c| gt_to_st[c] == Some(my_mapping));
         if is_dup {
             duplications.push(id);
         }
@@ -363,13 +358,7 @@ pub fn concordance_factors(
 
 /// Determine quartet topology for taxa (a,b,c,d) in a tree.
 /// Returns 0 for ab|cd, 1 for ac|bd, 2 for ad|bc.
-fn quartet_topology(
-    tree: &PhyloTree,
-    a: &str,
-    b: &str,
-    c: &str,
-    d: &str,
-) -> usize {
+fn quartet_topology(tree: &PhyloTree, a: &str, b: &str, c: &str, d: &str) -> usize {
     // Find leaf nodes for each taxon.
     let find_leaf = |name: &str| -> Option<NodeId> {
         for &id in &tree.leaves() {
@@ -551,8 +540,7 @@ mod tests {
     #[test]
     fn reconciliation_matching_trees() {
         let gene = PhyloTree::from_newick("((a:0.1,b:0.1):0.1,(c:0.1,d:0.1):0.1);").unwrap();
-        let species =
-            PhyloTree::from_newick("((a:0.1,b:0.1):0.1,(c:0.1,d:0.1):0.1);").unwrap();
+        let species = PhyloTree::from_newick("((a:0.1,b:0.1):0.1,(c:0.1,d:0.1):0.1);").unwrap();
         let mapping = HashMap::new(); // Identity mapping (names match)
 
         let result = reconcile(&gene, &species, &mapping).unwrap();
@@ -572,16 +560,12 @@ mod tests {
         mapping.insert("b".to_string(), "b".to_string());
 
         let result = reconcile(&gene, &species, &mapping).unwrap();
-        assert!(
-            result.duplications.len() > 0,
-            "should detect duplication"
-        );
+        assert!(result.duplications.len() > 0, "should detect duplication");
     }
 
     #[test]
     fn gcf_all_agree() {
-        let species =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let species = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
         let gt1 = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
         let gt2 = PhyloTree::from_newick("((A:0.2,B:0.2):0.2,(C:0.2,D:0.2):0.2);").unwrap();
 
@@ -597,12 +581,9 @@ mod tests {
 
     #[test]
     fn gcf_with_discordance() {
-        let species =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
-        let gt_agree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
-        let gt_discord =
-            PhyloTree::from_newick("((A:0.1,C:0.1):0.1,(B:0.1,D:0.1):0.1);").unwrap();
+        let species = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let gt_agree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let gt_discord = PhyloTree::from_newick("((A:0.1,C:0.1):0.1,(B:0.1,D:0.1):0.1);").unwrap();
 
         let cf = concordance_factors(&species, &[gt_agree, gt_discord], None).unwrap();
         // At least one branch should have gCF < 1.0
@@ -612,8 +593,7 @@ mod tests {
 
     #[test]
     fn scf_computed() {
-        let species =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let species = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
         let seqs: Vec<Vec<u8>> = vec![
             b"AAACCCAAA".to_vec(),
             b"AAACCCAAA".to_vec(),
@@ -640,14 +620,10 @@ mod tests {
 
     #[test]
     fn astral_five_taxa() {
-        let gt1 = PhyloTree::from_newick(
-            "(((A:0.1,B:0.1):0.1,C:0.1):0.1,(D:0.1,E:0.1):0.1);",
-        )
-        .unwrap();
-        let gt2 = PhyloTree::from_newick(
-            "(((A:0.1,B:0.1):0.1,C:0.1):0.1,(D:0.1,E:0.1):0.1);",
-        )
-        .unwrap();
+        let gt1 =
+            PhyloTree::from_newick("(((A:0.1,B:0.1):0.1,C:0.1):0.1,(D:0.1,E:0.1):0.1);").unwrap();
+        let gt2 =
+            PhyloTree::from_newick("(((A:0.1,B:0.1):0.1,C:0.1):0.1,(D:0.1,E:0.1):0.1);").unwrap();
 
         let result = astral_species_tree(&[gt1, gt2]).unwrap();
         assert_eq!(result.leaf_count(), 5);

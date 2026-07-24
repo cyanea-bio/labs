@@ -1,28 +1,30 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use cyanea_chem::{morgan_fingerprint, parse_smiles, tanimoto_bulk, tanimoto_similarity, Fingerprint};
+use cyanea_chem::{
+    morgan_fingerprint, parse_smiles, tanimoto_bulk, tanimoto_similarity, Fingerprint,
+};
 
 /// A set of representative drug-like SMILES strings
 const SMILES_SET: &[&str] = &[
-    "CCO",                              // ethanol
-    "CC(=O)O",                          // acetic acid
-    "c1ccccc1",                         // benzene
-    "CC(=O)Oc1ccccc1C(=O)O",           // aspirin
+    "CCO",                                 // ethanol
+    "CC(=O)O",                             // acetic acid
+    "c1ccccc1",                            // benzene
+    "CC(=O)Oc1ccccc1C(=O)O",               // aspirin
     "CC12CCC3C(C1CCC2O)CCC4=CC(=O)CCC34C", // testosterone
-    "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",   // caffeine
-    "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O",  // ibuprofen
-    "OC(=O)C1=CC=CC=C1O",              // salicylic acid
-    "C1=CC=C(C=C1)O",                  // phenol
-    "CC(=O)NC1=CC=C(C=C1)O",           // acetaminophen
-    "C(C(=O)O)N",                       // glycine
-    "c1ccc2ccccc2c1",                   // naphthalene
-    "C1CCCCC1",                         // cyclohexane
-    "C(=O)(N)N",                        // urea
-    "CC(O)CC",                          // 2-butanol
-    "CCCCCCCC",                         // octane
-    "c1ccncc1",                         // pyridine
-    "C1=CN=CN=C1",                      // pyrimidine
-    "c1cc[nH]c1",                       // pyrrole
-    "C1=CSC=C1",                        // thiophene
+    "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",        // caffeine
+    "CC(C)CC1=CC=C(C=C1)C(C)C(=O)O",       // ibuprofen
+    "OC(=O)C1=CC=CC=C1O",                  // salicylic acid
+    "C1=CC=C(C=C1)O",                      // phenol
+    "CC(=O)NC1=CC=C(C=C1)O",               // acetaminophen
+    "C(C(=O)O)N",                          // glycine
+    "c1ccc2ccccc2c1",                      // naphthalene
+    "C1CCCCC1",                            // cyclohexane
+    "C(=O)(N)N",                           // urea
+    "CC(O)CC",                             // 2-butanol
+    "CCCCCCCC",                            // octane
+    "c1ccncc1",                            // pyridine
+    "C1=CN=CN=C1",                         // pyrimidine
+    "c1cc[nH]c1",                          // pyrrole
+    "C1=CSC=C1",                           // thiophene
 ];
 
 fn bench_smiles_parse(c: &mut Criterion) {
@@ -72,7 +74,10 @@ fn bench_tanimoto(c: &mut Criterion) {
         .filter_map(|s| parse_smiles(s).ok())
         .collect();
 
-    let fps: Vec<Fingerprint> = mols.iter().map(|m| morgan_fingerprint(m, 2, 2048)).collect();
+    let fps: Vec<Fingerprint> = mols
+        .iter()
+        .map(|m| morgan_fingerprint(m, 2, 2048))
+        .collect();
 
     // Build 100 query FPs and 1000 target FPs
     let queries: Vec<Fingerprint> = fps.iter().cycle().take(100).cloned().collect();
