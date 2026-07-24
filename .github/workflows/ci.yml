@@ -9,6 +9,9 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -Dwarnings
+  # cyanea-py (PyO3) builds against the abi3 stable ABI; allow a host Python
+  # newer than PyO3's max supported version (e.g. macOS runners ship 3.14).
+  PYO3_USE_ABI3_FORWARD_COMPATIBILITY: "1"
 
 jobs:
   check:
@@ -57,9 +60,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Install system libraries (HDF5 for cyanea-omics h5ad feature)
+        run: sudo apt-get update && sudo apt-get install -y libhdf5-dev
       - name: No default features
         run: cargo check -p ${{ matrix.crate }} --no-default-features
       - name: All features
+        # cyanea-gpu / cyanea-align expose GPU backends (metal = Apple-only
+        # frameworks, cuda = needs a CUDA toolkit) via --all-features that
+        # cannot build on a generic Linux runner. Their minimal build is still
+        # covered by the --no-default-features step above.
+        if: matrix.crate != 'cyanea-gpu' && matrix.crate != 'cyanea-align'
         run: cargo check -p ${{ matrix.crate }} --all-features
 
   wasm:
