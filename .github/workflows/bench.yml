@@ -11,6 +11,11 @@ concurrency:
   group: bench-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
+# The comparison comment step needs write access to the PR.
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -87,6 +92,8 @@ jobs:
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
+        # A failed cosmetic comment (e.g. fork PRs) must not fail the job.
+        continue-on-error: true
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: bench-comment.md
