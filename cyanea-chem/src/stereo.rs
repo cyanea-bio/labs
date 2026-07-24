@@ -4,6 +4,7 @@
 //! absolute stereochemical descriptors.
 
 use crate::molecule::{BondOrder, BondStereo, Chirality, Molecule};
+use std::cmp::Ordering;
 
 /// Assign R/S descriptor to a tetrahedral stereocenter.
 ///
@@ -36,19 +37,31 @@ pub fn assign_rs(mol: &Molecule, atom_idx: usize) -> Option<char> {
         neighbor_list.push(None); // implicit hydrogen
     }
 
-    // Compute CIP priorities for each neighbor
-    let priorities: Vec<u64> = neighbor_list
+    // Rank the neighbors by CIP priority using a hierarchical digraph
+    // comparison — spheres are compared recursively and we descend as far as
+    // needed to break a tie. This resolves substituents that only differ deep
+    // in a cyclic path (e.g. the anomeric carbon of a sugar ring), which the
+    // fixed-depth `cip_priority` encoding reports as a false tie.
+    let trees: Vec<CipNode> = neighbor_list
         .iter()
-        .map(|&n| cip_priority(mol, atom_idx, n))
+        .map(|&n| build_cip_tree(mol, atom_idx, n))
         .collect();
 
-    // Check that all priorities are distinct (otherwise not a true stereocenter)
-    let mut sorted_prio = priorities.clone();
-    sorted_prio.sort();
-    for i in 1..sorted_prio.len() {
-        if sorted_prio[i] == sorted_prio[i - 1] {
-            return None; // Not a stereocenter — duplicate priorities
+    // Order neighbor positions by priority, lowest first.
+    let mut order: Vec<usize> = (0..neighbor_list.len()).collect();
+    order.sort_by(|&i, &j| compare_cip_nodes(&trees[i], &trees[j]));
+
+    // Two neighbors that compare equal mean this is not a true stereocenter.
+    for pair in order.windows(2) {
+        if compare_cip_nodes(&trees[pair[0]], &trees[pair[1]]) == Ordering::Equal {
+            return None;
         }
+    }
+
+    // Priority value = rank in ascending order (0 = lowest ... 3 = highest).
+    let mut priorities = vec![0u64; neighbor_list.len()];
+    for (rank, &pos) in order.iter().enumerate() {
+        priorities[pos] = rank as u64;
     }
 
     // Determine R/S from the chirality annotation and priority ordering.
@@ -344,6 +357,102 @@ fn cip_priority(mol: &Molecule, center: usize, neighbor: Option<usize>) -> u64 {
     }
 }
 
+/// A node in the CIP hierarchical digraph used to rank stereocenter substituents.
+struct CipNode {
+    /// Atomic number of this node.
+    z: u8,
+    /// Child branches, kept sorted in descending CIP order.
+    children: Vec<CipNode>,
+}
+
+/// Build the CIP hierarchical digraph rooted at substituent `neighbor` of
+/// `center`. Ring closures (revisiting an atom already on the current path)
+/// become duplicate atoms — leaf nodes carrying the atomic number but no
+/// children — so the graph is a finite tree. A node budget guards against
+/// pathological fused-ring blow-up.
+fn build_cip_tree(mol: &Molecule, center: usize, neighbor: Option<usize>) -> CipNode {
+    match neighbor {
+        // Implicit hydrogen: atomic number 1, no substituents.
+        None => CipNode {
+            z: 1,
+            children: Vec::new(),
+        },
+        Some(idx) => {
+            let mut on_path = vec![false; mol.atoms.len()];
+            on_path[center] = true;
+            let mut budget: u32 = 50_000;
+            build_cip_node(mol, idx, center, &mut on_path, &mut budget)
+        }
+    }
+}
+
+fn build_cip_node(
+    mol: &Molecule,
+    atom: usize,
+    parent: usize,
+    on_path: &mut [bool],
+    budget: &mut u32,
+) -> CipNode {
+    on_path[atom] = true;
+    let mut children: Vec<CipNode> = Vec::new();
+
+    for &(n, _) in &mol.adjacency[atom] {
+        if n == parent {
+            continue; // never walk back toward the stereocenter
+        }
+        if *budget == 0 || on_path[n] {
+            // Ring closure (or budget exhausted): duplicate atom, no children.
+            children.push(CipNode {
+                z: mol.atoms[n].atomic_number,
+                children: Vec::new(),
+            });
+        } else {
+            *budget -= 1;
+            children.push(build_cip_node(mol, n, atom, on_path, budget));
+        }
+    }
+    for _ in 0..mol.atoms[atom].implicit_hydrogens {
+        children.push(CipNode {
+            z: 1,
+            children: Vec::new(),
+        });
+    }
+
+    on_path[atom] = false; // backtrack: this atom may appear on sibling branches
+    children.sort_by(|a, b| compare_cip_nodes(b, a)); // descending priority
+    CipNode {
+        z: mol.atoms[atom].atomic_number,
+        children,
+    }
+}
+
+/// Compare two CIP digraph nodes. `Ordering::Greater` means higher CIP priority.
+///
+/// Compares atomic number first, then — for equal atoms — the children in
+/// descending priority order (highest vs highest, and so on), recursing until
+/// a difference is found. A present child outranks a missing one (phantom).
+fn compare_cip_nodes(a: &CipNode, b: &CipNode) -> Ordering {
+    match a.z.cmp(&b.z) {
+        Ordering::Equal => {}
+        non_eq => return non_eq,
+    }
+    let mut i = 0;
+    loop {
+        match (a.children.get(i), b.children.get(i)) {
+            (Some(x), Some(y)) => {
+                let ord = compare_cip_nodes(x, y);
+                if ord != Ordering::Equal {
+                    return ord;
+                }
+            }
+            (Some(_), None) => return Ordering::Greater,
+            (None, Some(_)) => return Ordering::Less,
+            (None, None) => return Ordering::Equal,
+        }
+        i += 1;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -384,6 +493,29 @@ mod tests {
             descriptor == 'R' || descriptor == 'S',
             "should be R or S, got {descriptor}"
         );
+    }
+
+    #[test]
+    fn assign_rs_resolves_cyclic_tie_glucose() {
+        // beta-D-glucopyranose. The anomeric carbon has two ring-carbon
+        // substituents that only differ deep in the ring; the fixed-depth CIP
+        // encoding reported a false tie and returned None (issue #2).
+        let mol = parse_smiles("OC[C@H]1O[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O").unwrap();
+
+        let chiral_atoms: Vec<usize> = mol
+            .atoms
+            .iter()
+            .enumerate()
+            .filter_map(|(i, atom)| (atom.chirality != Chirality::None).then_some(i))
+            .collect();
+        assert_eq!(chiral_atoms, vec![2, 4, 6, 8, 10]);
+
+        for &i in &chiral_atoms {
+            assert!(
+                assign_rs(&mol, i).is_some(),
+                "stereocenter at atom {i} should resolve to R or S"
+            );
+        }
     }
 
     #[test]
