@@ -367,8 +367,6 @@ mod sse41 {
                         vh[s] = vh_new;
                         vbest = _mm_max_epi16(vbest, vh_new);
                     }
-
-                    vf = vf;
                 }
 
                 if !any_update {
@@ -497,8 +495,6 @@ mod avx2 {
                         vh[s] = vh_new;
                         vbest = _mm256_max_epi16(vbest, vh_new);
                     }
-
-                    vf = vf;
                 }
 
                 if !any_update {

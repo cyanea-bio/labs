@@ -4,8 +4,9 @@ use std::collections::HashMap;
 
 use cyanea_core::{CyaneaError, Result};
 
-use crate::single_cell::{AnnData, ColumnData, MatrixData};
-use crate::sparse::SparseMatrix;
+use crate::single_cell::{AnnData, ColumnData};
+#[cfg(test)]
+use crate::single_cell::MatrixData;
 
 // ── Harmony ────────────────────────────────────────────────────────────────
 
@@ -961,7 +962,7 @@ mod tests {
 
     #[test]
     fn combat_single_batch() {
-        let mut data = vec![vec![1.0, 2.0]; 5];
+        let data = vec![vec![1.0, 2.0]; 5];
         let obs_names: Vec<String> = (0..5).map(|i| format!("c{}", i)).collect();
         let mut adata =
             AnnData::new(MatrixData::Dense(data), obs_names, vec!["g0".into(), "g1".into()])

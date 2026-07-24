@@ -6,7 +6,7 @@
 
 use crate::graph::{Edge, Graph, GraphType};
 use crate::topology;
-use cyanea_core::{CyaneaError, Result};
+use cyanea_core::Result;
 use std::collections::HashMap;
 
 /// Evidence channels for PPI scoring (STRING-style).

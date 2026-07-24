@@ -1270,7 +1270,7 @@ mod tests {
         // Stop loss: stop codon * -> amino acid
         let ref_aa = b'*';
         let alt_aa = b'Q';
-        let codon_pos_0based = 100u64;
+        let _codon_pos_0based = 100u64;
 
         let consequence = if ref_aa == b'*' && alt_aa != b'*' {
             Consequence::StopLoss { ref_aa }
