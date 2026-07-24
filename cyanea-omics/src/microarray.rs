@@ -290,6 +290,7 @@ pub struct MethylationProbe {
 
 /// Infinium probe design type.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum InfiniumType {
     /// Type I — two-bead design (separate methylated/unmethylated).
     TypeI,

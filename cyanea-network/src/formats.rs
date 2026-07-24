@@ -4,7 +4,7 @@
 //! exchanging biological network data.
 
 use crate::graph::{Edge, Graph, GraphType, Node};
-use cyanea_core::{CyaneaError, Result};
+use cyanea_core::Result;
 use std::collections::HashMap;
 
 // ──────────────────────────── SIF ────────────────────────────

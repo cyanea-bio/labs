@@ -6,6 +6,7 @@
 use cyanea_core::{CyaneaError, Result};
 
 use crate::single_cell::{AnnData, ColumnData, MatrixData};
+#[cfg(test)]
 use crate::sparse::SparseMatrix;
 
 // ── HVG Selection ──────────────────────────────────────────────────────────

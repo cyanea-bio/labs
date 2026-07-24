@@ -331,15 +331,6 @@ fn logistic_regression_test(in_vals: &[f64], out_vals: &[f64]) -> Result<(f64, f
         }
     }
 
-    // Standard error of beta[1] from Fisher information
-    let mut info_11 = 0.0; // (1,1) element of X^T W X
-    for i in 0..n {
-        let eta = x[i * 2] * beta[0] + x[i * 2 + 1] * beta[1];
-        let p = sigmoid(eta);
-        let w = (p * (1.0 - p)).max(1e-10);
-        info_11 += w * x[i * 2 + 1] * x[i * 2 + 1];
-    }
-
     // Need to invert 2×2 Fisher information to get variance
     let mut info = [0.0; 4];
     for i in 0..n {

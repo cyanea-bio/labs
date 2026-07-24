@@ -536,7 +536,7 @@ mod tests {
     use super::*;
     use crate::single_cell::MatrixData;
 
-    fn make_adata_with_pca(n_obs: usize, n_dims: usize, data: Vec<Vec<f64>>) -> AnnData {
+    fn make_adata_with_pca(n_obs: usize, _n_dims: usize, data: Vec<Vec<f64>>) -> AnnData {
         let x = MatrixData::Dense(vec![vec![0.0; 2]; n_obs]);
         let obs_names: Vec<String> = (0..n_obs).map(|i| format!("cell_{}", i)).collect();
         let var_names = vec!["g0".into(), "g1".into()];
