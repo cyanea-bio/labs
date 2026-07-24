@@ -26,8 +26,8 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-repository = "https://github.com/cyanea-io/labs"
-homepage = "https://github.com/cyanea-io/labs"
+repository = "https://github.com/cyanea-bio/labs"
+homepage = "https://github.com/cyanea-bio/labs"
 rust-version = "1.93"
 
 [workspace.dependencies]

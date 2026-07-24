@@ -24,8 +24,8 @@
   <a href="docs/BUILDING.md">Build Guide</a> &bull;
   <a href="docs/BINDINGS.md">Bindings</a> &bull;
   <a href="docs/GUIDE.md">Usage Guide</a> &bull;
-  <a href="https://github.com/cyanea-io/labs/issues">Issues</a> &bull;
-  <a href="https://github.com/cyanea-io/labs/discussions">Discussions</a>
+  <a href="https://github.com/cyanea-bio/labs/issues">Issues</a> &bull;
+  <a href="https://github.com/cyanea-bio/labs/discussions">Discussions</a>
 </p>
 
 </div>
@@ -146,7 +146,7 @@ cyanea-core (foundation)
 └── cyanea-py           → Python (PyO3 + maturin)
 ```
 
-Every domain crate depends only on `cyanea-core`. The binding crates (`wasm`, `py`) aggregate the domain crates to expose a unified API. The Elixir NIF bridge lives in a [separate repo](https://github.com/cyanea-io/cyanea) and depends on these crates via path.
+Every domain crate depends only on `cyanea-core`. The binding crates (`wasm`, `py`) aggregate the domain crates to expose a unified API. The Elixir NIF bridge lives in a [separate repo](https://github.com/cyanea-bio/cyanea) and depends on these crates via path.
 
 ## Feature Flags
 
