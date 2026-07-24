@@ -28,6 +28,7 @@
 //! assert_eq!(canonical_smiles(&mol1), canonical_smiles(&mol2));
 //! ```
 
+pub mod aromaticity;
 pub mod canon;
 pub mod conformer;
 pub mod descriptors;
@@ -52,6 +53,7 @@ pub mod substructure;
 
 mod ring;
 
+pub use aromaticity::perceive_aromaticity;
 pub use canon::canonical_smiles;
 pub use element::{element_by_number, element_by_symbol, Element};
 pub use fingerprint::{morgan_fingerprint, tanimoto_bulk, tanimoto_similarity, Fingerprint};

@@ -18,7 +18,11 @@ pub fn parse_smiles_named(smiles: &str, name: &str) -> Result<Molecule> {
     parser.parse()?;
     parser.resolve_ring_closures()?;
     parser.compute_implicit_hydrogens();
-    Ok(Molecule::new(name.to_string(), parser.atoms, parser.bonds))
+    let mut mol = Molecule::new(name.to_string(), parser.atoms, parser.bonds);
+    // Perceive aromaticity so Kekulé-form aromatics normalize to the same
+    // aromatic graph as the equivalent lower-case aromatic SMILES.
+    crate::aromaticity::perceive_aromaticity(&mut mol);
+    Ok(mol)
 }
 
 struct SmilesParser<'a> {
