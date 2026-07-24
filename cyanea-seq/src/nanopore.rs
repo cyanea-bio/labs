@@ -91,7 +91,9 @@ pub fn parse_signal_metadata(line: &str) -> Result<SignalMetadata> {
     }
 
     if meta.read_id.is_empty() {
-        return Err(CyaneaError::Parse("missing read_id in signal metadata".into()));
+        return Err(CyaneaError::Parse(
+            "missing read_id in signal metadata".into(),
+        ));
     }
 
     Ok(meta)
@@ -155,7 +157,10 @@ pub fn parse_methylation_calls(text: &str) -> Result<Vec<MethylationCall>> {
 
         let fields: Vec<&str> = line.split('\t').collect();
         if fields.len() < 6 {
-            return Err(CyaneaError::Parse(format!("expected 6 tab-separated fields, got {}", fields.len())));
+            return Err(CyaneaError::Parse(format!(
+                "expected 6 tab-separated fields, got {}",
+                fields.len()
+            )));
         }
 
         let mod_type = match fields[4] {
@@ -163,16 +168,25 @@ pub fn parse_methylation_calls(text: &str) -> Result<Vec<MethylationCall>> {
             "5hmC" | "h" => ModificationType::FiveHMC,
             "6mA" | "a" => ModificationType::SixMA,
             "4mC" => ModificationType::FourMC,
-            other => return Err(CyaneaError::Parse(format!("unknown modification: {}", other))),
+            other => {
+                return Err(CyaneaError::Parse(format!(
+                    "unknown modification: {}",
+                    other
+                )))
+            }
         };
 
         calls.push(MethylationCall {
             read_id: fields[0].to_string(),
             chrom: fields[1].to_string(),
-            position: fields[2].parse().map_err(|_| CyaneaError::Parse("invalid position".into()))?,
+            position: fields[2]
+                .parse()
+                .map_err(|_| CyaneaError::Parse("invalid position".into()))?,
             strand: fields[3].chars().next().unwrap_or('+'),
             mod_type,
-            probability: fields[5].parse().map_err(|_| CyaneaError::Parse("invalid probability".into()))?,
+            probability: fields[5]
+                .parse()
+                .map_err(|_| CyaneaError::Parse("invalid probability".into()))?,
         });
     }
 
@@ -205,37 +219,48 @@ pub struct MethylationSite {
 ///
 /// Groups calls by (chrom, position, strand, mod_type) and computes
 /// coverage, modified count (probability >= threshold), and mean probability.
-pub fn aggregate_methylation(
-    calls: &[MethylationCall],
-    threshold: f64,
-) -> Vec<MethylationSite> {
+pub fn aggregate_methylation(calls: &[MethylationCall], threshold: f64) -> Vec<MethylationSite> {
     let mut sites: std::collections::HashMap<(String, u64, char, &str), Vec<f64>> =
         std::collections::HashMap::new();
 
     for call in calls {
-        let key = (call.chrom.clone(), call.position, call.strand, call.mod_type.as_str());
+        let key = (
+            call.chrom.clone(),
+            call.position,
+            call.strand,
+            call.mod_type.as_str(),
+        );
         sites.entry(key).or_default().push(call.probability);
     }
 
-    let mut results: Vec<MethylationSite> = sites.into_iter().map(|((chrom, position, strand, mod_str), probs)| {
-        let coverage = probs.len();
-        let modified_count = probs.iter().filter(|&&p| p >= threshold).count();
-        let mean_probability = probs.iter().sum::<f64>() / coverage as f64;
-        let frequency = modified_count as f64 / coverage as f64;
+    let mut results: Vec<MethylationSite> = sites
+        .into_iter()
+        .map(|((chrom, position, strand, mod_str), probs)| {
+            let coverage = probs.len();
+            let modified_count = probs.iter().filter(|&&p| p >= threshold).count();
+            let mean_probability = probs.iter().sum::<f64>() / coverage as f64;
+            let frequency = modified_count as f64 / coverage as f64;
 
-        let mod_type = match mod_str {
-            "5mC" => ModificationType::FiveMC,
-            "5hmC" => ModificationType::FiveHMC,
-            "6mA" => ModificationType::SixMA,
-            "4mC" => ModificationType::FourMC,
-            _ => ModificationType::FiveMC,
-        };
+            let mod_type = match mod_str {
+                "5mC" => ModificationType::FiveMC,
+                "5hmC" => ModificationType::FiveHMC,
+                "6mA" => ModificationType::SixMA,
+                "4mC" => ModificationType::FourMC,
+                _ => ModificationType::FiveMC,
+            };
 
-        MethylationSite {
-            chrom, position, strand, mod_type,
-            coverage, modified_count, mean_probability, frequency,
-        }
-    }).collect();
+            MethylationSite {
+                chrom,
+                position,
+                strand,
+                mod_type,
+                coverage,
+                modified_count,
+                mean_probability,
+                frequency,
+            }
+        })
+        .collect();
 
     results.sort_by(|a, b| a.chrom.cmp(&b.chrom).then(a.position.cmp(&b.position)));
     results
@@ -294,14 +319,16 @@ pub fn nanopore_qc(
         }
     }
 
-    let pass_reads = read_qualities.iter().filter(|&&q| q >= quality_threshold).count();
+    let pass_reads = read_qualities
+        .iter()
+        .filter(|&&q| q >= quality_threshold)
+        .count();
     let fail_reads = total_reads - pass_reads;
     let mean_quality = read_qualities.iter().sum::<f64>() / total_reads as f64;
 
     // Pore occupancy: fraction of channels that produced at least one read
-    let active_channels: std::collections::HashSet<u32> = metadata.iter()
-        .map(|m| m.channel)
-        .collect();
+    let active_channels: std::collections::HashSet<u32> =
+        metadata.iter().map(|m| m.channel).collect();
     let pore_occupancy = active_channels.len() as f64 / total_channels.max(1) as f64;
     let reads_per_channel = total_reads as f64 / active_channels.len().max(1) as f64;
 
@@ -387,9 +414,30 @@ read3\tchr1\t2000\t-\t5mC\t0.10
     #[test]
     fn test_aggregate_methylation() {
         let calls = vec![
-            MethylationCall { read_id: "r1".into(), chrom: "chr1".into(), position: 1000, strand: '+', mod_type: ModificationType::FiveMC, probability: 0.95 },
-            MethylationCall { read_id: "r2".into(), chrom: "chr1".into(), position: 1000, strand: '+', mod_type: ModificationType::FiveMC, probability: 0.85 },
-            MethylationCall { read_id: "r3".into(), chrom: "chr1".into(), position: 1000, strand: '+', mod_type: ModificationType::FiveMC, probability: 0.10 },
+            MethylationCall {
+                read_id: "r1".into(),
+                chrom: "chr1".into(),
+                position: 1000,
+                strand: '+',
+                mod_type: ModificationType::FiveMC,
+                probability: 0.95,
+            },
+            MethylationCall {
+                read_id: "r2".into(),
+                chrom: "chr1".into(),
+                position: 1000,
+                strand: '+',
+                mod_type: ModificationType::FiveMC,
+                probability: 0.85,
+            },
+            MethylationCall {
+                read_id: "r3".into(),
+                chrom: "chr1".into(),
+                position: 1000,
+                strand: '+',
+                mod_type: ModificationType::FiveMC,
+                probability: 0.10,
+            },
         ];
 
         let sites = aggregate_methylation(&calls, 0.5);
@@ -402,9 +450,30 @@ read3\tchr1\t2000\t-\t5mC\t0.10
     #[test]
     fn test_aggregate_multiple_sites() {
         let calls = vec![
-            MethylationCall { read_id: "r1".into(), chrom: "chr1".into(), position: 100, strand: '+', mod_type: ModificationType::FiveMC, probability: 0.9 },
-            MethylationCall { read_id: "r2".into(), chrom: "chr1".into(), position: 200, strand: '+', mod_type: ModificationType::FiveMC, probability: 0.8 },
-            MethylationCall { read_id: "r3".into(), chrom: "chr2".into(), position: 100, strand: '-', mod_type: ModificationType::SixMA, probability: 0.7 },
+            MethylationCall {
+                read_id: "r1".into(),
+                chrom: "chr1".into(),
+                position: 100,
+                strand: '+',
+                mod_type: ModificationType::FiveMC,
+                probability: 0.9,
+            },
+            MethylationCall {
+                read_id: "r2".into(),
+                chrom: "chr1".into(),
+                position: 200,
+                strand: '+',
+                mod_type: ModificationType::FiveMC,
+                probability: 0.8,
+            },
+            MethylationCall {
+                read_id: "r3".into(),
+                chrom: "chr2".into(),
+                position: 100,
+                strand: '-',
+                mod_type: ModificationType::SixMA,
+                probability: 0.7,
+            },
         ];
 
         let sites = aggregate_methylation(&calls, 0.5);
@@ -421,22 +490,24 @@ read3\tchr1\t2000\t-\t5mC\t0.10
 
     #[test]
     fn test_nanopore_qc() {
-        let metadata: Vec<SignalMetadata> = (0..100).map(|i| SignalMetadata {
-            read_id: format!("read_{}", i),
-            run_id: "run1".into(),
-            flow_cell_id: "FC001".into(),
-            experiment: "exp1".into(),
-            sample_id: "sample1".into(),
-            channel: (i % 50) as u32,
-            start_time: i as f64 * 10.0,
-            duration: 2.0,
-            sampling_rate: 4000.0,
-            num_samples: 8000,
-            median_signal: 80.0,
-            signal_to_noise: Some(10.0),
-            basecaller: Some("dorado".into()),
-            basecaller_version: Some("0.5.0".into()),
-        }).collect();
+        let metadata: Vec<SignalMetadata> = (0..100)
+            .map(|i| SignalMetadata {
+                read_id: format!("read_{}", i),
+                run_id: "run1".into(),
+                flow_cell_id: "FC001".into(),
+                experiment: "exp1".into(),
+                sample_id: "sample1".into(),
+                channel: (i % 50) as u32,
+                start_time: i as f64 * 10.0,
+                duration: 2.0,
+                sampling_rate: 4000.0,
+                num_samples: 8000,
+                median_signal: 80.0,
+                signal_to_noise: Some(10.0),
+                basecaller: Some("dorado".into()),
+                basecaller_version: Some("0.5.0".into()),
+            })
+            .collect();
 
         let lengths: Vec<usize> = (0..100).map(|i| 5000 + i * 100).collect();
         let qualities: Vec<f64> = (0..100).map(|i| 10.0 + (i as f64) * 0.2).collect();

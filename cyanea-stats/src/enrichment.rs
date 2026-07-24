@@ -75,16 +75,10 @@ pub struct OraResult {
 /// assert!(results[0].gene_set == "pathway_A");
 /// assert!(results[0].overlap == 3);
 /// ```
-pub fn ora(
-    significant: &[usize],
-    gene_sets: &[GeneSet],
-    n_total: usize,
-) -> Result<Vec<OraResult>> {
+pub fn ora(significant: &[usize], gene_sets: &[GeneSet], n_total: usize) -> Result<Vec<OraResult>> {
     // Validate inputs
     if n_total == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "ora: n_total must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("ora: n_total must be > 0".into()));
     }
     if gene_sets.is_empty() {
         return Err(CyaneaError::InvalidInput(
@@ -273,7 +267,10 @@ pub fn gsea_preranked(
 
     for gs in gene_sets {
         // Effective set: gene set members present in the ranked list
-        let set_members: HashSet<usize> = gs.genes.iter().copied()
+        let set_members: HashSet<usize> = gs
+            .genes
+            .iter()
+            .copied()
             .filter(|g| gene_set_in_list.contains(g))
             .collect();
         let n_h = set_members.len();
@@ -324,15 +321,24 @@ pub fn gsea_preranked(
                 0.0
             } else {
                 let mean_pos: f64 = pos_null.iter().sum::<f64>() / pos_null.len() as f64;
-                if mean_pos > 1e-15 { es / mean_pos } else { 0.0 }
+                if mean_pos > 1e-15 {
+                    es / mean_pos
+                } else {
+                    0.0
+                }
             }
         } else {
             let neg_null: Vec<f64> = null_es.iter().copied().filter(|&x| x < 0.0).collect();
             if neg_null.is_empty() {
                 0.0
             } else {
-                let mean_neg: f64 = neg_null.iter().map(|x| x.abs()).sum::<f64>() / neg_null.len() as f64;
-                if mean_neg > 1e-15 { -(es.abs() / mean_neg) } else { 0.0 }
+                let mean_neg: f64 =
+                    neg_null.iter().map(|x| x.abs()).sum::<f64>() / neg_null.len() as f64;
+                if mean_neg > 1e-15 {
+                    -(es.abs() / mean_neg)
+                } else {
+                    0.0
+                }
             }
         };
 
@@ -373,7 +379,9 @@ fn compute_es(
     let n = genes.len();
 
     // N_R: sum of |score|^weight for set members
-    let n_r: f64 = genes.iter().zip(scores.iter())
+    let n_r: f64 = genes
+        .iter()
+        .zip(scores.iter())
         .filter(|(&g, _)| set_members.contains(&g))
         .map(|(_, &s)| s.abs().powf(weight))
         .sum();
@@ -407,7 +415,8 @@ fn compute_es(
     }
 
     // Leading edge: set members before (and including) the peak
-    let leading_edge = genes[..=max_dev_pos].iter()
+    let leading_edge = genes[..=max_dev_pos]
+        .iter()
         .filter(|g| set_members.contains(g))
         .count();
 
@@ -424,7 +433,9 @@ struct Xorshift64 {
 impl Xorshift64 {
     fn new(seed: u64) -> Self {
         // Ensure non-zero state
-        Self { state: if seed == 0 { 1 } else { seed } }
+        Self {
+            state: if seed == 0 { 1 } else { seed },
+        }
     }
 
     fn next_u64(&mut self) -> u64 {
@@ -529,7 +540,11 @@ impl GoAnnotation {
 
     /// Number of distinct genes across all terms.
     pub fn n_genes(&self) -> usize {
-        let all: HashSet<usize> = self.terms.iter().flat_map(|t| t.genes.iter().copied()).collect();
+        let all: HashSet<usize> = self
+            .terms
+            .iter()
+            .flat_map(|t| t.genes.iter().copied())
+            .collect();
         all.len()
     }
 
@@ -716,9 +731,10 @@ mod tests {
     fn ora_basic_enrichment() {
         // 5 significant genes out of 100, gene set has 3 of them
         let significant = vec![0, 1, 2, 3, 4];
-        let gene_sets = vec![
-            GeneSet { name: "enriched".into(), genes: vec![0, 1, 2, 50, 51] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "enriched".into(),
+            genes: vec![0, 1, 2, 50, 51],
+        }];
         let results = ora(&significant, &gene_sets, 100).unwrap();
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].overlap, 3);
@@ -730,21 +746,27 @@ mod tests {
     #[test]
     fn ora_no_overlap() {
         let significant = vec![0, 1, 2];
-        let gene_sets = vec![
-            GeneSet { name: "disjoint".into(), genes: vec![50, 51, 52] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "disjoint".into(),
+            genes: vec![50, 51, 52],
+        }];
         let results = ora(&significant, &gene_sets, 100).unwrap();
         assert_eq!(results[0].overlap, 0);
-        assert!((results[0].p_value - 1.0).abs() < 1e-10, "p={}", results[0].p_value);
+        assert!(
+            (results[0].p_value - 1.0).abs() < 1e-10,
+            "p={}",
+            results[0].p_value
+        );
     }
 
     #[test]
     fn ora_complete_overlap() {
         // All significant genes are in the set
         let significant = vec![0, 1, 2, 3, 4];
-        let gene_sets = vec![
-            GeneSet { name: "complete".into(), genes: vec![0, 1, 2, 3, 4] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "complete".into(),
+            genes: vec![0, 1, 2, 3, 4],
+        }];
         let results = ora(&significant, &gene_sets, 1000).unwrap();
         assert_eq!(results[0].overlap, 5);
         assert!(results[0].p_value < 0.001, "p={}", results[0].p_value);
@@ -753,9 +775,10 @@ mod tests {
     #[test]
     fn ora_empty_significant() {
         let significant: Vec<usize> = vec![];
-        let gene_sets = vec![
-            GeneSet { name: "any".into(), genes: vec![0, 1, 2] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "any".into(),
+            genes: vec![0, 1, 2],
+        }];
         let results = ora(&significant, &gene_sets, 100).unwrap();
         assert_eq!(results[0].overlap, 0);
         assert!((results[0].p_value - 1.0).abs() < 1e-10);
@@ -765,12 +788,17 @@ mod tests {
     fn ora_expected_overlap() {
         // E[k] = n * K / N
         let significant: Vec<usize> = (0..10).collect();
-        let gene_sets = vec![
-            GeneSet { name: "gs".into(), genes: (0..20).collect() },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: (0..20).collect(),
+        }];
         let results = ora(&significant, &gene_sets, 100).unwrap();
         // Expected = 10 * 20 / 100 = 2.0
-        assert!((results[0].expected - 2.0).abs() < 1e-10, "expected={}", results[0].expected);
+        assert!(
+            (results[0].expected - 2.0).abs() < 1e-10,
+            "expected={}",
+            results[0].expected
+        );
     }
 
     #[test]
@@ -778,16 +806,27 @@ mod tests {
         // Multiple gene sets: check that p_adjusted >= p_value
         let significant: Vec<usize> = (0..5).collect();
         let gene_sets = vec![
-            GeneSet { name: "gs1".into(), genes: vec![0, 1, 2, 50, 51] },
-            GeneSet { name: "gs2".into(), genes: vec![60, 61, 62, 63, 64] },
-            GeneSet { name: "gs3".into(), genes: vec![0, 1, 70, 71, 72] },
+            GeneSet {
+                name: "gs1".into(),
+                genes: vec![0, 1, 2, 50, 51],
+            },
+            GeneSet {
+                name: "gs2".into(),
+                genes: vec![60, 61, 62, 63, 64],
+            },
+            GeneSet {
+                name: "gs3".into(),
+                genes: vec![0, 1, 70, 71, 72],
+            },
         ];
         let results = ora(&significant, &gene_sets, 100).unwrap();
         for r in &results {
             assert!(
                 r.p_adjusted >= r.p_value - 1e-15,
                 "{}: padj={} < p={}",
-                r.gene_set, r.p_adjusted, r.p_value,
+                r.gene_set,
+                r.p_adjusted,
+                r.p_value,
             );
         }
     }
@@ -796,9 +835,18 @@ mod tests {
     fn ora_sorted_by_pvalue() {
         let significant: Vec<usize> = (0..5).collect();
         let gene_sets = vec![
-            GeneSet { name: "gs1".into(), genes: vec![0, 1, 2, 50, 51] },
-            GeneSet { name: "gs2".into(), genes: vec![60, 61, 62, 63, 64] },
-            GeneSet { name: "gs3".into(), genes: vec![0, 1, 2, 3, 4] },
+            GeneSet {
+                name: "gs1".into(),
+                genes: vec![0, 1, 2, 50, 51],
+            },
+            GeneSet {
+                name: "gs2".into(),
+                genes: vec![60, 61, 62, 63, 64],
+            },
+            GeneSet {
+                name: "gs3".into(),
+                genes: vec![0, 1, 2, 3, 4],
+            },
         ];
         let results = ora(&significant, &gene_sets, 100).unwrap();
         for w in results.windows(2) {
@@ -809,18 +857,20 @@ mod tests {
     #[test]
     fn ora_error_index_too_large() {
         let significant = vec![100]; // >= n_total
-        let gene_sets = vec![
-            GeneSet { name: "gs".into(), genes: vec![0] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![0],
+        }];
         assert!(ora(&significant, &gene_sets, 100).is_err());
     }
 
     #[test]
     fn ora_error_gene_set_index_too_large() {
         let significant = vec![0];
-        let gene_sets = vec![
-            GeneSet { name: "gs".into(), genes: vec![200] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![200],
+        }];
         assert!(ora(&significant, &gene_sets, 100).is_err());
     }
 
@@ -831,7 +881,10 @@ mod tests {
 
     #[test]
     fn ora_error_zero_universe() {
-        let gene_sets = vec![GeneSet { name: "gs".into(), genes: vec![] }];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![],
+        }];
         assert!(ora(&[], &gene_sets, 0).is_err());
     }
 
@@ -839,9 +892,10 @@ mod tests {
     fn ora_duplicate_genes_deduplicated() {
         // Duplicate indices in significant and gene sets should be deduplicated
         let significant = vec![0, 0, 1, 1, 2];
-        let gene_sets = vec![
-            GeneSet { name: "gs".into(), genes: vec![0, 0, 1, 50, 50] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![0, 0, 1, 50, 50],
+        }];
         let results = ora(&significant, &gene_sets, 100).unwrap();
         // Unique significant: {0, 1, 2}, unique gs: {0, 1, 50}
         assert_eq!(results[0].overlap, 2); // {0, 1}
@@ -855,11 +909,16 @@ mod tests {
         // Gene set members concentrated at top of ranked list → positive ES
         let genes: Vec<usize> = (0..50).collect();
         let scores: Vec<f64> = (0..50).rev().map(|i| i as f64).collect();
-        let gene_sets = vec![
-            GeneSet { name: "top".into(), genes: vec![0, 1, 2, 3, 4] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "top".into(),
+            genes: vec![0, 1, 2, 3, 4],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 200).unwrap();
-        assert!(results[0].enrichment_score > 0.0, "ES={}", results[0].enrichment_score);
+        assert!(
+            results[0].enrichment_score > 0.0,
+            "ES={}",
+            results[0].enrichment_score
+        );
     }
 
     #[test]
@@ -867,11 +926,16 @@ mod tests {
         // Gene set members concentrated at bottom → negative ES
         let genes: Vec<usize> = (0..50).collect();
         let scores: Vec<f64> = (0..50).rev().map(|i| i as f64).collect();
-        let gene_sets = vec![
-            GeneSet { name: "bottom".into(), genes: vec![45, 46, 47, 48, 49] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "bottom".into(),
+            genes: vec![45, 46, 47, 48, 49],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 200).unwrap();
-        assert!(results[0].enrichment_score < 0.0, "ES={}", results[0].enrichment_score);
+        assert!(
+            results[0].enrichment_score < 0.0,
+            "ES={}",
+            results[0].enrichment_score
+        );
     }
 
     #[test]
@@ -879,12 +943,17 @@ mod tests {
         // Gene set members evenly distributed → ES near 0, not significant
         let genes: Vec<usize> = (0..100).collect();
         let scores: Vec<f64> = (0..100).rev().map(|i| i as f64).collect();
-        let gene_sets = vec![
-            GeneSet { name: "uniform".into(), genes: vec![0, 20, 40, 60, 80] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "uniform".into(),
+            genes: vec![0, 20, 40, 60, 80],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 200).unwrap();
         // ES should be relatively small
-        assert!(results[0].enrichment_score.abs() < 0.5, "ES={}", results[0].enrichment_score);
+        assert!(
+            results[0].enrichment_score.abs() < 0.5,
+            "ES={}",
+            results[0].enrichment_score
+        );
     }
 
     #[test]
@@ -892,9 +961,10 @@ mod tests {
         // weight=0 gives unweighted KS-like statistic
         let genes: Vec<usize> = (0..20).collect();
         let scores: Vec<f64> = (0..20).rev().map(|i| i as f64).collect();
-        let gene_sets = vec![
-            GeneSet { name: "top".into(), genes: vec![0, 1, 2, 3, 4] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "top".into(),
+            genes: vec![0, 1, 2, 3, 4],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 0.0, 100).unwrap();
         assert!(results[0].enrichment_score > 0.0);
     }
@@ -904,9 +974,10 @@ mod tests {
         // weight=1.0 is classic GSEA
         let genes: Vec<usize> = (0..20).collect();
         let scores: Vec<f64> = (0..20).rev().map(|i| i as f64 + 1.0).collect();
-        let gene_sets = vec![
-            GeneSet { name: "top".into(), genes: vec![0, 1, 2, 3, 4] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "top".into(),
+            genes: vec![0, 1, 2, 3, 4],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 100).unwrap();
         assert!(results[0].enrichment_score > 0.0);
     }
@@ -916,15 +987,31 @@ mod tests {
         let genes: Vec<usize> = (0..50).collect();
         let scores: Vec<f64> = (0..50).rev().map(|i| i as f64).collect();
         let gene_sets = vec![
-            GeneSet { name: "top".into(), genes: vec![0, 1, 2, 3, 4] },
-            GeneSet { name: "bottom".into(), genes: vec![45, 46, 47, 48, 49] },
+            GeneSet {
+                name: "top".into(),
+                genes: vec![0, 1, 2, 3, 4],
+            },
+            GeneSet {
+                name: "bottom".into(),
+                genes: vec![45, 46, 47, 48, 49],
+            },
         ];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 200).unwrap();
         for r in &results {
             if r.enrichment_score > 0.0 {
-                assert!(r.normalized_es >= 0.0, "NES={} but ES={}", r.normalized_es, r.enrichment_score);
+                assert!(
+                    r.normalized_es >= 0.0,
+                    "NES={} but ES={}",
+                    r.normalized_es,
+                    r.enrichment_score
+                );
             } else if r.enrichment_score < 0.0 {
-                assert!(r.normalized_es <= 0.0, "NES={} but ES={}", r.normalized_es, r.enrichment_score);
+                assert!(
+                    r.normalized_es <= 0.0,
+                    "NES={} but ES={}",
+                    r.normalized_es,
+                    r.enrichment_score
+                );
             }
         }
     }
@@ -933,9 +1020,10 @@ mod tests {
     fn gsea_leading_edge_size() {
         let genes: Vec<usize> = (0..20).collect();
         let scores: Vec<f64> = (0..20).rev().map(|i| i as f64).collect();
-        let gene_sets = vec![
-            GeneSet { name: "top".into(), genes: vec![0, 1, 2, 3, 4] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "top".into(),
+            genes: vec![0, 1, 2, 3, 4],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 100).unwrap();
         // Leading edge should be between 1 and gene_set_size
         assert!(results[0].leading_edge_size >= 1);
@@ -946,23 +1034,31 @@ mod tests {
     fn gsea_pvalue_in_range() {
         let genes: Vec<usize> = (0..30).collect();
         let scores: Vec<f64> = (0..30).rev().map(|i| i as f64).collect();
-        let gene_sets = vec![
-            GeneSet { name: "gs".into(), genes: vec![0, 1, 2, 15, 16] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![0, 1, 2, 15, 16],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 100).unwrap();
-        assert!(results[0].p_value >= 0.0 && results[0].p_value <= 1.0,
-            "p={}", results[0].p_value);
-        assert!(results[0].p_adjusted >= 0.0 && results[0].p_adjusted <= 1.0,
-            "padj={}", results[0].p_adjusted);
+        assert!(
+            results[0].p_value >= 0.0 && results[0].p_value <= 1.0,
+            "p={}",
+            results[0].p_value
+        );
+        assert!(
+            results[0].p_adjusted >= 0.0 && results[0].p_adjusted <= 1.0,
+            "padj={}",
+            results[0].p_adjusted
+        );
     }
 
     #[test]
     fn gsea_deterministic_with_fixed_seed() {
         let genes: Vec<usize> = (0..30).collect();
         let scores: Vec<f64> = (0..30).rev().map(|i| i as f64).collect();
-        let gene_sets = vec![
-            GeneSet { name: "gs".into(), genes: vec![0, 1, 2, 3, 4] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![0, 1, 2, 3, 4],
+        }];
         let r1 = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 100).unwrap();
         let r2 = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 100).unwrap();
         assert!((r1[0].enrichment_score - r2[0].enrichment_score).abs() < 1e-15);
@@ -974,9 +1070,10 @@ mod tests {
         // Gene set has no members in the ranked list
         let genes: Vec<usize> = (0..10).collect();
         let scores: Vec<f64> = (0..10).rev().map(|i| i as f64).collect();
-        let gene_sets = vec![
-            GeneSet { name: "outside".into(), genes: vec![100, 101, 102] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "outside".into(),
+            genes: vec![100, 101, 102],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 100).unwrap();
         assert_eq!(results[0].gene_set_size, 0);
         assert!((results[0].enrichment_score - 0.0).abs() < 1e-15);
@@ -987,9 +1084,10 @@ mod tests {
     fn gsea_single_gene_set_single_gene() {
         let genes: Vec<usize> = (0..10).collect();
         let scores: Vec<f64> = (0..10).rev().map(|i| i as f64 + 1.0).collect();
-        let gene_sets = vec![
-            GeneSet { name: "single".into(), genes: vec![0] },
-        ];
+        let gene_sets = vec![GeneSet {
+            name: "single".into(),
+            genes: vec![0],
+        }];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 100).unwrap();
         assert_eq!(results[0].gene_set_size, 1);
         assert!(results[0].enrichment_score > 0.0);
@@ -997,13 +1095,19 @@ mod tests {
 
     #[test]
     fn gsea_error_empty_genes() {
-        let gene_sets = vec![GeneSet { name: "gs".into(), genes: vec![0] }];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![0],
+        }];
         assert!(gsea_preranked(&[], &[], &gene_sets, 1.0, 100).is_err());
     }
 
     #[test]
     fn gsea_error_mismatched_lengths() {
-        let gene_sets = vec![GeneSet { name: "gs".into(), genes: vec![0] }];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![0],
+        }];
         assert!(gsea_preranked(&[0, 1], &[1.0], &gene_sets, 1.0, 100).is_err());
     }
 
@@ -1014,7 +1118,10 @@ mod tests {
 
     #[test]
     fn gsea_error_zero_permutations() {
-        let gene_sets = vec![GeneSet { name: "gs".into(), genes: vec![0] }];
+        let gene_sets = vec![GeneSet {
+            name: "gs".into(),
+            genes: vec![0],
+        }];
         assert!(gsea_preranked(&[0], &[1.0], &gene_sets, 1.0, 0).is_err());
     }
 
@@ -1023,9 +1130,18 @@ mod tests {
         let genes: Vec<usize> = (0..50).collect();
         let scores: Vec<f64> = (0..50).rev().map(|i| i as f64).collect();
         let gene_sets = vec![
-            GeneSet { name: "gs1".into(), genes: vec![0, 1, 2, 3, 4] },
-            GeneSet { name: "gs2".into(), genes: vec![25, 26, 27, 28, 29] },
-            GeneSet { name: "gs3".into(), genes: vec![45, 46, 47, 48, 49] },
+            GeneSet {
+                name: "gs1".into(),
+                genes: vec![0, 1, 2, 3, 4],
+            },
+            GeneSet {
+                name: "gs2".into(),
+                genes: vec![25, 26, 27, 28, 29],
+            },
+            GeneSet {
+                name: "gs3".into(),
+                genes: vec![45, 46, 47, 48, 49],
+            },
         ];
         let results = gsea_preranked(&genes, &scores, &gene_sets, 1.0, 200).unwrap();
         // p_adjusted >= p_value for all
@@ -1033,7 +1149,9 @@ mod tests {
             assert!(
                 r.p_adjusted >= r.p_value - 1e-15,
                 "{}: padj={} < p={}",
-                r.gene_set, r.p_adjusted, r.p_value,
+                r.gene_set,
+                r.p_adjusted,
+                r.p_value,
             );
         }
         // Sorted by p-value
@@ -1095,7 +1213,12 @@ mod tests {
     #[test]
     fn go_annotation_from_entries_merges() {
         let entries = vec![
-            (0usize, "GO:0000001", "term A", GoNamespace::BiologicalProcess),
+            (
+                0usize,
+                "GO:0000001",
+                "term A",
+                GoNamespace::BiologicalProcess,
+            ),
             (1, "GO:0000001", "term A", GoNamespace::BiologicalProcess),
             (2, "GO:0000002", "term B", GoNamespace::MolecularFunction),
         ];
@@ -1140,7 +1263,9 @@ mod tests {
     #[test]
     fn go_annotation_filter_namespace() {
         let ann = GoAnnotation::new(make_go_terms()).unwrap();
-        let bp = ann.filter_namespace(GoNamespace::BiologicalProcess).unwrap();
+        let bp = ann
+            .filter_namespace(GoNamespace::BiologicalProcess)
+            .unwrap();
         assert_eq!(bp.n_terms(), 2);
         for t in &bp.terms {
             assert_eq!(t.namespace, GoNamespace::BiologicalProcess);
@@ -1150,7 +1275,9 @@ mod tests {
     #[test]
     fn go_annotation_filter_namespace_empty_error() {
         let ann = GoAnnotation::new(make_go_terms()).unwrap();
-        assert!(ann.filter_namespace(GoNamespace::CellularComponent).is_err());
+        assert!(ann
+            .filter_namespace(GoNamespace::CellularComponent)
+            .is_err());
     }
 
     #[test]

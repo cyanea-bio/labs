@@ -23,11 +23,7 @@ use crate::scoring::ScoringScheme;
 ///
 /// Returns an error if either sequence is empty.
 #[allow(unreachable_code)]
-pub fn sw_simd_score(
-    query: &[u8],
-    target: &[u8],
-    scoring: &ScoringScheme,
-) -> Result<i32> {
+pub fn sw_simd_score(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> Result<i32> {
     if query.is_empty() || target.is_empty() {
         return Err(CyaneaError::InvalidInput(
             "sequences must not be empty".into(),
@@ -64,11 +60,7 @@ pub fn sw_simd_score(
 /// # Errors
 ///
 /// Returns an error if either sequence is empty.
-pub fn sw_scalar_score(
-    query: &[u8],
-    target: &[u8],
-    scoring: &ScoringScheme,
-) -> Result<i32> {
+pub fn sw_scalar_score(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> Result<i32> {
     if query.is_empty() || target.is_empty() {
         return Err(CyaneaError::InvalidInput(
             "sequences must not be empty".into(),
@@ -105,10 +97,7 @@ fn sw_score_scalar(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> i32 
             f_col[j + 1] = (h_row[j + 1] + gap_open).max(f_col[j + 1] + gap_extend);
 
             // H[i][j] = max(0, H[i-1][j-1] + sub, E[i][j], F[i][j])
-            let h_new = 0i32
-                .max(h_diag + sub)
-                .max(e)
-                .max(f_col[j + 1]);
+            let h_new = 0i32.max(h_diag + sub).max(e).max(f_col[j + 1]);
 
             // Save H[i-1][j] before overwriting
             h_diag = h_row[j + 1];
@@ -244,10 +233,7 @@ mod neon {
                 let mut any_update = false;
 
                 for s in 0..n_stripes {
-                    vf = vmaxq_s16(
-                        vqaddq_s16(vh[s], vgap_open),
-                        vqaddq_s16(vf, vgap_extend),
-                    );
+                    vf = vmaxq_s16(vqaddq_s16(vh[s], vgap_open), vqaddq_s16(vf, vgap_extend));
 
                     let vh_cur = vh[s];
                     let vh_new = vmaxq_s16(vh_cur, vf);
@@ -339,10 +325,7 @@ mod sse41 {
                 );
                 ve[s] = ve_new;
 
-                let vh_new = _mm_max_epi16(vzero, _mm_max_epi16(
-                    _mm_adds_epi16(vdiag, vp),
-                    ve_new,
-                ));
+                let vh_new = _mm_max_epi16(vzero, _mm_max_epi16(_mm_adds_epi16(vdiag, vp), ve_new));
                 vh[s] = vh_new;
                 vbest = _mm_max_epi16(vbest, vh_new);
             }
@@ -467,10 +450,10 @@ mod avx2 {
                 );
                 ve[s] = ve_new;
 
-                let vh_new = _mm256_max_epi16(vzero, _mm256_max_epi16(
-                    _mm256_adds_epi16(vdiag, vp),
-                    ve_new,
-                ));
+                let vh_new = _mm256_max_epi16(
+                    vzero,
+                    _mm256_max_epi16(_mm256_adds_epi16(vdiag, vp), ve_new),
+                );
                 vh[s] = vh_new;
                 vbest = _mm256_max_epi16(vbest, vh_new);
             }
@@ -584,7 +567,8 @@ mod tests {
             let simd_score = sw_simd_score(q, t, &scoring).unwrap();
             let scalar_score = sw_score_scalar(q, t, &scoring);
             assert_eq!(
-                simd_score, scalar_score,
+                simd_score,
+                scalar_score,
                 "mismatch for q={}, t={}: simd={}, scalar={}",
                 String::from_utf8_lossy(q),
                 String::from_utf8_lossy(t),

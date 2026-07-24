@@ -65,8 +65,7 @@ mod tests {
 
     #[test]
     fn result_err_variant() {
-        let r: cyanea_core::Result<i32> =
-            Err(cyanea_core::CyaneaError::InvalidInput("bad".into()));
+        let r: cyanea_core::Result<i32> = Err(cyanea_core::CyaneaError::InvalidInput("bad".into()));
         let json = wasm_result(r);
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         assert!(v["error"].as_str().unwrap().contains("bad"));

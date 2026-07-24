@@ -238,21 +238,15 @@ pub fn watershed_grid(
     seeds: &[(usize, usize)],
 ) -> Result<Vec<Vec<usize>>> {
     if grid.len() != rows {
-        return Err(CyaneaError::InvalidInput(
-            "grid rows mismatch".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("grid rows mismatch".into()));
     }
     for r in grid {
         if r.len() != cols {
-            return Err(CyaneaError::InvalidInput(
-                "grid cols mismatch".into(),
-            ));
+            return Err(CyaneaError::InvalidInput("grid cols mismatch".into()));
         }
     }
     if seeds.is_empty() {
-        return Err(CyaneaError::InvalidInput(
-            "need at least 1 seed".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("need at least 1 seed".into()));
     }
 
     // Label grid: 0 = unlabeled
@@ -284,7 +278,11 @@ pub fn watershed_grid(
     }
 
     // Sort by intensity descending (process high-intensity pixels first)
-    queue.sort_by(|a, b| b.intensity.partial_cmp(&a.intensity).unwrap_or(std::cmp::Ordering::Equal));
+    queue.sort_by(|a, b| {
+        b.intensity
+            .partial_cmp(&a.intensity)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     let mut head = 0;
     while head < queue.len() {

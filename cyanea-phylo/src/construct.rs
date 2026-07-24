@@ -307,7 +307,9 @@ mod tests {
     }
 
     fn names(n: usize) -> Vec<String> {
-        (0..n).map(|i| format!("{}", (b'A' + i as u8) as char)).collect()
+        (0..n)
+            .map(|i| format!("{}", (b'A' + i as u8) as char))
+            .collect()
     }
 
     // --- UPGMA tests ---

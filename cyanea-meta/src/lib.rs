@@ -55,21 +55,21 @@
 //! let rare = rarefaction_curve(&counts, &depths).unwrap();
 //! ```
 
-pub mod error;
-pub mod taxonomy;
-pub mod profile;
-pub mod diversity;
-pub mod composition;
-pub mod functional;
-pub mod binning;
 pub mod assembly;
+pub mod binning;
+pub mod composition;
+pub mod diversity;
+pub mod error;
+pub mod functional;
+pub mod profile;
+pub mod taxonomy;
 
 // Re-export common types
-pub use error::{MetaError, Result};
-pub use taxonomy::{TaxonomyDB, TaxonNode, TaxonRank};
-pub use profile::TaxonomicProfile;
-pub use diversity::{AlphaDiversity, BetaDiversityMatrix};
-pub use composition::CompositionTransform;
-pub use functional::FunctionalProfile;
-pub use binning::{Contig, Bin};
 pub use assembly::AssemblyStats;
+pub use binning::{Bin, Contig};
+pub use composition::CompositionTransform;
+pub use diversity::{AlphaDiversity, BetaDiversityMatrix};
+pub use error::{MetaError, Result};
+pub use functional::FunctionalProfile;
+pub use profile::TaxonomicProfile;
+pub use taxonomy::{TaxonNode, TaxonRank, TaxonomyDB};

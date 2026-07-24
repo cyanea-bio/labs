@@ -68,9 +68,8 @@ pub fn betai(a: f64, b: f64, x: f64) -> Result<f64> {
         return Ok(1.0 - betai(b, a, 1.0 - x)?);
     }
 
-    let ln_prefactor = ln_gamma(a + b) - ln_gamma(a) - ln_gamma(b)
-        + a * x.ln()
-        + b * (1.0 - x).ln();
+    let ln_prefactor =
+        ln_gamma(a + b) - ln_gamma(a) - ln_gamma(b) + a * x.ln() + b * (1.0 - x).ln();
     let prefactor = ln_prefactor.exp();
 
     // Evaluate continued fraction with modified Lentz's method.
@@ -102,8 +101,8 @@ pub fn betai(a: f64, b: f64, x: f64) -> Result<f64> {
         h *= d * c;
 
         // Odd step: d_{2m+1}
-        let num_odd = -((a + m_f64) * (a + b + m_f64) * x)
-            / ((a + 2.0 * m_f64) * (a + 2.0 * m_f64 + 1.0));
+        let num_odd =
+            -((a + m_f64) * (a + b + m_f64) * x) / ((a + 2.0 * m_f64) * (a + 2.0 * m_f64 + 1.0));
         d = 1.0 + num_odd * d;
         if d.abs() < tiny {
             d = tiny;
@@ -256,10 +255,14 @@ impl Distribution for Poisson {
 /// representation (computing Q = 1 - P) otherwise.
 pub fn gammainc(a: f64, x: f64) -> Result<f64> {
     if a <= 0.0 {
-        return Err(CyaneaError::InvalidInput("gammainc: a must be positive".into()));
+        return Err(CyaneaError::InvalidInput(
+            "gammainc: a must be positive".into(),
+        ));
     }
     if x < 0.0 {
-        return Err(CyaneaError::InvalidInput("gammainc: x must be non-negative".into()));
+        return Err(CyaneaError::InvalidInput(
+            "gammainc: x must be non-negative".into(),
+        ));
     }
     if x == 0.0 {
         return Ok(0.0);
@@ -437,8 +440,7 @@ impl Distribution for FDistribution {
         if self.d2 > 4.0 {
             let d1 = self.d1;
             let d2 = self.d2;
-            2.0 * d2 * d2 * (d1 + d2 - 2.0)
-                / (d1 * (d2 - 2.0).powi(2) * (d2 - 4.0))
+            2.0 * d2 * d2 * (d1 + d2 - 2.0) / (d1 * (d2 - 2.0).powi(2) * (d2 - 4.0))
         } else {
             f64::INFINITY
         }
@@ -591,9 +593,7 @@ impl NegativeBinomial {
     /// `ln P(X = k) = ln Γ(k + r) - ln Γ(k + 1) - ln Γ(r) + r ln(p) + k ln(1 - p)`
     pub fn ln_pmf(&self, k: usize) -> f64 {
         let k_f = k as f64;
-        ln_gamma(k_f + self.r)
-            - ln_gamma(k_f + 1.0)
-            - ln_gamma(self.r)
+        ln_gamma(k_f + self.r) - ln_gamma(k_f + 1.0) - ln_gamma(self.r)
             + self.r * self.p.ln()
             + k_f * (1.0 - self.p).ln()
     }

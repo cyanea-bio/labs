@@ -141,9 +141,7 @@ fn extract_data_id(lines: &[&str]) -> String {
 }
 
 /// Locate the `_atom_site.` loop and parse it into records.
-fn find_and_parse_atom_site_loop(
-    lines: &[&str],
-) -> Result<Vec<BTreeMap<String, String>>> {
+fn find_and_parse_atom_site_loop(lines: &[&str]) -> Result<Vec<BTreeMap<String, String>>> {
     let mut i = 0;
     while i < lines.len() {
         let trimmed = lines[i].trim();
@@ -261,16 +259,14 @@ fn build_structure_from_records(
         let atom = Atom {
             serial,
             name: atom_name.clone(),
-            alt_loc: record
-                .get("_atom_site.label_alt_id")
-                .and_then(|s| {
-                    let c = s.chars().next()?;
-                    if c == '.' || c == '?' {
-                        None
-                    } else {
-                        Some(c)
-                    }
-                }),
+            alt_loc: record.get("_atom_site.label_alt_id").and_then(|s| {
+                let c = s.chars().next()?;
+                if c == '.' || c == '?' {
+                    None
+                } else {
+                    Some(c)
+                }
+            }),
             coords: Point3D::new(x, y, z),
             occupancy,
             temp_factor: b_factor,
@@ -330,11 +326,7 @@ fn build_structure_from_records(
 
 // ---- Field extraction helpers ----
 
-fn get_field_str(
-    record: &BTreeMap<String, String>,
-    field: &str,
-    row: usize,
-) -> Result<String> {
+fn get_field_str(record: &BTreeMap<String, String>, field: &str, row: usize) -> Result<String> {
     record
         .get(field)
         .filter(|s| s.as_str() != "." && s.as_str() != "?")
@@ -348,11 +340,7 @@ fn get_field_str(
         })
 }
 
-fn get_field_u32(
-    record: &BTreeMap<String, String>,
-    field: &str,
-    row: usize,
-) -> Result<u32> {
+fn get_field_u32(record: &BTreeMap<String, String>, field: &str, row: usize) -> Result<u32> {
     let s = get_field_str(record, field, row)?;
     s.parse::<u32>().map_err(|e| {
         CyaneaError::Parse(alloc::format!(
@@ -365,11 +353,7 @@ fn get_field_u32(
     })
 }
 
-fn get_field_i32(
-    record: &BTreeMap<String, String>,
-    field: &str,
-    row: usize,
-) -> Result<i32> {
+fn get_field_i32(record: &BTreeMap<String, String>, field: &str, row: usize) -> Result<i32> {
     let s = get_field_str(record, field, row)?;
     s.parse::<i32>().map_err(|e| {
         CyaneaError::Parse(alloc::format!(
@@ -382,11 +366,7 @@ fn get_field_i32(
     })
 }
 
-fn get_field_f64(
-    record: &BTreeMap<String, String>,
-    field: &str,
-    row: usize,
-) -> Result<f64> {
+fn get_field_f64(record: &BTreeMap<String, String>, field: &str, row: usize) -> Result<f64> {
     let s = get_field_str(record, field, row)?;
     s.parse::<f64>().map_err(|e| {
         CyaneaError::Parse(alloc::format!(
@@ -399,10 +379,7 @@ fn get_field_f64(
     })
 }
 
-fn get_field_f64_opt(
-    record: &BTreeMap<String, String>,
-    field: &str,
-) -> Option<f64> {
+fn get_field_f64_opt(record: &BTreeMap<String, String>, field: &str) -> Option<f64> {
     record
         .get(field)
         .filter(|s| s.as_str() != "." && s.as_str() != "?")
@@ -617,13 +594,7 @@ _entity.type
     fn element_symbol_extracted() {
         let s = parse_mmcif(minimal_mmcif()).unwrap();
         let chain = s.get_chain('A').unwrap();
-        assert_eq!(
-            chain.residues[0].atoms[0].element.as_deref(),
-            Some("N")
-        );
-        assert_eq!(
-            chain.residues[0].atoms[1].element.as_deref(),
-            Some("C")
-        );
+        assert_eq!(chain.residues[0].atoms[0].element.as_deref(), Some("N"));
+        assert_eq!(chain.residues[0].atoms[1].element.as_deref(), Some("C"));
     }
 }

@@ -93,14 +93,12 @@ pub fn rank_genes_groups(adata: &AnnData, config: &MarkerConfig) -> Result<Marke
     let n_vars = adata.n_vars();
 
     // Get cluster labels
-    let cluster_col = adata
-        .get_obs(&config.cluster_key)
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput(format!(
-                "obs['{}'] not found; run clustering first",
-                config.cluster_key
-            ))
-        })?;
+    let cluster_col = adata.get_obs(&config.cluster_key).ok_or_else(|| {
+        CyaneaError::InvalidInput(format!(
+            "obs['{}'] not found; run clustering first",
+            config.cluster_key
+        ))
+    })?;
 
     let labels: Vec<String> = match cluster_col {
         ColumnData::Strings(v) => v.clone(),
@@ -165,13 +163,17 @@ pub fn rank_genes_groups(adata: &AnnData, config: &MarkerConfig) -> Result<Marke
             let (statistic, p_value) = match config.method {
                 MarkerMethod::TTest => {
                     match cyanea_stats::testing::t_test_two_sample(&in_vals, &out_vals, false) {
-                        Ok(result) if result.p_value.is_finite() => (result.statistic, result.p_value),
+                        Ok(result) if result.p_value.is_finite() => {
+                            (result.statistic, result.p_value)
+                        }
                         _ => (0.0, 1.0), // degenerate case (zero variance)
                     }
                 }
                 MarkerMethod::Wilcoxon => {
                     match cyanea_stats::testing::mann_whitney_u(&in_vals, &out_vals) {
-                        Ok(result) if result.p_value.is_finite() => (result.statistic, result.p_value),
+                        Ok(result) if result.p_value.is_finite() => {
+                            (result.statistic, result.p_value)
+                        }
                         _ => (0.0, 1.0),
                     }
                 }
@@ -350,11 +352,7 @@ fn logistic_regression_test(in_vals: &[f64], out_vals: &[f64]) -> Result<(f64, f
     };
 
     // z-statistic and p-value (two-sided)
-    let z = if se > 1e-15 {
-        beta[1] / se
-    } else {
-        0.0
-    };
+    let z = if se > 1e-15 { beta[1] / se } else { 0.0 };
 
     // Approximate two-sided p-value using normal CDF approximation
     let p_value = 2.0 * normal_cdf_complement(z.abs());
@@ -542,8 +540,16 @@ mod tests {
         let a_markers = &results.markers["A"];
         let gene0 = a_markers.iter().find(|g| g.gene_name == "gene_0").unwrap();
         let gene2 = a_markers.iter().find(|g| g.gene_name == "gene_2").unwrap();
-        assert!(gene0.log2_fold_change > 0.0, "gene_0 l2fc = {}", gene0.log2_fold_change);
-        assert!(gene2.log2_fold_change < 0.0, "gene_2 l2fc = {}", gene2.log2_fold_change);
+        assert!(
+            gene0.log2_fold_change > 0.0,
+            "gene_0 l2fc = {}",
+            gene0.log2_fold_change
+        );
+        assert!(
+            gene2.log2_fold_change < 0.0,
+            "gene_2 l2fc = {}",
+            gene2.log2_fold_change
+        );
     }
 
     #[test]
@@ -679,7 +685,10 @@ mod tests {
         let in_vals = vec![5.0, 5.0, 5.0, 5.0, 5.0];
         let out_vals = vec![5.0, 5.0, 5.0, 5.0, 5.0];
         let (z, p) = logistic_regression_test(&in_vals, &out_vals).unwrap();
-        assert!(z.abs() < 1e-6 || p > 0.5, "identical groups should not be significant");
+        assert!(
+            z.abs() < 1e-6 || p > 0.5,
+            "identical groups should not be significant"
+        );
     }
 
     // ── Helper tests ──
@@ -764,12 +773,14 @@ mod tests {
         let mut adata = AnnData::new(MatrixData::Dense(data), obs_names, var_names).unwrap();
 
         let labels: Vec<String> = (0..15)
-            .map(|i| match i / 5 {
-                0 => "A",
-                1 => "B",
-                _ => "C",
-            }
-            .into())
+            .map(|i| {
+                match i / 5 {
+                    0 => "A",
+                    1 => "B",
+                    _ => "C",
+                }
+                .into()
+            })
             .collect();
         adata
             .add_obs_column("leiden", ColumnData::Strings(labels))

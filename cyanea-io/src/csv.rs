@@ -9,10 +9,7 @@ use serde_json::{json, Value};
 
 /// Metadata about a CSV file.
 #[derive(Debug, Clone)]
-#[cfg_attr(
-    feature = "csv",
-    derive(serde::Serialize, serde::Deserialize)
-)]
+#[cfg_attr(feature = "csv", derive(serde::Serialize, serde::Deserialize))]
 pub struct CsvInfo {
     pub row_count: u64,
     pub column_count: usize,

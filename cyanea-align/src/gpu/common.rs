@@ -84,7 +84,10 @@ pub fn encode_pairs(pairs: &[(&[u8], &[u8])]) -> (Vec<u8>, Vec<SeqIndex>) {
 pub fn partition_pairs<'a>(
     pairs: &[(&'a [u8], &'a [u8])],
     max_bandwidth: usize,
-) -> (Vec<(usize, &'a [u8], &'a [u8])>, Vec<(usize, &'a [u8], &'a [u8])>) {
+) -> (
+    Vec<(usize, &'a [u8], &'a [u8])>,
+    Vec<(usize, &'a [u8], &'a [u8])>,
+) {
     let mut gpu_pairs = Vec::new();
     let mut cpu_pairs = Vec::new();
 
@@ -166,8 +169,7 @@ pub fn reconstruct_alignment(
         match h_dir {
             TB_STOP => break,
             TB_DIAG if i > 0 && j > 0 => {
-                let op = if query[i - 1].to_ascii_uppercase()
-                    == target[j - 1].to_ascii_uppercase()
+                let op = if query[i - 1].to_ascii_uppercase() == target[j - 1].to_ascii_uppercase()
                 {
                     CigarOp::Match(1)
                 } else {
@@ -290,10 +292,7 @@ mod tests {
 
     #[test]
     fn encode_pairs_round_trip() {
-        let pairs: Vec<(&[u8], &[u8])> = vec![
-            (b"ACGT", b"TGCA"),
-            (b"AA", b"CC"),
-        ];
+        let pairs: Vec<(&[u8], &[u8])> = vec![(b"ACGT", b"TGCA"), (b"AA", b"CC")];
         let (packed, index) = encode_pairs(&pairs);
         assert_eq!(packed.len(), 4 + 4 + 2 + 2);
         assert_eq!(index.len(), 2);
@@ -307,7 +306,7 @@ mod tests {
     fn partition_within_bandwidth() {
         let pairs: Vec<(&[u8], &[u8])> = vec![
             (b"ACGT", b"ACGT"),      // same length, within band
-            (b"A", b"ACGTACGTACGT"),  // diff > 8
+            (b"A", b"ACGTACGTACGT"), // diff > 8
         ];
         let (gpu, cpu) = partition_pairs(&pairs, 8);
         assert_eq!(gpu.len(), 1);

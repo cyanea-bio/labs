@@ -23,64 +23,140 @@ struct ElectroParams {
 fn electro_params(atomic_number: u8, bond_order_sum: f64) -> ElectroParams {
     match atomic_number {
         // Hydrogen
-        1 => ElectroParams { a: 7.17, b: 6.24, c: -0.56 },
+        1 => ElectroParams {
+            a: 7.17,
+            b: 6.24,
+            c: -0.56,
+        },
         // Carbon
         6 => {
             if bond_order_sum > 3.5 {
                 // sp (triple bond)
-                ElectroParams { a: 10.39, b: 9.45, c: 0.73 }
+                ElectroParams {
+                    a: 10.39,
+                    b: 9.45,
+                    c: 0.73,
+                }
             } else if bond_order_sum > 2.5 {
                 // sp2 (double bond or aromatic)
-                ElectroParams { a: 8.79, b: 9.32, c: 1.51 }
+                ElectroParams {
+                    a: 8.79,
+                    b: 9.32,
+                    c: 1.51,
+                }
             } else {
                 // sp3
-                ElectroParams { a: 7.98, b: 9.18, c: 1.88 }
+                ElectroParams {
+                    a: 7.98,
+                    b: 9.18,
+                    c: 1.88,
+                }
             }
         }
         // Nitrogen
         7 => {
             if bond_order_sum > 3.5 {
-                ElectroParams { a: 15.68, b: 11.70, c: -0.27 }
+                ElectroParams {
+                    a: 15.68,
+                    b: 11.70,
+                    c: -0.27,
+                }
             } else if bond_order_sum > 2.5 {
-                ElectroParams { a: 12.87, b: 11.15, c: 0.85 }
+                ElectroParams {
+                    a: 12.87,
+                    b: 11.15,
+                    c: 0.85,
+                }
             } else {
-                ElectroParams { a: 11.54, b: 10.82, c: 1.36 }
+                ElectroParams {
+                    a: 11.54,
+                    b: 10.82,
+                    c: 1.36,
+                }
             }
         }
         // Oxygen
         8 => {
             if bond_order_sum > 1.5 {
                 // sp2 (C=O)
-                ElectroParams { a: 17.07, b: 13.79, c: 0.47 }
+                ElectroParams {
+                    a: 17.07,
+                    b: 13.79,
+                    c: 0.47,
+                }
             } else {
                 // sp3 (C-O-H, C-O-C)
-                ElectroParams { a: 14.18, b: 12.92, c: 1.39 }
+                ElectroParams {
+                    a: 14.18,
+                    b: 12.92,
+                    c: 1.39,
+                }
             }
         }
         // Fluorine
-        9 => ElectroParams { a: 14.66, b: 13.85, c: 2.31 },
+        9 => ElectroParams {
+            a: 14.66,
+            b: 13.85,
+            c: 2.31,
+        },
         // Silicon
-        14 => ElectroParams { a: 5.60, b: 6.00, c: 1.20 },
+        14 => ElectroParams {
+            a: 5.60,
+            b: 6.00,
+            c: 1.20,
+        },
         // Phosphorus
-        15 => ElectroParams { a: 8.90, b: 8.24, c: 0.96 },
+        15 => ElectroParams {
+            a: 8.90,
+            b: 8.24,
+            c: 0.96,
+        },
         // Sulfur
         16 => {
             if bond_order_sum > 2.5 {
-                ElectroParams { a: 12.00, b: 9.88, c: 1.58 }
+                ElectroParams {
+                    a: 12.00,
+                    b: 9.88,
+                    c: 1.58,
+                }
             } else {
-                ElectroParams { a: 10.14, b: 9.13, c: 1.38 }
+                ElectroParams {
+                    a: 10.14,
+                    b: 9.13,
+                    c: 1.38,
+                }
             }
         }
         // Chlorine
-        17 => ElectroParams { a: 11.00, b: 9.69, c: 1.35 },
+        17 => ElectroParams {
+            a: 11.00,
+            b: 9.69,
+            c: 1.35,
+        },
         // Bromine
-        35 => ElectroParams { a: 10.08, b: 8.47, c: 1.16 },
+        35 => ElectroParams {
+            a: 10.08,
+            b: 8.47,
+            c: 1.16,
+        },
         // Iodine
-        53 => ElectroParams { a: 9.90, b: 7.96, c: 0.96 },
+        53 => ElectroParams {
+            a: 9.90,
+            b: 7.96,
+            c: 0.96,
+        },
         // Selenium
-        34 => ElectroParams { a: 10.00, b: 8.80, c: 1.20 },
+        34 => ElectroParams {
+            a: 10.00,
+            b: 8.80,
+            c: 1.20,
+        },
         // Default: use carbon sp3 as fallback
-        _ => ElectroParams { a: 7.98, b: 9.18, c: 1.88 },
+        _ => ElectroParams {
+            a: 7.98,
+            b: 9.18,
+            c: 1.88,
+        },
     }
 }
 

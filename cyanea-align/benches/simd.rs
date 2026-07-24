@@ -3,9 +3,7 @@
 //! Measures SIMD vs scalar performance for score-only Smith-Waterman,
 //! and banded alignment scaling across different bandwidths.
 
-use criterion::{
-    black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput,
-};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 
 use cyanea_align::scoring::{ScoringMatrix, ScoringScheme};
 use cyanea_align::simd::banded_sw;
@@ -56,26 +54,14 @@ fn bench_simd_vs_scalar(c: &mut Criterion) {
         let target = mutate_dna(&query, 0.10, 137);
 
         // Scalar baseline
-        group.bench_with_input(
-            BenchmarkId::new("scalar", len),
-            &len,
-            |b, _| {
-                b.iter(|| {
-                    sw_scalar_score(black_box(&query), black_box(&target), &scoring).unwrap()
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("scalar", len), &len, |b, _| {
+            b.iter(|| sw_scalar_score(black_box(&query), black_box(&target), &scoring).unwrap())
+        });
 
         // SIMD (NEON on aarch64, AVX2/SSE4.1 on x86_64)
-        group.bench_with_input(
-            BenchmarkId::new("simd", len),
-            &len,
-            |b, _| {
-                b.iter(|| {
-                    sw_simd_score(black_box(&query), black_box(&target), &scoring).unwrap()
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("simd", len), &len, |b, _| {
+            b.iter(|| sw_simd_score(black_box(&query), black_box(&target), &scoring).unwrap())
+        });
     }
 
     group.finish();
@@ -95,13 +81,9 @@ fn bench_banded_scaling(c: &mut Criterion) {
     group.throughput(Throughput::Elements(len as u64));
 
     for &bw in &[10, 50, 100, 500] {
-        group.bench_with_input(
-            BenchmarkId::new("banded_sw", bw),
-            &bw,
-            |b, _| {
-                b.iter(|| banded_sw(black_box(&query), black_box(&target), &scoring, bw))
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("banded_sw", bw), &bw, |b, _| {
+            b.iter(|| banded_sw(black_box(&query), black_box(&target), &scoring, bw))
+        });
     }
 
     // Unbanded (full SW, score-only via SIMD)

@@ -101,18 +101,23 @@ pub enum BaseEditor {
 /// The context must be 30 nucleotides: NNNN[20-nt spacer]NGG NNN.
 pub fn score_guide_rs2(context_30: &[u8]) -> Result<f64> {
     if context_30.len() != 30 {
-        return Err(CyaneaError::InvalidInput(
-            format!("Expected 30-nt context, got {} nt", context_30.len()),
-        ));
+        return Err(CyaneaError::InvalidInput(format!(
+            "Expected 30-nt context, got {} nt",
+            context_30.len()
+        )));
     }
 
     // Simplified scoring based on known position-dependent nucleotide preferences
     let mut score: f64 = 0.5; // baseline
 
     // Position 20 (spacer position 20, closest to PAM): G preferred
-    if context_30[23] == b'G' { score += 0.05; }
+    if context_30[23] == b'G' {
+        score += 0.05;
+    }
     // Position 16 of spacer: C preferred
-    if context_30[19] == b'C' { score += 0.04; }
+    if context_30[19] == b'C' {
+        score += 0.04;
+    }
 
     // GC content of spacer (positions 4-23)
     let spacer = &context_30[4..24];
@@ -136,14 +141,22 @@ pub fn score_guide_rs2(context_30: &[u8]) -> Result<f64> {
     // Seed region (positions 1-8 from PAM, i.e., spacer positions 13-20)
     // Prefer no G at position 20 of spacer (already handled above)
     // Prefer G at position 1 of spacer
-    if spacer[0] == b'G' { score += 0.03; }
+    if spacer[0] == b'G' {
+        score += 0.03;
+    }
 
     // PAM-proximal nucleotide preferences
-    if spacer[19] == b'C' || spacer[19] == b'G' { score += 0.03; }
-    if spacer[18] == b'A' { score += 0.02; }
+    if spacer[19] == b'C' || spacer[19] == b'G' {
+        score += 0.03;
+    }
+    if spacer[18] == b'A' {
+        score += 0.02;
+    }
 
     // Upstream context
-    if context_30[3] == b'C' { score += 0.02; }
+    if context_30[3] == b'C' {
+        score += 0.02;
+    }
 
     score = score.clamp(0.0, 1.0);
     Ok(score)
@@ -160,7 +173,9 @@ pub fn score_guide_rs2(context_30: &[u8]) -> Result<f64> {
 /// and lower values indicate less likely cutting.
 pub fn cfd_score(guide: &[u8], off_target: &[u8]) -> Result<f64> {
     if guide.len() != 20 || off_target.len() != 20 {
-        return Err(CyaneaError::InvalidInput("Guide and off-target must be 20 nt".into()));
+        return Err(CyaneaError::InvalidInput(
+            "Guide and off-target must be 20 nt".into(),
+        ));
     }
 
     let mut score: f64 = 1.0;
@@ -172,21 +187,21 @@ pub fn cfd_score(guide: &[u8], off_target: &[u8]) -> Result<f64> {
             let pos_from_pam = 20 - i; // 1 = PAM-proximal
 
             let penalty: f64 = if pos_from_pam <= 4 {
-                0.0   // Critical seed: any mismatch nearly abolishes cutting
+                0.0 // Critical seed: any mismatch nearly abolishes cutting
             } else if pos_from_pam <= 8 {
-                0.1   // Near-seed: heavy penalty
+                0.1 // Near-seed: heavy penalty
             } else if pos_from_pam <= 12 {
-                0.3   // Mid-guide
+                0.3 // Mid-guide
             } else if pos_from_pam <= 16 {
-                0.6   // PAM-distal
+                0.6 // PAM-distal
             } else {
-                0.8   // Very distal: mild penalty
+                0.8 // Very distal: mild penalty
             };
 
             // Specific mismatch type modifiers (rG:dT wobble is more tolerated)
             let modifier: f64 = match (guide[i], off_target[i]) {
-                (b'G', b'A') | (b'A', b'G') => 1.2,  // purine-purine: slightly worse
-                (b'C', b'T') | (b'T', b'C') => 1.1,  // pyrimidine-pyrimidine
+                (b'G', b'A') | (b'A', b'G') => 1.2, // purine-purine: slightly worse
+                (b'C', b'T') | (b'T', b'C') => 1.1, // pyrimidine-pyrimidine
                 _ => 1.0,
             };
 
@@ -199,7 +214,11 @@ pub fn cfd_score(guide: &[u8], off_target: &[u8]) -> Result<f64> {
 
 /// Count mismatches between a guide and a target sequence.
 pub fn count_mismatches(guide: &[u8], target: &[u8]) -> u32 {
-    guide.iter().zip(target.iter()).filter(|(a, b)| a != b).count() as u32
+    guide
+        .iter()
+        .zip(target.iter())
+        .filter(|(a, b)| a != b)
+        .count() as u32
 }
 
 // ---------------------------------------------------------------------------
@@ -265,18 +284,25 @@ pub fn find_off_targets(
         }
     }
 
-    results.sort_by(|a, b| b.cfd_score.partial_cmp(&a.cfd_score).unwrap_or(core::cmp::Ordering::Equal));
+    results.sort_by(|a, b| {
+        b.cfd_score
+            .partial_cmp(&a.cfd_score)
+            .unwrap_or(core::cmp::Ordering::Equal)
+    });
     Ok(results)
 }
 
 fn reverse_complement(seq: &[u8]) -> Vec<u8> {
-    seq.iter().rev().map(|&b| match b {
-        b'A' => b'T',
-        b'T' => b'A',
-        b'G' => b'C',
-        b'C' => b'G',
-        _ => b'N',
-    }).collect()
+    seq.iter()
+        .rev()
+        .map(|&b| match b {
+            b'A' => b'T',
+            b'T' => b'A',
+            b'G' => b'C',
+            b'C' => b'G',
+            _ => b'N',
+        })
+        .collect()
 }
 
 // ---------------------------------------------------------------------------
@@ -312,7 +338,9 @@ pub fn analyze_screen(
     }
 
     // Create LFC → rank mapping
-    let lfc_ranks: Vec<(f64, f64)> = all_lfcs.iter().enumerate()
+    let lfc_ranks: Vec<(f64, f64)> = all_lfcs
+        .iter()
+        .enumerate()
         .map(|(i, &lfc)| (lfc, (i + 1) as f64 / n_total as f64))
         .collect();
 
@@ -322,13 +350,22 @@ pub fn analyze_screen(
         let n_guides = lfcs.len();
 
         // Compute per-guide percentile ranks
-        let mut guide_ranks: Vec<f64> = lfcs.iter().map(|lfc| {
-            // Find closest rank
-            lfc_ranks.iter()
-                .min_by(|a, b| (a.0 - lfc).abs().partial_cmp(&(b.0 - lfc).abs()).unwrap_or(core::cmp::Ordering::Equal))
-                .map(|r| r.1)
-                .unwrap_or(0.5)
-        }).collect();
+        let mut guide_ranks: Vec<f64> = lfcs
+            .iter()
+            .map(|lfc| {
+                // Find closest rank
+                lfc_ranks
+                    .iter()
+                    .min_by(|a, b| {
+                        (a.0 - lfc)
+                            .abs()
+                            .partial_cmp(&(b.0 - lfc).abs())
+                            .unwrap_or(core::cmp::Ordering::Equal)
+                    })
+                    .map(|r| r.1)
+                    .unwrap_or(0.5)
+            })
+            .collect();
 
         guide_ranks.sort_by(|a, b| a.partial_cmp(b).unwrap_or(core::cmp::Ordering::Equal));
 
@@ -370,7 +407,11 @@ pub fn analyze_screen(
     }
 
     // Sort by RRA score
-    results.sort_by(|a, b| a.rra_score.partial_cmp(&b.rra_score).unwrap_or(core::cmp::Ordering::Equal));
+    results.sort_by(|a, b| {
+        a.rra_score
+            .partial_cmp(&b.rra_score)
+            .unwrap_or(core::cmp::Ordering::Equal)
+    });
 
     // BH correction
     let n_genes = results.len();
@@ -402,7 +443,9 @@ pub fn analyze_screen(
 }
 
 fn choose(n: usize, k: usize) -> f64 {
-    if k > n { return 0.0; }
+    if k > n {
+        return 0.0;
+    }
     let mut result = 1.0;
     for i in 0..k {
         result *= (n - i) as f64 / (i + 1) as f64;
@@ -485,7 +528,7 @@ mod tests {
     fn test_score_guide_rs2_polyt() {
         // Guide with TTTT run should score lower (both 30 nt)
         let good = b"ACGTGCATGCTAGCTAGCGATGGNNGGATT";
-        let bad  = b"ACGTTTTTGCTAGCTAGCGATGGNNGGATT";
+        let bad = b"ACGTTTTTGCTAGCTAGCGATGGNNGGATT";
         let s1 = score_guide_rs2(good).unwrap();
         let s2 = score_guide_rs2(bad).unwrap();
         assert!(s1 > s2);
@@ -505,7 +548,7 @@ mod tests {
 
     #[test]
     fn test_cfd_score_mismatches() {
-        let guide  = b"ACGTACGTACGTACGTACGT";
+        let guide = b"ACGTACGTACGTACGTACGT";
         // One mismatch near PAM (position 20) — should heavily penalize
         let ot_seed = b"ACGTACGTACGTACGTACGA";
         // One mismatch far from PAM (position 1)
@@ -514,7 +557,10 @@ mod tests {
         let s_seed = cfd_score(guide, ot_seed).unwrap();
         let s_distal = cfd_score(guide, ot_distal).unwrap();
 
-        assert!(s_distal > s_seed, "Distal mismatch should be more tolerated");
+        assert!(
+            s_distal > s_seed,
+            "Distal mismatch should be more tolerated"
+        );
     }
 
     #[test]
@@ -644,7 +690,10 @@ mod tests {
 
         let max_in = in_win.iter().map(|o| o.efficiency).fold(0.0f64, f64::max);
         let max_out = out_win.iter().map(|o| o.efficiency).fold(0.0f64, f64::max);
-        assert!(max_in > max_out, "In-window efficiency should exceed out-of-window");
+        assert!(
+            max_in > max_out,
+            "In-window efficiency should exceed out-of-window"
+        );
     }
 
     #[test]

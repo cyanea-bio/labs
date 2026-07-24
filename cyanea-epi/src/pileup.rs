@@ -93,9 +93,7 @@ pub fn build_pileup(reads: &[(String, u64, u64)], fragment_size: u64) -> TagPile
         }
     }
 
-    TagPileup {
-        coverage: pileup,
-    }
+    TagPileup { coverage: pileup }
 }
 
 /// Normalize pileup coverage.
@@ -112,7 +110,9 @@ pub fn normalize_pileup(pileup: &TagPileup, method: &str) -> Result<TagPileup> {
         .sum();
 
     if total_reads == 0 {
-        return Err(EpiError::InsufficientData("No coverage in pileup".to_string()));
+        return Err(EpiError::InsufficientData(
+            "No coverage in pileup".to_string(),
+        ));
     }
 
     let mut normalized = BTreeMap::new();
@@ -182,7 +182,10 @@ pub fn smooth_pileup(pileup: &TagPileup, bandwidth: f64) -> TagPileup {
             smooth_cov[pos] = weighted_sum;
         }
 
-        smoothed.insert(chrom.clone(), smooth_cov.iter().map(|&v| v as u32).collect());
+        smoothed.insert(
+            chrom.clone(),
+            smooth_cov.iter().map(|&v| v as u32).collect(),
+        );
     }
 
     TagPileup { coverage: smoothed }
@@ -275,10 +278,7 @@ mod tests {
 
     #[test]
     fn test_build_pileup() {
-        let reads = vec![
-            ("chr1".to_string(), 100, 50),
-            ("chr1".to_string(), 150, 50),
-        ];
+        let reads = vec![("chr1".to_string(), 100, 50), ("chr1".to_string(), 150, 50)];
 
         let pileup = build_pileup(&reads, 200);
 
@@ -299,10 +299,7 @@ mod tests {
 
     #[test]
     fn test_pileup_mean_coverage() {
-        let reads = vec![
-            ("chr1".to_string(), 0, 50),
-            ("chr1".to_string(), 100, 50),
-        ];
+        let reads = vec![("chr1".to_string(), 0, 50), ("chr1".to_string(), 100, 50)];
 
         let pileup = build_pileup(&reads, 200);
         let mean = pileup.mean_coverage();
@@ -312,10 +309,7 @@ mod tests {
 
     #[test]
     fn test_normalize_pileup_cpm() {
-        let reads = vec![
-            ("chr1".to_string(), 0, 50),
-            ("chr1".to_string(), 100, 50),
-        ];
+        let reads = vec![("chr1".to_string(), 0, 50), ("chr1".to_string(), 100, 50)];
 
         let pileup = build_pileup(&reads, 200);
         let normalized = normalize_pileup(&pileup, "cpm").unwrap();
@@ -339,15 +333,9 @@ mod tests {
 
     #[test]
     fn test_pileup_correlation() {
-        let reads1 = vec![
-            ("chr1".to_string(), 100, 50),
-            ("chr1".to_string(), 200, 50),
-        ];
+        let reads1 = vec![("chr1".to_string(), 100, 50), ("chr1".to_string(), 200, 50)];
 
-        let reads2 = vec![
-            ("chr1".to_string(), 100, 50),
-            ("chr1".to_string(), 200, 50),
-        ];
+        let reads2 = vec![("chr1".to_string(), 100, 50), ("chr1".to_string(), 200, 50)];
 
         let pileup1 = build_pileup(&reads1, 200);
         let pileup2 = build_pileup(&reads2, 200);
@@ -358,10 +346,7 @@ mod tests {
 
     #[test]
     fn test_fingerprint() {
-        let reads = vec![
-            ("chr1".to_string(), 100, 50),
-            ("chr1".to_string(), 150, 50),
-        ];
+        let reads = vec![("chr1".to_string(), 100, 50), ("chr1".to_string(), 150, 50)];
 
         let pileup = build_pileup(&reads, 200);
         let fp = fingerprint(&pileup);

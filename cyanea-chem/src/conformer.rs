@@ -268,11 +268,7 @@ mod tests {
 
     fn make_triangle() -> Conformer {
         // Right triangle in XY plane
-        Conformer::new(vec![
-            [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-        ])
+        Conformer::new(vec![[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
     }
 
     #[test]

@@ -320,10 +320,7 @@ seq2 ACGU..AACCU
         );
 
         // GC annotations
-        assert_eq!(
-            aln.gc_annotations.get("SS_cons").unwrap(),
-            "..<<..>>..."
-        );
+        assert_eq!(aln.gc_annotations.get("SS_cons").unwrap(), "..<<..>>...");
     }
 
     #[test]

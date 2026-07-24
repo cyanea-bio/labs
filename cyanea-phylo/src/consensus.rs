@@ -89,10 +89,7 @@ pub fn bipartition_frequencies(trees: &[PhyloTree]) -> Result<Vec<SupportedBipar
 
 /// Canonicalize a bipartition: always use the side that contains the
 /// lexicographically smallest leaf name (or the smaller set if equal).
-fn canonicalize_bipartition(
-    split: &BTreeSet<String>,
-    all: &BTreeSet<String>,
-) -> BTreeSet<String> {
+fn canonicalize_bipartition(split: &BTreeSet<String>, all: &BTreeSet<String>) -> BTreeSet<String> {
     let complement: BTreeSet<String> = all.difference(split).cloned().collect();
     // Use lexicographic comparison of first elements.
     if let (Some(s_first), Some(c_first)) = (split.iter().next(), complement.iter().next()) {

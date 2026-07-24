@@ -44,9 +44,7 @@ fn bench_pca(c: &mut Criterion) {
     let data = random_matrix(1_000, 100, 42);
     let refs: Vec<&[f64]> = data.iter().map(|r| r.as_slice()).collect();
 
-    group.bench_function("1k_x100_5comp", |b| {
-        b.iter(|| pca(black_box(&refs), 5))
-    });
+    group.bench_function("1k_x100_5comp", |b| b.iter(|| pca(black_box(&refs), 5)));
 
     group.finish();
 }
@@ -55,9 +53,7 @@ fn bench_correlation_matrix(c: &mut Criterion) {
     let mut group = c.benchmark_group("correlation");
 
     // 500 variables × 500 observations → 500×500 correlation matrix
-    let vars: Vec<Vec<f64>> = (0..500)
-        .map(|i| random_f64(500, 42 + i))
-        .collect();
+    let vars: Vec<Vec<f64>> = (0..500).map(|i| random_f64(500, 42 + i)).collect();
     let refs: Vec<&[f64]> = vars.iter().map(|v| v.as_slice()).collect();
 
     group.bench_function("500x500_matrix", |b| {
@@ -80,5 +76,11 @@ fn bench_pearson(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_describe, bench_pca, bench_correlation_matrix, bench_pearson);
+criterion_group!(
+    benches,
+    bench_describe,
+    bench_pca,
+    bench_correlation_matrix,
+    bench_pearson
+);
 criterion_main!(benches);

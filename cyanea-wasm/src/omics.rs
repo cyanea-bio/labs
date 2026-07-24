@@ -7,7 +7,7 @@
 use serde::{Deserialize, Serialize};
 
 use cyanea_omics::annotation::{Exon, Gene, GeneType, Transcript};
-use cyanea_omics::cnv::{CbsConfig, circular_binary_segmentation};
+use cyanea_omics::cnv::{circular_binary_segmentation, CbsConfig};
 use cyanea_omics::genome_arithmetic;
 use cyanea_omics::genomic::{GenomicInterval, Strand};
 use cyanea_omics::liftover;
@@ -528,7 +528,12 @@ pub fn annotate_variant(variant_json: &str, genes_json: &str) -> String {
         return wasm_err("alt_alleles must contain at least one string");
     }
 
-    let variant = match Variant::new(chrom, position, ref_allele_str.as_bytes().to_vec(), alt_alleles) {
+    let variant = match Variant::new(
+        chrom,
+        position,
+        ref_allele_str.as_bytes().to_vec(),
+        alt_alleles,
+    ) {
         Ok(v) => v,
         Err(e) => return wasm_err(e),
     };
@@ -647,8 +652,8 @@ pub fn find_cpg_islands(seq: &str, chrom: &str) -> String {
 // ── Spatial ──────────────────────────────────────────────────────────────
 
 fn parse_spatial_graph(neighbors_json: &str, n_nodes: usize) -> Result<SpatialGraph, String> {
-    let arr: Vec<Vec<Vec<serde_json::Value>>> = serde_json::from_str(neighbors_json)
-        .map_err(|e| format!("invalid neighbors JSON: {e}"))?;
+    let arr: Vec<Vec<Vec<serde_json::Value>>> =
+        serde_json::from_str(neighbors_json).map_err(|e| format!("invalid neighbors JSON: {e}"))?;
     if arr.len() != n_nodes {
         return Err(format!(
             "neighbors array length ({}) does not match values length ({})",
@@ -674,10 +679,7 @@ fn parse_spatial_graph(neighbors_json: &str, n_nodes: usize) -> Result<SpatialGr
         }
         neighbors.push(nb);
     }
-    Ok(SpatialGraph {
-        n_nodes,
-        neighbors,
-    })
+    Ok(SpatialGraph { n_nodes, neighbors })
 }
 
 /// Compute Moran's I spatial autocorrelation.
@@ -803,7 +805,10 @@ pub struct JsHarmonyResult {
 }
 
 /// Build an AnnData from a flat row-major data array.
-fn build_adata(data: &[f64], n_features: usize) -> Result<cyanea_omics::single_cell::AnnData, String> {
+fn build_adata(
+    data: &[f64],
+    n_features: usize,
+) -> Result<cyanea_omics::single_cell::AnnData, String> {
     use cyanea_omics::single_cell::{AnnData, MatrixData};
     if data.is_empty() || n_features == 0 {
         return Err("data and n_features must be non-empty".to_string());
@@ -831,7 +836,7 @@ fn build_adata(data: &[f64], n_features: usize) -> Result<cyanea_omics::single_c
 /// Output: JSON array of corrected values (flat row-major).
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn sc_normalize(data_json: &str, n_features: usize, target_sum: f64, log1p: bool) -> String {
-    use cyanea_omics::sc_preprocess::{NormalizeConfig, normalize_total};
+    use cyanea_omics::sc_preprocess::{normalize_total, NormalizeConfig};
     let data = match parse_f64_array(data_json) {
         Ok(d) => d,
         Err(e) => return wasm_err(e),
@@ -861,7 +866,7 @@ pub fn sc_normalize(data_json: &str, n_features: usize, target_sum: f64, log1p: 
 /// Output: JSON `JsHvgResult`.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn sc_hvg(data_json: &str, n_features: usize, n_top_genes: usize, method: &str) -> String {
-    use cyanea_omics::sc_preprocess::{HvgConfig, HvgMethod, highly_variable_genes};
+    use cyanea_omics::sc_preprocess::{highly_variable_genes, HvgConfig, HvgMethod};
     let data = match parse_f64_array(data_json) {
         Ok(d) => d,
         Err(e) => return wasm_err(e),
@@ -979,8 +984,13 @@ pub fn sc_score_genes(data_json: &str, n_features: usize, gene_indices_json: &st
 /// `metric`: `"euclidean"` or `"cosine"`.
 /// Output: JSON `JsNeighborsResult`.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-pub fn sc_neighbors(data_json: &str, n_features: usize, n_neighbors: usize, metric: &str) -> String {
-    use cyanea_omics::sc_cluster::{DistanceMetric, NeighborsConfig, neighbors};
+pub fn sc_neighbors(
+    data_json: &str,
+    n_features: usize,
+    n_neighbors: usize,
+    metric: &str,
+) -> String {
+    use cyanea_omics::sc_cluster::{neighbors, DistanceMetric, NeighborsConfig};
     let data = match parse_f64_array(data_json) {
         Ok(d) => d,
         Err(e) => return wasm_err(e),
@@ -1038,7 +1048,7 @@ pub fn sc_louvain(neighbors_json: &str, resolution: f64) -> String {
 }
 
 fn sc_cluster_impl(neighbors_json: &str, resolution: f64, use_leiden: bool) -> String {
-    use cyanea_omics::sc_cluster::{ClusterConfig, leiden, louvain};
+    use cyanea_omics::sc_cluster::{leiden, louvain, ClusterConfig};
     use cyanea_omics::single_cell::{AnnData, MatrixData};
     use cyanea_omics::sparse::SparseMatrix;
 
@@ -1062,11 +1072,9 @@ fn sc_cluster_impl(neighbors_json: &str, resolution: f64, use_leiden: bool) -> S
     if let Some(arr) = v["distances"].as_array() {
         let mut sm = SparseMatrix::new(n_obs, n_obs);
         for entry in arr {
-            if let (Some(r), Some(c), Some(val)) = (
-                entry[0].as_u64(),
-                entry[1].as_u64(),
-                entry[2].as_f64(),
-            ) {
+            if let (Some(r), Some(c), Some(val)) =
+                (entry[0].as_u64(), entry[1].as_u64(), entry[2].as_f64())
+            {
                 let _ = sm.insert(r as usize, c as usize, val);
             }
         }
@@ -1075,11 +1083,9 @@ fn sc_cluster_impl(neighbors_json: &str, resolution: f64, use_leiden: bool) -> S
     if let Some(arr) = v["connectivities"].as_array() {
         let mut sm = SparseMatrix::new(n_obs, n_obs);
         for entry in arr {
-            if let (Some(r), Some(c), Some(val)) = (
-                entry[0].as_u64(),
-                entry[1].as_u64(),
-                entry[2].as_f64(),
-            ) {
+            if let (Some(r), Some(c), Some(val)) =
+                (entry[0].as_u64(), entry[1].as_u64(), entry[2].as_f64())
+            {
                 let _ = sm.insert(r as usize, c as usize, val);
             }
         }
@@ -1107,22 +1113,22 @@ fn sc_cluster_impl(neighbors_json: &str, resolution: f64, use_leiden: bool) -> S
             let n_clusters = labels.iter().copied().max().map_or(0, |m| m + 1);
             // Compute a simple modularity proxy
             let modularity = n_clusters as f64 / n_obs as f64;
-            wasm_ok(&JsClusterResult {
-                labels,
-                modularity,
-            })
+            wasm_ok(&JsClusterResult { labels, modularity })
         }
         Some(cyanea_omics::ColumnData::Strings(labels)) => {
             // Convert string labels to usize
             let mut label_map = std::collections::HashMap::new();
             let mut next_id = 0usize;
-            let int_labels: Vec<usize> = labels.iter().map(|l| {
-                *label_map.entry(l.clone()).or_insert_with(|| {
-                    let id = next_id;
-                    next_id += 1;
-                    id
+            let int_labels: Vec<usize> = labels
+                .iter()
+                .map(|l| {
+                    *label_map.entry(l.clone()).or_insert_with(|| {
+                        let id = next_id;
+                        next_id += 1;
+                        id
+                    })
                 })
-            }).collect();
+                .collect();
             wasm_ok(&JsClusterResult {
                 labels: int_labels,
                 modularity: 0.0,
@@ -1140,7 +1146,7 @@ fn sc_cluster_impl(neighbors_json: &str, resolution: f64, use_leiden: bool) -> S
 /// Output: JSON `JsDiffusionResult`.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn sc_diffusion_map(data_json: &str, n_features: usize, n_components: usize) -> String {
-    use cyanea_omics::sc_trajectory::{DiffusionConfig, diffusion_map};
+    use cyanea_omics::sc_trajectory::{diffusion_map, DiffusionConfig};
     let data = match parse_f64_array(data_json) {
         Ok(d) => d,
         Err(e) => return wasm_err(e),
@@ -1169,7 +1175,7 @@ pub fn sc_diffusion_map(data_json: &str, n_features: usize, n_components: usize)
 /// Output: JSON `JsDptResult`.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn sc_dpt(diffmap_json: &str, root_cell: usize) -> String {
-    use cyanea_omics::sc_trajectory::{DptConfig, dpt};
+    use cyanea_omics::sc_trajectory::{dpt, DptConfig};
     use cyanea_omics::single_cell::{AnnData, MatrixData};
 
     let v: serde_json::Value = match serde_json::from_str(diffmap_json) {
@@ -1197,7 +1203,10 @@ pub fn sc_dpt(diffmap_json: &str, root_cell: usize) -> String {
         Err(e) => return wasm_err(e),
     };
     let _ = adata.add_obsm("X_diffmap", components);
-    adata.add_uns("diffmap_evals", serde_json::to_string(&eigenvalues).unwrap_or_default());
+    adata.add_uns(
+        "diffmap_evals",
+        serde_json::to_string(&eigenvalues).unwrap_or_default(),
+    );
 
     let config = DptConfig {
         root_cell,
@@ -1207,11 +1216,9 @@ pub fn sc_dpt(diffmap_json: &str, root_cell: usize) -> String {
         return wasm_err(e);
     }
     match adata.get_obs("dpt_pseudotime") {
-        Some(cyanea_omics::ColumnData::Numeric(pt)) => {
-            wasm_ok(&JsDptResult {
-                pseudotime: pt.clone(),
-            })
-        }
+        Some(cyanea_omics::ColumnData::Numeric(pt)) => wasm_ok(&JsDptResult {
+            pseudotime: pt.clone(),
+        }),
         _ => wasm_err("DPT did not produce pseudotime"),
     }
 }
@@ -1249,11 +1256,9 @@ pub fn sc_paga(neighbors_json: &str, clusters_json: &str) -> String {
     if let Some(arr) = v["connectivities"].as_array() {
         let mut sm = SparseMatrix::new(n_obs, n_obs);
         for entry in arr {
-            if let (Some(r), Some(c), Some(val)) = (
-                entry[0].as_u64(),
-                entry[1].as_u64(),
-                entry[2].as_f64(),
-            ) {
+            if let (Some(r), Some(c), Some(val)) =
+                (entry[0].as_u64(), entry[1].as_u64(), entry[2].as_f64())
+            {
                 let _ = sm.insert(r as usize, c as usize, val);
             }
         }
@@ -1276,8 +1281,13 @@ pub fn sc_paga(neighbors_json: &str, clusters_json: &str) -> String {
 /// `method`: `"t-test"`, `"wilcoxon"`, or `"logistic"`.
 /// Output: JSON `JsMarkerResult`.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-pub fn sc_rank_genes(data_json: &str, n_features: usize, clusters_json: &str, method: &str) -> String {
-    use cyanea_omics::sc_markers::{MarkerConfig, MarkerMethod, rank_genes_groups};
+pub fn sc_rank_genes(
+    data_json: &str,
+    n_features: usize,
+    clusters_json: &str,
+    method: &str,
+) -> String {
+    use cyanea_omics::sc_markers::{rank_genes_groups, MarkerConfig, MarkerMethod};
     let data = match parse_f64_array(data_json) {
         Ok(d) => d,
         Err(e) => return wasm_err(e),
@@ -1376,8 +1386,13 @@ pub fn sc_filter_markers(markers_json: &str, log2fc: f64, min_pct: f64, padj: f6
 /// `n_clusters`: optional number of clusters for Harmony.
 /// Output: JSON `JsHarmonyResult`.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-pub fn sc_harmony(data_json: &str, n_features: usize, batch_json: &str, n_clusters: usize) -> String {
-    use cyanea_omics::sc_integrate::{HarmonyConfig, harmony};
+pub fn sc_harmony(
+    data_json: &str,
+    n_features: usize,
+    batch_json: &str,
+    n_clusters: usize,
+) -> String {
+    use cyanea_omics::sc_integrate::{harmony, HarmonyConfig};
     let data = match parse_f64_array(data_json) {
         Ok(d) => d,
         Err(e) => return wasm_err(e),
@@ -1395,7 +1410,11 @@ pub fn sc_harmony(data_json: &str, n_features: usize, batch_json: &str, n_cluste
     }
     let config = HarmonyConfig {
         batch_key: "batch".to_string(),
-        n_clusters: if n_clusters > 0 { Some(n_clusters) } else { None },
+        n_clusters: if n_clusters > 0 {
+            Some(n_clusters)
+        } else {
+            None
+        },
         theta: 2.0,
         sigma: 0.1,
         max_iter: 10,
@@ -1420,7 +1439,7 @@ pub fn sc_harmony(data_json: &str, n_features: usize, batch_json: &str, n_cluste
 /// Output: JSON `JsHarmonyResult` (same format as Harmony for simplicity).
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn sc_combat(data_json: &str, n_features: usize, batch_json: &str) -> String {
-    use cyanea_omics::sc_integrate::{CombatConfig, combat};
+    use cyanea_omics::sc_integrate::{combat, CombatConfig};
     let data = match parse_f64_array(data_json) {
         Ok(d) => d,
         Err(e) => return wasm_err(e),
@@ -1692,7 +1711,11 @@ mod tests {
         let result = cbs_segment(&pos_json, &val_json, "chr1", 0.05, 3);
         let ok = ok_val(&result);
         let arr = ok.as_array().unwrap();
-        assert!(arr.len() >= 2, "expected at least 2 segments, got {}", arr.len());
+        assert!(
+            arr.len() >= 2,
+            "expected at least 2 segments, got {}",
+            arr.len()
+        );
         // First segment should have low log2_ratio, last should have high
         let first_lr = arr[0]["log2_ratio"].as_f64().unwrap();
         let last_lr = arr.last().unwrap()["log2_ratio"].as_f64().unwrap();
@@ -1740,10 +1763,7 @@ mod tests {
     fn test_morans_i_positive() {
         // 4x4 grid with clustered values: top-left high, bottom-right low
         let values = vec![
-            10.0, 10.0, 9.0, 9.0,
-            10.0, 10.0, 9.0, 9.0,
-            1.0, 1.0, 2.0, 2.0,
-            1.0, 1.0, 2.0, 2.0,
+            10.0, 10.0, 9.0, 9.0, 10.0, 10.0, 9.0, 9.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0,
         ];
         // Build a 4x4 grid neighbor graph
         let neighbors = build_grid_neighbors(4, 4);
@@ -1752,18 +1772,18 @@ mod tests {
         let result = morans_i(&values_json, &neighbors_json);
         let ok = ok_val(&result);
         let stat = ok["statistic"].as_f64().unwrap();
-        assert!(stat > 0.0, "clustered data should have positive Moran's I, got {stat}");
+        assert!(
+            stat > 0.0,
+            "clustered data should have positive Moran's I, got {stat}"
+        );
     }
 
     // 17. morans_i - random (near zero)
     #[test]
     fn test_morans_i_random() {
         let values = vec![
-            12.0, 5.0, 18.0, 3.0, 15.0,
-            9.0, 22.0, 1.0, 14.0, 7.0,
-            20.0, 4.0, 16.0, 8.0, 11.0,
-            2.0, 17.0, 6.0, 23.0, 10.0,
-            13.0, 19.0, 24.0, 21.0, 25.0,
+            12.0, 5.0, 18.0, 3.0, 15.0, 9.0, 22.0, 1.0, 14.0, 7.0, 20.0, 4.0, 16.0, 8.0, 11.0, 2.0,
+            17.0, 6.0, 23.0, 10.0, 13.0, 19.0, 24.0, 21.0, 25.0,
         ];
         let neighbors = build_grid_neighbors(5, 5);
         let values_json = serde_json::to_string(&values).unwrap();
@@ -1782,10 +1802,7 @@ mod tests {
     fn test_gearys_c() {
         // Clustered data should give Geary's C < 1
         let values = vec![
-            10.0, 10.0, 9.0, 9.0,
-            10.0, 10.0, 9.0, 9.0,
-            1.0, 1.0, 2.0, 2.0,
-            1.0, 1.0, 2.0, 2.0,
+            10.0, 10.0, 9.0, 9.0, 10.0, 10.0, 9.0, 9.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0,
         ];
         let neighbors = build_grid_neighbors(4, 4);
         let values_json = serde_json::to_string(&values).unwrap();

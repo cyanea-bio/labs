@@ -153,11 +153,7 @@ impl TraceLevel {
 /// - Returns an error if either sequence is empty.
 /// - Returns an error if a `ScoringScheme::Substitution` matrix is provided
 ///   (WFA currently only supports simple match/mismatch scoring).
-pub fn wfa_align(
-    query: &[u8],
-    target: &[u8],
-    scoring: &ScoringScheme,
-) -> Result<AlignmentResult> {
+pub fn wfa_align(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> Result<AlignmentResult> {
     if query.is_empty() || target.is_empty() {
         return Err(CyaneaError::InvalidInput(
             "sequences must not be empty".into(),
@@ -369,9 +365,7 @@ pub fn wfa_align(
         }
     }
 
-    Err(CyaneaError::InvalidInput(
-        "WFA failed to converge".into(),
-    ))
+    Err(CyaneaError::InvalidInput("WFA failed to converge".into()))
 }
 
 // ---------------------------------------------------------------------------
@@ -393,9 +387,7 @@ fn extend_wf(wf: &mut Wavefront, query: &[u8], target: &[u8]) {
             if h >= n || j < 0 || j >= m {
                 break;
             }
-            if query[h as usize].to_ascii_uppercase()
-                != target[j as usize].to_ascii_uppercase()
-            {
+            if query[h as usize].to_ascii_uppercase() != target[j as usize].to_ascii_uppercase() {
                 break;
             }
             h += 1;
@@ -810,7 +802,8 @@ mod tests {
             let wfa = wfa_align(q, t, &scheme).unwrap();
             let nw = needleman_wunsch(q, t, &scheme).unwrap();
             assert_eq!(
-                wfa.score, nw.score,
+                wfa.score,
+                nw.score,
                 "WFA score {} != NW score {} for {:?} vs {:?}",
                 wfa.score,
                 nw.score,

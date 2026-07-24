@@ -267,7 +267,8 @@ pub fn spliced_align(
                         0
                     };
 
-                    if max_donor > min_donor || (max_donor == min_donor && j >= params.min_intron_len)
+                    if max_donor > min_donor
+                        || (max_donor == min_donor && j >= params.min_intron_len)
                     {
                         // Find donor sites in range
                         let lo = donor_sites.partition_point(|&d| d < min_donor);
@@ -763,8 +764,13 @@ mod tests {
     fn single_exon_no_intron() {
         let query = b"ACGTACGT";
         let reference = b"ACGTACGT";
-        let result = spliced_align(query, reference, &dna_scheme(), &SplicedAlignParams::default())
-            .unwrap();
+        let result = spliced_align(
+            query,
+            reference,
+            &dna_scheme(),
+            &SplicedAlignParams::default(),
+        )
+        .unwrap();
         assert_eq!(result.intron_count, 0);
         assert_eq!(result.exons.len(), 1);
         assert_eq!(result.alignment.score, 16);
@@ -784,11 +790,16 @@ mod tests {
         reference.push(b'A');
         reference.push(b'G'); // acceptor
         reference.extend_from_slice(b"ACGT"); // exon 2
-        // Total intron = 2 + 30 + 2 = 34 bases (> min_intron_len=30)
+                                              // Total intron = 2 + 30 + 2 = 34 bases (> min_intron_len=30)
 
         let query = b"ACGTACGT";
-        let result = spliced_align(query, &reference, &dna_scheme(), &SplicedAlignParams::default())
-            .unwrap();
+        let result = spliced_align(
+            query,
+            &reference,
+            &dna_scheme(),
+            &SplicedAlignParams::default(),
+        )
+        .unwrap();
 
         // Should find the splice junction
         assert!(
@@ -854,27 +865,22 @@ mod tests {
         // Intron = 9 bases, less than default min_intron_len=30
 
         let query = b"ACGTACGT";
-        let result = spliced_align(query, &reference, &dna_scheme(), &SplicedAlignParams::default())
-            .unwrap();
+        let result = spliced_align(
+            query,
+            &reference,
+            &dna_scheme(),
+            &SplicedAlignParams::default(),
+        )
+        .unwrap();
         assert_eq!(result.intron_count, 0, "short intron should not be used");
     }
 
     #[test]
     fn empty_error() {
-        let result = spliced_align(
-            b"",
-            b"ACGT",
-            &dna_scheme(),
-            &SplicedAlignParams::default(),
-        );
+        let result = spliced_align(b"", b"ACGT", &dna_scheme(), &SplicedAlignParams::default());
         assert!(result.is_err());
 
-        let result = spliced_align(
-            b"ACGT",
-            b"",
-            &dna_scheme(),
-            &SplicedAlignParams::default(),
-        );
+        let result = spliced_align(b"ACGT", b"", &dna_scheme(), &SplicedAlignParams::default());
         assert!(result.is_err());
     }
 

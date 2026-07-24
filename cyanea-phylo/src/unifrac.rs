@@ -320,9 +320,7 @@ pub fn unifrac_matrix(
                 UnifracMethod::Unweighted => {
                     unweighted_unifrac(tree, &samples[i].1, &samples[j].1)?
                 }
-                UnifracMethod::Weighted => {
-                    weighted_unifrac(tree, &samples[i].1, &samples[j].1)?
-                }
+                UnifracMethod::Weighted => weighted_unifrac(tree, &samples[i].1, &samples[j].1)?,
                 UnifracMethod::Generalized(alpha) => {
                     generalized_unifrac(tree, &samples[i].1, &samples[j].1, alpha)?
                 }
@@ -342,9 +340,7 @@ pub fn unifrac_matrix(
 
 fn validate_samples(a: &HashMap<String, f64>, b: &HashMap<String, f64>) -> Result<()> {
     if a.is_empty() && b.is_empty() {
-        return Err(CyaneaError::InvalidInput(
-            "both samples are empty".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("both samples are empty".into()));
     }
     Ok(())
 }
@@ -391,12 +387,7 @@ mod tests {
         let taxa: HashSet<String> = ["A", "B", "C", "D"].iter().map(|s| s.to_string()).collect();
         let pd = faiths_pd(&tree, &taxa).unwrap();
         let total = tree.total_branch_length();
-        assert!(
-            (pd - total).abs() < 1e-10,
-            "PD={} total_bl={}",
-            pd,
-            total
-        );
+        assert!((pd - total).abs() < 1e-10, "PD={} total_bl={}", pd, total);
     }
 
     #[test]

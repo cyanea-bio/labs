@@ -66,9 +66,7 @@ fn parse_strand(s: &str) -> Result<Strand> {
     match s {
         "+" => Ok(Strand::Forward),
         "-" => Ok(Strand::Reverse),
-        _ => Err(CyaneaError::Parse(format!(
-            "invalid strand '{s}'"
-        ))),
+        _ => Err(CyaneaError::Parse(format!("invalid strand '{s}'"))),
     }
 }
 
@@ -121,29 +119,29 @@ pub fn parse_chain(input: &str) -> Result<ChainFile> {
 
             // Target = source in our naming (genome we're lifting FROM)
             let source_chrom = fields[2].to_string();
-            let source_size: u64 = fields[3].parse().map_err(|_| {
-                CyaneaError::Parse(format!("invalid source size: {}", fields[3]))
-            })?;
+            let source_size: u64 = fields[3]
+                .parse()
+                .map_err(|_| CyaneaError::Parse(format!("invalid source size: {}", fields[3])))?;
             let source_strand = parse_strand(fields[4])?;
-            let source_start: u64 = fields[5].parse().map_err(|_| {
-                CyaneaError::Parse(format!("invalid source start: {}", fields[5]))
-            })?;
-            let source_end: u64 = fields[6].parse().map_err(|_| {
-                CyaneaError::Parse(format!("invalid source end: {}", fields[6]))
-            })?;
+            let source_start: u64 = fields[5]
+                .parse()
+                .map_err(|_| CyaneaError::Parse(format!("invalid source start: {}", fields[5])))?;
+            let source_end: u64 = fields[6]
+                .parse()
+                .map_err(|_| CyaneaError::Parse(format!("invalid source end: {}", fields[6])))?;
 
             // Query = target in our naming (genome we're lifting TO)
             let target_chrom = fields[7].to_string();
-            let target_size: u64 = fields[8].parse().map_err(|_| {
-                CyaneaError::Parse(format!("invalid target size: {}", fields[8]))
-            })?;
+            let target_size: u64 = fields[8]
+                .parse()
+                .map_err(|_| CyaneaError::Parse(format!("invalid target size: {}", fields[8])))?;
             let target_strand = parse_strand(fields[9])?;
-            let target_start: u64 = fields[10].parse().map_err(|_| {
-                CyaneaError::Parse(format!("invalid target start: {}", fields[10]))
-            })?;
-            let target_end: u64 = fields[11].parse().map_err(|_| {
-                CyaneaError::Parse(format!("invalid target end: {}", fields[11]))
-            })?;
+            let target_start: u64 = fields[10]
+                .parse()
+                .map_err(|_| CyaneaError::Parse(format!("invalid target start: {}", fields[10])))?;
+            let target_end: u64 = fields[11]
+                .parse()
+                .map_err(|_| CyaneaError::Parse(format!("invalid target end: {}", fields[11])))?;
 
             source_offset = source_start;
             target_offset = target_start;
@@ -173,9 +171,9 @@ pub fn parse_chain(input: &str) -> Result<ChainFile> {
                 continue;
             }
 
-            let size: u64 = fields[0].parse().map_err(|_| {
-                CyaneaError::Parse(format!("invalid block size: {}", fields[0]))
-            })?;
+            let size: u64 = fields[0]
+                .parse()
+                .map_err(|_| CyaneaError::Parse(format!("invalid block size: {}", fields[0])))?;
 
             chain.blocks.push(AlignmentBlock {
                 source_start: source_offset,
@@ -185,12 +183,12 @@ pub fn parse_chain(input: &str) -> Result<ChainFile> {
             });
 
             if fields.len() >= 3 {
-                let dt: u64 = fields[1].parse().map_err(|_| {
-                    CyaneaError::Parse(format!("invalid dt: {}", fields[1]))
-                })?;
-                let dq: u64 = fields[2].parse().map_err(|_| {
-                    CyaneaError::Parse(format!("invalid dq: {}", fields[2]))
-                })?;
+                let dt: u64 = fields[1]
+                    .parse()
+                    .map_err(|_| CyaneaError::Parse(format!("invalid dt: {}", fields[1])))?;
+                let dq: u64 = fields[2]
+                    .parse()
+                    .map_err(|_| CyaneaError::Parse(format!("invalid dq: {}", fields[2])))?;
                 source_offset += size + dt;
                 target_offset += size + dq;
             }
@@ -234,15 +232,17 @@ pub fn liftover(
     };
 
     // Find the best chain that overlaps this interval (chains are sorted by score desc)
-    let chain = match chains.iter().find(|c| {
-        c.source_start <= interval.start && c.source_end >= interval.end
-    }) {
+    let chain = match chains
+        .iter()
+        .find(|c| c.source_start <= interval.start && c.source_end >= interval.end)
+    {
         Some(c) => c,
         None => {
             // Try partial overlap with best-scoring chain
-            match chains.iter().find(|c| {
-                c.source_start < interval.end && c.source_end > interval.start
-            }) {
+            match chains
+                .iter()
+                .find(|c| c.source_start < interval.end && c.source_end > interval.start)
+            {
                 Some(c) => c,
                 None => return LiftoverResult::Unmapped,
             }
@@ -491,7 +491,11 @@ chain 2000 chr1 1000 + 100 400 chrA 800 - 300 600 1
     #[test]
     fn test_liftover_batch_consistency() {
         let cf = parse_chain(SIMPLE_CHAIN).unwrap();
-        let intervals = vec![iv("chr1", 150, 250), iv("chr1", 310, 390), iv("chrX", 0, 100)];
+        let intervals = vec![
+            iv("chr1", 150, 250),
+            iv("chr1", 310, 390),
+            iv("chrX", 0, 100),
+        ];
         let results = liftover_batch(&cf, &intervals, 0.95);
         assert_eq!(results.len(), 3);
         assert!(matches!(results[0], LiftoverResult::Mapped(_)));

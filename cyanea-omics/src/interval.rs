@@ -300,11 +300,11 @@ mod tests {
 
     #[test]
     fn test_summary() {
-        let set = IntervalSet::from_intervals(vec![
-            iv("chr1", 100, 200),
-            iv("chr2", 100, 200),
-        ]);
-        assert_eq!(set.summary(), "IntervalSet: 2 intervals across 2 chromosomes");
+        let set = IntervalSet::from_intervals(vec![iv("chr1", 100, 200), iv("chr2", 100, 200)]);
+        assert_eq!(
+            set.summary(),
+            "IntervalSet: 2 intervals across 2 chromosomes"
+        );
     }
 
     #[test]
@@ -363,8 +363,16 @@ mod tests {
         indexed_set.build_index();
 
         let query = iv("chr1", 40, 120);
-        let mut linear_hits: Vec<u64> = linear_set.overlapping(&query).iter().map(|iv| iv.start).collect();
-        let mut indexed_hits: Vec<u64> = indexed_set.overlapping(&query).iter().map(|iv| iv.start).collect();
+        let mut linear_hits: Vec<u64> = linear_set
+            .overlapping(&query)
+            .iter()
+            .map(|iv| iv.start)
+            .collect();
+        let mut indexed_hits: Vec<u64> = indexed_set
+            .overlapping(&query)
+            .iter()
+            .map(|iv| iv.start)
+            .collect();
         linear_hits.sort();
         indexed_hits.sort();
         assert_eq!(linear_hits, indexed_hits);

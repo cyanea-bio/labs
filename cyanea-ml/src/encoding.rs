@@ -135,7 +135,7 @@ mod tests {
     fn label_encode_protein() {
         let enc = label_encode(b"AW", Alphabet::Protein);
         assert_eq!(enc[0], 0.0); // A is first
-        // W is at index 18 in ACDEFGHIKLMNPQRSTVWY
+                                 // W is at index 18 in ACDEFGHIKLMNPQRSTVWY
         assert_eq!(enc[1], 18.0);
     }
 }

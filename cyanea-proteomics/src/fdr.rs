@@ -68,7 +68,9 @@ pub fn estimate_fdr(
     }
 
     // Combine and sort by score descending
-    let mut all: Vec<(&Psm, bool)> = target_psms.iter().map(|p| (p, false))
+    let mut all: Vec<(&Psm, bool)> = target_psms
+        .iter()
+        .map(|p| (p, false))
         .chain(decoy_psms.iter().map(|p| (p, true)))
         .collect();
 
@@ -81,7 +83,9 @@ pub fn estimate_fdr(
             ScoreType::Hyperscore => b.0.hyperscore,
             ScoreType::Xcorr => b.0.xcorr,
         };
-        score_b.partial_cmp(&score_a).unwrap_or(std::cmp::Ordering::Equal)
+        score_b
+            .partial_cmp(&score_a)
+            .unwrap_or(std::cmp::Ordering::Equal)
     });
 
     // Compute FDR at each rank
@@ -140,11 +144,7 @@ pub fn estimate_fdr(
 /// Filter PSMs to a specified FDR level.
 ///
 /// Returns only target PSMs passing the FDR threshold.
-pub fn filter_fdr(
-    target_psms: &[Psm],
-    decoy_psms: &[Psm],
-    fdr_threshold: f64,
-) -> Result<Vec<Psm>> {
+pub fn filter_fdr(target_psms: &[Psm], decoy_psms: &[Psm], fdr_threshold: f64) -> Result<Vec<Psm>> {
     let config = FdrConfig {
         threshold: fdr_threshold,
         ..Default::default()
@@ -152,11 +152,15 @@ pub fn filter_fdr(
 
     let results = estimate_fdr(target_psms, decoy_psms, &config)?;
 
-    let passing: Vec<Psm> = results.iter()
+    let passing: Vec<Psm> = results
+        .iter()
         .filter(|r| r.passes)
         .filter_map(|r| {
-            target_psms.iter()
-                .find(|p| p.spectrum_id == r.spectrum_id && p.peptide_sequence == r.peptide_sequence)
+            target_psms
+                .iter()
+                .find(|p| {
+                    p.spectrum_id == r.spectrum_id && p.peptide_sequence == r.peptide_sequence
+                })
                 .cloned()
         })
         .collect();
@@ -183,14 +187,17 @@ pub struct FdrSummary {
 }
 
 /// Compute FDR summary statistics.
-pub fn fdr_summary(
-    target_psms: &[Psm],
-    decoy_psms: &[Psm],
-) -> Result<FdrSummary> {
-    let config_1 = FdrConfig { threshold: 0.01, ..Default::default() };
+pub fn fdr_summary(target_psms: &[Psm], decoy_psms: &[Psm]) -> Result<FdrSummary> {
+    let config_1 = FdrConfig {
+        threshold: 0.01,
+        ..Default::default()
+    };
     let results_1 = estimate_fdr(target_psms, decoy_psms, &config_1)?;
 
-    let config_5 = FdrConfig { threshold: 0.05, ..Default::default() };
+    let config_5 = FdrConfig {
+        threshold: 0.05,
+        ..Default::default()
+    };
     let results_5 = estimate_fdr(target_psms, decoy_psms, &config_5)?;
 
     let passing_1: Vec<&FdrResult> = results_1.iter().filter(|r| r.passes).collect();
@@ -235,11 +242,12 @@ mod tests {
             make_psm("s4", "DDDK", 20.0),
             make_psm("s5", "EEEK", 10.0),
         ];
-        let decoys = vec![
-            make_psm("d1", "KAAA", 25.0),
-        ];
+        let decoys = vec![make_psm("d1", "KAAA", 25.0)];
 
-        let config = FdrConfig { threshold: 0.05, ..Default::default() };
+        let config = FdrConfig {
+            threshold: 0.05,
+            ..Default::default()
+        };
         let results = estimate_fdr(&targets, &decoys, &config).unwrap();
 
         // At score 50, 40, 30: 0 decoys / 3 targets = 0% FDR
@@ -257,9 +265,7 @@ mod tests {
             make_psm("s2", "BBBK", 40.0),
             make_psm("s3", "CCCK", 30.0),
         ];
-        let decoys = vec![
-            make_psm("d1", "KAAA", 35.0),
-        ];
+        let decoys = vec![make_psm("d1", "KAAA", 35.0)];
 
         let config = FdrConfig::default();
         let results = estimate_fdr(&targets, &decoys, &config).unwrap();
@@ -267,8 +273,12 @@ mod tests {
         // q-values should be monotonically non-decreasing (from top to bottom by score)
         // Actually our q-values go from bottom up as minimum, so they should be non-decreasing
         for i in 1..results.len() {
-            assert!(results[i].q_value >= results[i - 1].q_value - 1e-10,
-                "q-values should be non-decreasing: {} < {}", results[i].q_value, results[i-1].q_value);
+            assert!(
+                results[i].q_value >= results[i - 1].q_value - 1e-10,
+                "q-values should be non-decreasing: {} < {}",
+                results[i].q_value,
+                results[i - 1].q_value
+            );
         }
     }
 
@@ -279,9 +289,7 @@ mod tests {
             make_psm("s2", "BBBK", 40.0),
             make_psm("s3", "CCCK", 5.0),
         ];
-        let decoys = vec![
-            make_psm("d1", "KAAA", 8.0),
-        ];
+        let decoys = vec![make_psm("d1", "KAAA", 8.0)];
 
         let passing = filter_fdr(&targets, &decoys, 0.01).unwrap();
         // Only top 2 should pass (decoy at 8.0 means FDR jumps for score<=8)
@@ -296,12 +304,12 @@ mod tests {
 
     #[test]
     fn test_fdr_no_decoys() {
-        let targets = vec![
-            make_psm("s1", "AAAK", 50.0),
-            make_psm("s2", "BBBK", 40.0),
-        ];
+        let targets = vec![make_psm("s1", "AAAK", 50.0), make_psm("s2", "BBBK", 40.0)];
 
-        let config = FdrConfig { threshold: 0.01, ..Default::default() };
+        let config = FdrConfig {
+            threshold: 0.01,
+            ..Default::default()
+        };
         let results = estimate_fdr(&targets, &[], &config).unwrap();
         // No decoys means FDR=0 everywhere, all should pass
         let passing: Vec<&FdrResult> = results.iter().filter(|r| r.passes).collect();
@@ -316,9 +324,7 @@ mod tests {
             make_psm("s3", "CCCK", 30.0),
             make_psm("s4", "DDDK", 20.0),
         ];
-        let decoys = vec![
-            make_psm("d1", "KAAA", 25.0),
-        ];
+        let decoys = vec![make_psm("d1", "KAAA", 25.0)];
 
         let summary = fdr_summary(&targets, &decoys).unwrap();
         assert_eq!(summary.total_targets, 4);
@@ -328,10 +334,7 @@ mod tests {
 
     #[test]
     fn test_xcorr_scoring() {
-        let targets = vec![
-            make_psm("s1", "AAAK", 50.0),
-            make_psm("s2", "BBBK", 40.0),
-        ];
+        let targets = vec![make_psm("s1", "AAAK", 50.0), make_psm("s2", "BBBK", 40.0)];
         let decoys = vec![];
 
         let config = FdrConfig {

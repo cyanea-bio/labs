@@ -152,15 +152,11 @@ impl DeBruijnGraph {
             }
         }
 
-        let out_degree = |node: &Vec<u8>| -> usize {
-            self.edges.get(node).map_or(0, |v| v.len())
-        };
+        let out_degree = |node: &Vec<u8>| -> usize { self.edges.get(node).map_or(0, |v| v.len()) };
         let in_deg = |node: &Vec<u8>| -> usize { in_degree.get(node).copied().unwrap_or(0) };
 
         // A node is a branching point if in-degree != 1 or out-degree != 1.
-        let is_start = |node: &Vec<u8>| -> bool {
-            in_deg(node) != 1 || out_degree(node) != 1
-        };
+        let is_start = |node: &Vec<u8>| -> bool { in_deg(node) != 1 || out_degree(node) != 1 };
 
         let mut visited: BTreeMap<(Vec<u8>, Vec<u8>), bool> = BTreeMap::new();
         let mut unitigs = Vec::new();
@@ -327,8 +323,7 @@ mod tests {
     #[test]
     fn unitig_coverage_correct() {
         // Feed the same sequence twice — coverage should be 2.0.
-        let graph =
-            DeBruijnGraph::from_sequences(&[b"ACGT", b"ACGT"], 3).unwrap();
+        let graph = DeBruijnGraph::from_sequences(&[b"ACGT", b"ACGT"], 3).unwrap();
         let unitigs = graph.unitigs();
         assert!(!unitigs.is_empty());
         for u in &unitigs {

@@ -529,8 +529,7 @@ pub fn amova(
 
     for _ in 0..n_permutations {
         fisher_yates_shuffle_usize(&mut perm_groups, &mut rng);
-        let (perm_ss_among, perm_ss_within, _) =
-            compute_amova_ss(distances, &perm_groups, n);
+        let (perm_ss_among, perm_ss_within, _) = compute_amova_ss(distances, &perm_groups, n);
         let perm_ms_among = if df_among > 0 {
             perm_ss_among / df_among as f64
         } else {
@@ -566,11 +565,7 @@ pub fn amova(
     })
 }
 
-fn compute_amova_ss(
-    distances: &[Vec<f64>],
-    groups: &[usize],
-    n: usize,
-) -> (f64, f64, f64) {
+fn compute_amova_ss(distances: &[Vec<f64>], groups: &[usize], n: usize) -> (f64, f64, f64) {
     // SSD_total = (1/n) Σ_{i<j} d²_{ij}
     let mut ssd_total = 0.0;
     for i in 0..n {
@@ -981,7 +976,11 @@ mod tests {
     #[test]
     fn mantel_size_mismatch_error() {
         let a = vec![vec![0.0, 1.0], vec![1.0, 0.0]];
-        let b = vec![vec![0.0, 1.0, 2.0], vec![1.0, 0.0, 1.5], vec![2.0, 1.5, 0.0]];
+        let b = vec![
+            vec![0.0, 1.0, 2.0],
+            vec![1.0, 0.0, 1.5],
+            vec![2.0, 1.5, 0.0],
+        ];
         assert!(mantel_test(&a, &b, 99, 42, "pearson").is_err());
     }
 

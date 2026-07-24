@@ -15,7 +15,8 @@ pub fn find_sssr(mol: &Molecule) -> Vec<Vec<usize>> {
 
     // Expected number of rings = bonds - atoms + connected_components
     let num_components = count_components(mol);
-    let expected_rings = mol.bond_count() as isize - mol.atom_count() as isize + num_components as isize;
+    let expected_rings =
+        mol.bond_count() as isize - mol.atom_count() as isize + num_components as isize;
     if expected_rings <= 0 {
         return Vec::new();
     }
@@ -194,12 +195,7 @@ fn normalize_ring(ring: &mut Vec<usize>) {
     }
 
     // Find the position of the minimum element
-    let min_pos = ring
-        .iter()
-        .enumerate()
-        .min_by_key(|&(_, &v)| v)
-        .unwrap()
-        .0;
+    let min_pos = ring.iter().enumerate().min_by_key(|&(_, &v)| v).unwrap().0;
 
     // Rotate so minimum is first
     ring.rotate_left(min_pos);

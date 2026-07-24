@@ -93,8 +93,7 @@ pub fn bootstrap_support(
 
         // Extract bipartitions from the replicate tree.
         let replicate_bps = bipartitions(&replicate_tree);
-        let replicate_set: BTreeSet<&BTreeSet<String>> =
-            replicate_bps.iter().collect();
+        let replicate_set: BTreeSet<&BTreeSet<String>> = replicate_bps.iter().collect();
 
         // Check which original bipartitions are present in this replicate.
         for (i, bp) in original_bps.iter().enumerate() {
@@ -145,7 +144,6 @@ pub fn bipartitions(tree: &PhyloTree) -> Vec<BTreeSet<String>> {
 
     result
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -204,9 +202,8 @@ mod tests {
         let original = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
 
         // A trivial tree builder that always returns the same topology.
-        let builder = |_seqs: &[Vec<u8>]| -> Result<PhyloTree> {
-            PhyloTree::from_newick("((A,B),(C,D));")
-        };
+        let builder =
+            |_seqs: &[Vec<u8>]| -> Result<PhyloTree> { PhyloTree::from_newick("((A,B),(C,D));") };
 
         let support = bootstrap_support(&seq_refs, &original, builder, 100).unwrap();
 
@@ -233,18 +230,13 @@ mod tests {
 
         let original = PhyloTree::from_newick("((A,B),(C,D));").unwrap();
 
-        let builder = |_seqs: &[Vec<u8>]| -> Result<PhyloTree> {
-            PhyloTree::from_newick("((A,B),(C,D));")
-        };
+        let builder =
+            |_seqs: &[Vec<u8>]| -> Result<PhyloTree> { PhyloTree::from_newick("((A,B),(C,D));") };
 
         let support = bootstrap_support(&seq_refs, &original, builder, 50).unwrap();
 
         for &s in &support {
-            assert!(
-                (s - 1.0).abs() < 1e-10,
-                "expected 100% support, got {}",
-                s
-            );
+            assert!((s - 1.0).abs() < 1e-10, "expected 100% support, got {}", s);
         }
     }
 
@@ -252,9 +244,7 @@ mod tests {
     fn bootstrap_empty_sequences_error() {
         let seqs: Vec<&[u8]> = vec![];
         let tree = PhyloTree::from_newick("(A,B);").unwrap();
-        let builder = |_: &[Vec<u8>]| -> Result<PhyloTree> {
-            PhyloTree::from_newick("(A,B);")
-        };
+        let builder = |_: &[Vec<u8>]| -> Result<PhyloTree> { PhyloTree::from_newick("(A,B);") };
         assert!(bootstrap_support(&seqs, &tree, builder, 10).is_err());
     }
 
@@ -268,9 +258,8 @@ mod tests {
         ];
         let seq_refs: Vec<&[u8]> = seqs.iter().map(|s| s.as_slice()).collect();
         let original = PhyloTree::from_newick("((A,B),(C,D));").unwrap();
-        let builder = |_: &[Vec<u8>]| -> Result<PhyloTree> {
-            PhyloTree::from_newick("((A,B),(C,D));")
-        };
+        let builder =
+            |_: &[Vec<u8>]| -> Result<PhyloTree> { PhyloTree::from_newick("((A,B),(C,D));") };
 
         let support = bootstrap_support(&seq_refs, &original, builder, 0).unwrap();
         for &s in &support {
@@ -288,9 +277,7 @@ mod tests {
         ];
         let seq_refs: Vec<&[u8]> = seqs.iter().map(|s| s.as_slice()).collect();
         let original = PhyloTree::from_newick("(A,B,C,D);").unwrap();
-        let builder = |_: &[Vec<u8>]| -> Result<PhyloTree> {
-            PhyloTree::from_newick("(A,B,C,D);")
-        };
+        let builder = |_: &[Vec<u8>]| -> Result<PhyloTree> { PhyloTree::from_newick("(A,B,C,D);") };
 
         let support = bootstrap_support(&seq_refs, &original, builder, 10).unwrap();
         assert!(support.is_empty());

@@ -28,9 +28,7 @@ pub struct AlphaDiversity {
 /// Returns an error if `counts` is empty or all counts are zero.
 pub fn alpha_diversity(counts: &[usize]) -> Result<AlphaDiversity> {
     if counts.is_empty() {
-        return Err(CyaneaError::InvalidInput(
-            "counts must be non-empty".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("counts must be non-empty".into()));
     }
     let n: usize = counts.iter().sum();
     if n == 0 {
@@ -44,7 +42,11 @@ pub fn alpha_diversity(counts: &[usize]) -> Result<AlphaDiversity> {
         simpson: simpson_index(counts)?,
         inverse_simpson: {
             let d = simpson_index(counts)?;
-            if d > 0.0 { 1.0 / d } else { f64::INFINITY }
+            if d > 0.0 {
+                1.0 / d
+            } else {
+                f64::INFINITY
+            }
         },
         chao1: chao1(counts)?,
         observed_species: counts.iter().filter(|&&c| c > 0).count(),
@@ -274,7 +276,11 @@ pub fn jaccard_matrix(samples: &[&[usize]]) -> Result<Vec<Vec<f64>>> {
 pub fn hill_numbers(counts: &[usize], orders: &[f64]) -> Result<Vec<(f64, f64)>> {
     validate_counts(counts)?;
     let n: f64 = counts.iter().sum::<usize>() as f64;
-    let proportions: Vec<f64> = counts.iter().filter(|&&c| c > 0).map(|&c| c as f64 / n).collect();
+    let proportions: Vec<f64> = counts
+        .iter()
+        .filter(|&&c| c > 0)
+        .map(|&c| c as f64 / n)
+        .collect();
 
     let mut result = Vec::with_capacity(orders.len());
     for &q in orders {
@@ -304,10 +310,7 @@ pub fn hill_numbers(counts: &[usize], orders: &[f64]) -> Result<Vec<(f64, f64)>>
 ///
 /// Returns an error if any sample is invalid or any depth exceeds a sample's
 /// total count.
-pub fn alpha_rarefaction(
-    samples: &[&[usize]],
-    depths: &[usize],
-) -> Result<Vec<Vec<(usize, f64)>>> {
+pub fn alpha_rarefaction(samples: &[&[usize]], depths: &[usize]) -> Result<Vec<Vec<(usize, f64)>>> {
     let mut result = Vec::with_capacity(samples.len());
     for (i, sample) in samples.iter().enumerate() {
         let total: usize = sample.iter().sum();
@@ -376,9 +379,7 @@ pub fn rarefaction_curve(counts: &[usize], steps: &[usize]) -> Result<Vec<(usize
 
 fn validate_counts(counts: &[usize]) -> Result<()> {
     if counts.is_empty() {
-        return Err(CyaneaError::InvalidInput(
-            "counts must be non-empty".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("counts must be non-empty".into()));
     }
     let n: usize = counts.iter().sum();
     if n == 0 {
@@ -442,7 +443,12 @@ mod tests {
         let counts = vec![10, 10, 10, 10, 10]; // 5 species, equal abundance
         let h = shannon_index(&counts).unwrap();
         let expected = (5.0f64).ln();
-        assert!((h - expected).abs() < 1e-10, "H={}, expected={}", h, expected);
+        assert!(
+            (h - expected).abs() < 1e-10,
+            "H={}, expected={}",
+            h,
+            expected
+        );
     }
 
     #[test]
@@ -564,7 +570,11 @@ mod tests {
         let result = hill_numbers(&counts, &[2.0]).unwrap();
         // Hill q=2 = 1 / Σ p_i^2 (probability Simpson, not the n(n-1) form)
         let n: f64 = counts.iter().sum::<usize>() as f64;
-        let sum_p2: f64 = counts.iter().filter(|&&c| c > 0).map(|&c| (c as f64 / n).powi(2)).sum();
+        let sum_p2: f64 = counts
+            .iter()
+            .filter(|&&c| c > 0)
+            .map(|&c| (c as f64 / n).powi(2))
+            .sum();
         let expected = 1.0 / sum_p2;
         assert!(
             (result[0].1 - expected).abs() < 1e-8,
@@ -583,7 +593,10 @@ mod tests {
             assert!(
                 w[0].1 >= w[1].1 - 1e-8,
                 "not monotone: q={}: {} > q={}: {}",
-                w[0].0, w[0].1, w[1].0, w[1].1
+                w[0].0,
+                w[0].1,
+                w[1].0,
+                w[1].1
             );
         }
     }

@@ -188,13 +188,13 @@ fn parse_bed_line(line: &str, line_num: usize, path: &Path) -> Result<BedRecord>
         )));
     }
 
-    let name = fields.get(3).and_then(|s| {
-        if *s == "." { None } else { Some(s.to_string()) }
-    });
+    let name = fields
+        .get(3)
+        .and_then(|s| if *s == "." { None } else { Some(s.to_string()) });
 
-    let score = fields.get(4).and_then(|s| {
-        if *s == "." { None } else { s.parse().ok() }
-    });
+    let score = fields
+        .get(4)
+        .and_then(|s| if *s == "." { None } else { s.parse().ok() });
 
     let strand = fields.get(5).map_or(Strand::Unknown, |s| match *s {
         "+" => Strand::Forward,

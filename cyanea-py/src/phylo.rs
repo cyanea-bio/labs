@@ -194,7 +194,11 @@ fn parse_nexus(input: &str) -> PyResult<NexusFile> {
 
 /// Write NEXUS format from taxa and Newick strings.
 #[pyfunction]
-fn write_nexus(taxa: Vec<String>, tree_names: Vec<String>, tree_newicks: Vec<String>) -> PyResult<String> {
+fn write_nexus(
+    taxa: Vec<String>,
+    tree_names: Vec<String>,
+    tree_newicks: Vec<String>,
+) -> PyResult<String> {
     if tree_names.len() != tree_newicks.len() {
         return Err(pyo3::exceptions::PyValueError::new_err(
             "tree_names and tree_newicks must have the same length",
@@ -249,15 +253,36 @@ pub struct PyCoalescentTree {
 /// Models: "jc" (Jukes-Cantor), "k2p" (Kimura 2-parameter, kappa=2.0).
 #[pyfunction]
 #[pyo3(signature = (tree, seq_length, model="jc", seed=42))]
-fn simulate_evolution(tree: &PhyloTree, seq_length: usize, model: &str, seed: u64) -> PyResult<PySimulatedAlignment> {
+fn simulate_evolution(
+    tree: &PhyloTree,
+    seq_length: usize,
+    model: &str,
+    seed: u64,
+) -> PyResult<PySimulatedAlignment> {
     let model_obj: Box<dyn cyanea_phylo::SubstitutionModel> = match model {
         "jc" => Box::new(cyanea_phylo::Jc69Model::new()),
-        "k2p" => Box::new(cyanea_phylo::Hky85Model::new(2.0, [0.25, 0.25, 0.25, 0.25]).into_pyresult()?),
-        _ => return Err(pyo3::exceptions::PyValueError::new_err(format!("unknown model: {model} (expected 'jc' or 'k2p')"))),
+        "k2p" => {
+            Box::new(cyanea_phylo::Hky85Model::new(2.0, [0.25, 0.25, 0.25, 0.25]).into_pyresult()?)
+        }
+        _ => {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "unknown model: {model} (expected 'jc' or 'k2p')"
+            )))
+        }
     };
-    let result = cyanea_phylo::simulate_evolution(&tree.inner, model_obj.as_ref(), seq_length, seed).into_pyresult()?;
-    let sequences = result.sequences.iter().map(|s| String::from_utf8_lossy(s).to_string()).collect();
-    Ok(PySimulatedAlignment { names: result.names, sequences, n_substitutions: result.n_substitutions })
+    let result =
+        cyanea_phylo::simulate_evolution(&tree.inner, model_obj.as_ref(), seq_length, seed)
+            .into_pyresult()?;
+    let sequences = result
+        .sequences
+        .iter()
+        .map(|s| String::from_utf8_lossy(s).to_string())
+        .collect();
+    Ok(PySimulatedAlignment {
+        names: result.names,
+        sequences,
+        n_substitutions: result.n_substitutions,
+    })
 }
 
 /// Simulate a coalescent tree with constant population size.
@@ -266,16 +291,28 @@ fn simulate_evolution(tree: &PhyloTree, seq_length: usize, model: &str, seed: u6
 fn simulate_coalescent(n_samples: usize, pop_size: f64, seed: u64) -> PyResult<PyCoalescentTree> {
     let tree = cyanea_phylo::simulate_coalescent(n_samples, pop_size, seed).into_pyresult()?;
     let newick = cyanea_phylo::write_newick(&tree);
-    Ok(PyCoalescentTree { newick, n_samples: tree.leaf_count() })
+    Ok(PyCoalescentTree {
+        newick,
+        n_samples: tree.leaf_count(),
+    })
 }
 
 /// Simulate a coalescent tree with exponential population growth.
 #[pyfunction]
 #[pyo3(signature = (n_samples, pop_size, growth_rate, seed=42))]
-fn simulate_coalescent_growth(n_samples: usize, pop_size: f64, growth_rate: f64, seed: u64) -> PyResult<PyCoalescentTree> {
-    let tree = cyanea_phylo::simulate_coalescent_growth(n_samples, pop_size, growth_rate, seed).into_pyresult()?;
+fn simulate_coalescent_growth(
+    n_samples: usize,
+    pop_size: f64,
+    growth_rate: f64,
+    seed: u64,
+) -> PyResult<PyCoalescentTree> {
+    let tree = cyanea_phylo::simulate_coalescent_growth(n_samples, pop_size, growth_rate, seed)
+        .into_pyresult()?;
     let newick = cyanea_phylo::write_newick(&tree);
-    Ok(PyCoalescentTree { newick, n_samples: tree.leaf_count() })
+    Ok(PyCoalescentTree {
+        newick,
+        n_samples: tree.leaf_count(),
+    })
 }
 
 // ---------------------------------------------------------------------------

@@ -249,7 +249,11 @@ impl WaveletMatrix {
         }
 
         let n = symbols.len();
-        let num_levels = if sigma <= 1 { 1 } else { (sigma as f64).log2().ceil() as usize };
+        let num_levels = if sigma <= 1 {
+            1
+        } else {
+            (sigma as f64).log2().ceil() as usize
+        };
 
         let mut levels = Vec::with_capacity(num_levels);
         let mut num_zeros = Vec::with_capacity(num_levels);
@@ -541,7 +545,7 @@ mod tests {
         let wm = WaveletMatrix::build(&data, 10).unwrap();
         assert_eq!(wm.select(1, 1), Some(1)); // first 1 at index 1
         assert_eq!(wm.select(1, 2), Some(3)); // second 1 at index 3
-        assert_eq!(wm.select(1, 3), None);    // no third 1
+        assert_eq!(wm.select(1, 3), None); // no third 1
         assert_eq!(wm.select(3, 1), Some(0)); // first 3 at index 0
     }
 

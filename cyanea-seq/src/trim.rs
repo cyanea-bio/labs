@@ -30,10 +30,10 @@
 //! assert!(result.is_some());
 //! ```
 
+use crate::alphabet::DnaAlphabet;
 use crate::fastq::FastqRecord;
 use crate::quality::QualityScores;
 use crate::seq::ValidatedSeq;
-use crate::alphabet::DnaAlphabet;
 use cyanea_core::{Annotated, Sequence};
 
 /// A half-open range `[start, end)` describing which portion of a read to keep.
@@ -104,7 +104,10 @@ pub fn trim_sliding_window(quality: &[u8], window_size: usize, threshold: f64) -
         sum -= quality[i - 1] as u64;
         sum += quality[i + ws - 1] as u64;
         if (sum as f64) < threshold_sum {
-            return TrimRange { start: 0, end: i + ws - 1 };
+            return TrimRange {
+                start: 0,
+                end: i + ws - 1,
+            };
         }
     }
 
@@ -115,7 +118,10 @@ pub fn trim_sliding_window(quality: &[u8], window_size: usize, threshold: f64) -
 ///
 /// Removes consecutive bases from the start that have quality below `threshold`.
 pub fn trim_leading(quality: &[u8], threshold: u8) -> TrimRange {
-    let start = quality.iter().position(|&q| q >= threshold).unwrap_or(quality.len());
+    let start = quality
+        .iter()
+        .position(|&q| q >= threshold)
+        .unwrap_or(quality.len());
     TrimRange {
         start,
         end: quality.len(),
@@ -285,7 +291,11 @@ pub fn trim_adapter(record: &FastqRecord, adapter: &[u8], max_mismatches: usize)
 /// Filter a record by length.
 ///
 /// Returns `None` if the record's length is outside `[min_len, max_len]`.
-pub fn filter_by_length<'a>(record: &'a FastqRecord, min_len: usize, max_len: usize) -> Option<&'a FastqRecord> {
+pub fn filter_by_length<'a>(
+    record: &'a FastqRecord,
+    min_len: usize,
+    max_len: usize,
+) -> Option<&'a FastqRecord> {
     let len = record.sequence().len();
     if len >= min_len && len <= max_len {
         Some(record)
@@ -297,7 +307,10 @@ pub fn filter_by_length<'a>(record: &'a FastqRecord, min_len: usize, max_len: us
 /// Filter a record by low complexity.
 ///
 /// Returns `None` if the Shannon entropy is below `min_entropy`.
-pub fn filter_low_complexity<'a>(record: &'a FastqRecord, min_entropy: f64) -> Option<&'a FastqRecord> {
+pub fn filter_low_complexity<'a>(
+    record: &'a FastqRecord,
+    min_entropy: f64,
+) -> Option<&'a FastqRecord> {
     if shannon_entropy(record.sequence().as_bytes()) >= min_entropy {
         Some(record)
     } else {
@@ -503,7 +516,10 @@ impl TrimPipeline {
                 }
             }
             if best_cut < seq.len() {
-                let range = TrimRange { start: 0, end: best_cut };
+                let range = TrimRange {
+                    start: 0,
+                    end: best_cut,
+                };
                 current = apply_trim(&current, range)?;
             }
         }
@@ -626,7 +642,10 @@ impl TrimPipeline {
         TrimReport {
             kept,
             total_input,
-            total_output: total_input - filtered_by_length - filtered_by_quality - filtered_by_complexity,
+            total_output: total_input
+                - filtered_by_length
+                - filtered_by_quality
+                - filtered_by_complexity,
             filtered_by_length,
             filtered_by_quality,
             filtered_by_complexity,
@@ -665,7 +684,10 @@ impl TrimPipeline {
                 }
             }
             if best_cut < seq.len() {
-                let range = TrimRange { start: 0, end: best_cut };
+                let range = TrimRange {
+                    start: 0,
+                    end: best_cut,
+                };
                 match apply_trim(&current, range) {
                     Some(t) => current = t,
                     None => return Rejection::Trimmed,
@@ -684,7 +706,10 @@ impl TrimPipeline {
             ranges.push(trim_trailing(quality, threshold));
         }
         match &self.quality_trim {
-            QualityTrimAlgo::SlidingWindow { window_size, threshold } => {
+            QualityTrimAlgo::SlidingWindow {
+                window_size,
+                threshold,
+            } => {
                 ranges.push(trim_sliding_window(quality, *window_size, *threshold));
             }
             QualityTrimAlgo::Bwa { threshold } => {
@@ -693,7 +718,10 @@ impl TrimPipeline {
             QualityTrimAlgo::None => {}
         }
         if !ranges.is_empty() {
-            let full = TrimRange { start: 0, end: quality.len() };
+            let full = TrimRange {
+                start: 0,
+                end: quality.len(),
+            };
             ranges.insert(0, full);
             let combined = intersect_ranges(&ranges);
             match apply_trim(&current, combined) {
@@ -705,15 +733,21 @@ impl TrimPipeline {
         // Length filter
         let len = current.sequence().len();
         if let Some(min) = self.min_length {
-            if len < min { return Rejection::Length; }
+            if len < min {
+                return Rejection::Length;
+            }
         }
         if let Some(max) = self.max_length {
-            if len > max { return Rejection::Length; }
+            if len > max {
+                return Rejection::Length;
+            }
         }
 
         // Quality filter
         if let Some(min_q) = self.min_mean_quality {
-            if current.quality().mean() < min_q { return Rejection::Quality; }
+            if current.quality().mean() < min_q {
+                return Rejection::Quality;
+            }
         }
 
         // Complexity filter
@@ -855,10 +889,7 @@ impl TrimPipeline {
     ///
     /// Uses [`OrphanPolicy::DropBoth`] — pairs with a single surviving read
     /// are discarded.
-    pub fn process_paired_batch(
-        &self,
-        pairs: &[PairedFastqRecord],
-    ) -> Vec<PairedFastqRecord> {
+    pub fn process_paired_batch(&self, pairs: &[PairedFastqRecord]) -> Vec<PairedFastqRecord> {
         pairs
             .iter()
             .filter_map(|pair| {
@@ -870,10 +901,7 @@ impl TrimPipeline {
     }
 
     /// Process a batch of pairs and collect detailed statistics.
-    pub fn process_paired_batch_with_stats(
-        &self,
-        pairs: &[PairedFastqRecord],
-    ) -> PairedTrimReport {
+    pub fn process_paired_batch_with_stats(&self, pairs: &[PairedFastqRecord]) -> PairedTrimReport {
         let total_input = pairs.len();
         let mut total_bases_input: u64 = 0;
         let mut total_bases_output: u64 = 0;
@@ -1249,7 +1277,10 @@ mod tests {
         let qual = QualityScores::from_raw(vec![]);
         let r = FastqRecord::new("empty".into(), None, seq, qual).unwrap();
 
-        assert_eq!(trim_sliding_window(&[], 4, 15.0), TrimRange { start: 0, end: 0 });
+        assert_eq!(
+            trim_sliding_window(&[], 4, 15.0),
+            TrimRange { start: 0, end: 0 }
+        );
         assert!(TrimPipeline::new().process(&r).is_some());
     }
 
@@ -1263,7 +1294,10 @@ mod tests {
     #[test]
     fn uniform_quality() {
         let q = &[20, 20, 20, 20, 20];
-        assert_eq!(trim_sliding_window(q, 4, 20.0), TrimRange { start: 0, end: 5 });
+        assert_eq!(
+            trim_sliding_window(q, 4, 20.0),
+            TrimRange { start: 0, end: 5 }
+        );
         assert_eq!(trim_leading(q, 20), TrimRange { start: 0, end: 5 });
         assert_eq!(trim_trailing(q, 20), TrimRange { start: 0, end: 5 });
     }
@@ -1337,12 +1371,7 @@ mod paired_tests {
         FastqRecord::new("test".into(), None, sequence, quality).unwrap()
     }
 
-    fn make_pair(
-        seq1: &[u8],
-        quals1: &[u8],
-        seq2: &[u8],
-        quals2: &[u8],
-    ) -> PairedFastqRecord {
+    fn make_pair(seq1: &[u8], quals1: &[u8], seq2: &[u8], quals2: &[u8]) -> PairedFastqRecord {
         PairedFastqRecord::new_unchecked(make_record(seq1, quals1), make_record(seq2, quals2))
     }
 

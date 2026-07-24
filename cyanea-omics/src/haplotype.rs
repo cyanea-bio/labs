@@ -81,9 +81,7 @@ pub fn phase_em(genotypes: &[Vec<u8>], max_iter: usize) -> Result<PhasedGenotype
     let n_haplotypes = 1usize << n_snps;
     let all_haps: Vec<Haplotype> = (0..n_haplotypes)
         .map(|i| {
-            let alleles = (0..n_snps)
-                .map(|bit| ((i >> bit) & 1) as u8)
-                .collect();
+            let alleles = (0..n_snps).map(|bit| ((i >> bit) & 1) as u8).collect();
             Haplotype { alleles }
         })
         .collect();
@@ -126,7 +124,11 @@ pub fn phase_em(genotypes: &[Vec<u8>], max_iter: usize) -> Result<PhasedGenotype
                 .iter()
                 .map(|&(hi, hj)| {
                     let f = freqs[hi] * freqs[hj];
-                    if hi != hj { 2.0 * f } else { f }
+                    if hi != hj {
+                        2.0 * f
+                    } else {
+                        f
+                    }
                 })
                 .collect();
 
@@ -186,10 +188,18 @@ pub fn phase_em(genotypes: &[Vec<u8>], max_iter: usize) -> Result<PhasedGenotype
                 .iter()
                 .map(|&(hi, hj)| {
                     let f = freqs[hi] * freqs[hj];
-                    if hi != hj { 2.0 * f } else { f }
+                    if hi != hj {
+                        2.0 * f
+                    } else {
+                        f
+                    }
                 })
                 .sum();
-            if p > 0.0 { p.ln() } else { 0.0 }
+            if p > 0.0 {
+                p.ln()
+            } else {
+                0.0
+            }
         })
         .sum();
 
@@ -218,10 +228,7 @@ pub fn phase_em(genotypes: &[Vec<u8>], max_iter: usize) -> Result<PhasedGenotype
 /// # Errors
 ///
 /// Returns an error if genotypes is empty or threshold is not in [0, 1].
-pub fn haplotype_blocks(
-    genotypes: &[Vec<u8>],
-    threshold: f64,
-) -> Result<Vec<HaplotypeBlock>> {
+pub fn haplotype_blocks(genotypes: &[Vec<u8>], threshold: f64) -> Result<Vec<HaplotypeBlock>> {
     if genotypes.is_empty() {
         return Err(CyaneaError::InvalidInput(
             "at least one sample is required".into(),
@@ -285,7 +292,10 @@ pub fn haplotype_diversity(haplotypes: &[&Haplotype]) -> f64 {
     // Count frequency of each distinct haplotype.
     let mut freq_map: Vec<(&Haplotype, usize)> = Vec::new();
     for &h in haplotypes {
-        if let Some(entry) = freq_map.iter_mut().find(|(hap, _)| hap.alleles == h.alleles) {
+        if let Some(entry) = freq_map
+            .iter_mut()
+            .find(|(hap, _)| hap.alleles == h.alleles)
+        {
             entry.1 += 1;
         } else {
             freq_map.push((h, 1));
@@ -418,7 +428,9 @@ mod tests {
     #[test]
     fn haplotype_diversity_single() {
         // All identical haplotypes → diversity = 0.
-        let h = Haplotype { alleles: vec![0, 1] };
+        let h = Haplotype {
+            alleles: vec![0, 1],
+        };
         let haps = vec![&h, &h, &h];
         assert!((haplotype_diversity(&haps) - 0.0).abs() < 1e-10);
     }

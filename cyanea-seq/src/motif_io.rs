@@ -101,10 +101,8 @@ pub fn parse_meme(input: &str) -> Result<Vec<Motif>> {
                 if rline.is_empty() || rline.starts_with("MOTIF") || rline.starts_with("URL") {
                     break;
                 }
-                let vals: std::result::Result<Vec<f64>, _> = rline
-                    .split_whitespace()
-                    .map(|s| s.parse::<f64>())
-                    .collect();
+                let vals: std::result::Result<Vec<f64>, _> =
+                    rline.split_whitespace().map(|s| s.parse::<f64>()).collect();
                 match vals {
                     Ok(v) if v.len() == 4 => {
                         matrix.push([v[0], v[1], v[2], v[3]]);
@@ -200,11 +198,7 @@ pub fn parse_transfac(input: &str) -> Result<Vec<Motif>> {
 
         if trimmed.starts_with("ID") {
             // Start of a new record.
-            name = trimmed
-                .strip_prefix("ID")
-                .unwrap()
-                .trim()
-                .to_string();
+            name = trimmed.strip_prefix("ID").unwrap().trim().to_string();
             metadata.clear();
             matrix.clear();
             in_matrix = false;
@@ -361,10 +355,8 @@ pub fn parse_jaspar(input: &str) -> Result<Vec<Motif>> {
                 })?;
 
                 let inner = &rline[bracket_start + 1..bracket_end];
-                let vals: std::result::Result<Vec<f64>, _> = inner
-                    .split_whitespace()
-                    .map(|s| s.parse::<f64>())
-                    .collect();
+                let vals: std::result::Result<Vec<f64>, _> =
+                    inner.split_whitespace().map(|s| s.parse::<f64>()).collect();
                 match vals {
                     Ok(v) => raw_rows.push(v),
                     Err(e) => {
@@ -436,7 +428,11 @@ pub fn write_jaspar(motifs: &[Motif]) -> String {
 
     for motif in motifs {
         // Header line.
-        let desc = motif.metadata.get("description").map(|s| s.as_str()).unwrap_or("");
+        let desc = motif
+            .metadata
+            .get("description")
+            .map(|s| s.as_str())
+            .unwrap_or("");
         if desc.is_empty() {
             out.push_str(&format!(">{}\n", motif.name));
         } else {
@@ -602,13 +598,7 @@ mod tests {
     // 2. TRANSFAC round-trip
     #[test]
     fn transfac_round_trip() {
-        let motif = sample_motif(
-            "TF_MOTIF",
-            vec![
-                [0.5, 0.2, 0.2, 0.1],
-                [0.1, 0.6, 0.2, 0.1],
-            ],
-        );
+        let motif = sample_motif("TF_MOTIF", vec![[0.5, 0.2, 0.2, 0.1], [0.1, 0.6, 0.2, 0.1]]);
         let written = write_transfac(&[motif]);
         let parsed = parse_transfac(&written).unwrap();
         assert_eq!(parsed.len(), 1);

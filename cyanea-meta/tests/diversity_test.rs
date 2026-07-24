@@ -1,8 +1,5 @@
 /// Integration tests for diversity module.
-
-use cyanea_meta::diversity::{
-    alpha_diversity, beta_diversity_matrix, rarefaction_curve, rarefy,
-};
+use cyanea_meta::diversity::{alpha_diversity, beta_diversity_matrix, rarefaction_curve, rarefy};
 
 #[test]
 fn alpha_diversity_basic() {

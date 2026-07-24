@@ -153,7 +153,14 @@ pub fn call_star_alleles(
     // Build set of observed variant keys
     let observed: HashSet<(String, u64, Vec<u8>, Vec<u8>)> = variants
         .iter()
-        .map(|v| (v.chrom.clone(), v.position, v.ref_allele.clone(), v.alt_alleles[0].clone()))
+        .map(|v| {
+            (
+                v.chrom.clone(),
+                v.position,
+                v.ref_allele.clone(),
+                v.alt_alleles[0].clone(),
+            )
+        })
         .collect();
 
     // Score each allele by how many defining variants match
@@ -323,12 +330,30 @@ mod tests {
 
     #[test]
     fn test_activity_to_phenotype() {
-        assert_eq!(activity_to_phenotype(0.0), MetabolizerPhenotype::PoorMetabolizer);
-        assert_eq!(activity_to_phenotype(0.5), MetabolizerPhenotype::IntermediateMetabolizer);
-        assert_eq!(activity_to_phenotype(1.5), MetabolizerPhenotype::NormalMetabolizer);
-        assert_eq!(activity_to_phenotype(2.0), MetabolizerPhenotype::NormalMetabolizer);
-        assert_eq!(activity_to_phenotype(2.1), MetabolizerPhenotype::RapidMetabolizer);
-        assert_eq!(activity_to_phenotype(3.0), MetabolizerPhenotype::UltrarapidMetabolizer);
+        assert_eq!(
+            activity_to_phenotype(0.0),
+            MetabolizerPhenotype::PoorMetabolizer
+        );
+        assert_eq!(
+            activity_to_phenotype(0.5),
+            MetabolizerPhenotype::IntermediateMetabolizer
+        );
+        assert_eq!(
+            activity_to_phenotype(1.5),
+            MetabolizerPhenotype::NormalMetabolizer
+        );
+        assert_eq!(
+            activity_to_phenotype(2.0),
+            MetabolizerPhenotype::NormalMetabolizer
+        );
+        assert_eq!(
+            activity_to_phenotype(2.1),
+            MetabolizerPhenotype::RapidMetabolizer
+        );
+        assert_eq!(
+            activity_to_phenotype(3.0),
+            MetabolizerPhenotype::UltrarapidMetabolizer
+        );
     }
 
     #[test]
@@ -345,9 +370,7 @@ mod tests {
     fn test_call_star_alleles_poor_metabolizer() {
         let db = demo_cyp2d6_database();
         // CYP2D6*4 homozygous → PM (but we only get one allele from simple matching)
-        let variants = vec![
-            make_variant("chr22", 42128945, b"C", b"T"),
-        ];
+        let variants = vec![make_variant("chr22", 42128945, b"C", b"T")];
         let result = call_star_alleles("CYP2D6", &variants, &db).unwrap();
         assert!(result.diplotype.contains("*4"));
     }

@@ -41,9 +41,7 @@ pub struct AssemblyStats {
 /// Returns an error if contigs is empty.
 pub fn assembly_stats(contigs: &[&[u8]]) -> Result<AssemblyStats> {
     if contigs.is_empty() {
-        return Err(MetaError::Binning(
-            "at least one contig required".into(),
-        ));
+        return Err(MetaError::Binning("at least one contig required".into()));
     }
 
     let mut lengths: Vec<usize> = contigs.iter().map(|c| c.len()).collect();
@@ -91,11 +89,7 @@ pub fn assembly_stats(contigs: &[&[u8]]) -> Result<AssemblyStats> {
     let (n90, l90) = compute_nx(&lengths, total_length, 0.9);
 
     // Area under Nx curve
-    let au_n: f64 = lengths
-        .iter()
-        .map(|&l| (l as f64).powi(2))
-        .sum::<f64>()
-        / total_length as f64;
+    let au_n: f64 = lengths.iter().map(|&l| (l as f64).powi(2)).sum::<f64>() / total_length as f64;
 
     Ok(AssemblyStats {
         n_contigs,
@@ -123,9 +117,7 @@ pub fn assembly_stats(contigs: &[&[u8]]) -> Result<AssemblyStats> {
 /// Returns an error if contigs is empty or x is not in (0, 1].
 pub fn nx_values(contigs: &[&[u8]], x: f64) -> Result<(usize, usize)> {
     if contigs.is_empty() {
-        return Err(MetaError::Binning(
-            "at least one contig required".into(),
-        ));
+        return Err(MetaError::Binning("at least one contig required".into()));
     }
 
     if x <= 0.0 || x > 1.0 {
@@ -168,9 +160,7 @@ fn compute_nx(lengths: &[usize], total: usize, x: f64) -> (usize, usize) {
 /// Returns an error if contigs is empty.
 pub fn coverage_depth(contigs: &[&[u8]], _reads_per_contig: &[usize]) -> Result<Vec<f64>> {
     if contigs.is_empty() {
-        return Err(MetaError::Binning(
-            "at least one contig required".into(),
-        ));
+        return Err(MetaError::Binning("at least one contig required".into()));
     }
 
     // Placeholder: return uniform depth

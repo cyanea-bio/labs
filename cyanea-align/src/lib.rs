@@ -14,50 +14,50 @@
 //! assert_eq!(result.score, 8);
 //! ```
 
-pub mod types;
-pub mod cigar;
-pub mod scoring;
-pub mod needleman_wunsch;
-pub mod smith_waterman;
-pub mod semi_global;
 pub mod batch;
+pub mod cigar;
+pub mod lcsk;
+pub mod minimizers;
+pub mod msa;
+pub mod needleman_wunsch;
+pub mod pair_hmm;
+pub mod poa;
+pub mod profile_hmm;
+pub mod scoring;
+pub mod seed_extend;
+pub mod semi_global;
 pub mod simd;
 pub mod simd_sw;
-pub mod msa;
-pub mod poa;
-pub mod minimizers;
-pub mod seed_extend;
-pub mod wfa;
-pub mod lcsk;
-pub mod pair_hmm;
-pub mod profile_hmm;
+pub mod smith_waterman;
 pub mod spliced;
+pub mod types;
+pub mod wfa;
 pub mod xdrop;
 
 pub mod gpu;
 
-pub use types::{AlignmentMode, AlignmentResult, CigarOp};
-pub use scoring::{ScoringMatrix, ScoringScheme, SubstitutionMatrix};
-pub use needleman_wunsch::needleman_wunsch;
-pub use smith_waterman::smith_waterman;
-pub use semi_global::semi_global;
 pub use batch::align_batch;
-pub use simd_sw::{sw_simd_score, sw_scalar_score};
-pub use minimizers::{minimizers, find_seed_matches, Minimizer};
-pub use seed_extend::{seed_extend_align, chain_seeds, Seed, SeedChain};
-pub use wfa::wfa_align;
-pub use lcsk::{sparse_align, find_kmer_matches, lcsk_plusplus, SparseAlignResult};
-pub use poa::{PoaGraph, PoaScoring};
+pub use lcsk::{find_kmer_matches, lcsk_plusplus, sparse_align, SparseAlignResult};
+pub use minimizers::{find_seed_matches, minimizers, Minimizer};
+pub use needleman_wunsch::needleman_wunsch;
 pub use pair_hmm::{
     pair_hmm_forward, pair_hmm_viterbi, PairHmmAlignment, PairHmmParams, PairHmmState,
 };
+pub use poa::{PoaGraph, PoaScoring};
 pub use profile_hmm::{
     Alphabet, GumbelParams, ProfileHmm, ProfileHmmConfig, ProfileHmmResult, ProfileHmmState,
 };
+pub use scoring::{ScoringMatrix, ScoringScheme, SubstitutionMatrix};
+pub use seed_extend::{chain_seeds, seed_extend_align, Seed, SeedChain};
+pub use semi_global::semi_global;
+pub use simd_sw::{sw_scalar_score, sw_simd_score};
+pub use smith_waterman::smith_waterman;
 pub use spliced::{
     chain_exons, detect_splice_site, spliced_align, ExonAlignment, SpliceSiteType,
     SplicedAlignParams, SplicedAlignResult,
 };
+pub use types::{AlignmentMode, AlignmentResult, CigarOp};
+pub use wfa::wfa_align;
 pub use xdrop::{
     xdrop_extend_left, xdrop_extend_right, xdrop_seed_extend, zdrop_extend_left,
     zdrop_extend_right, zdrop_seed_extend, ExtensionResult, XDropParams, ZDropParams,
@@ -133,7 +133,10 @@ mod proptests {
     use proptest::prelude::*;
 
     fn dna_seq(max_len: usize) -> impl Strategy<Value = Vec<u8>> {
-        proptest::collection::vec(prop_oneof![Just(b'A'), Just(b'C'), Just(b'G'), Just(b'T')], 1..=max_len)
+        proptest::collection::vec(
+            prop_oneof![Just(b'A'), Just(b'C'), Just(b'G'), Just(b'T')],
+            1..=max_len,
+        )
     }
 
     proptest! {

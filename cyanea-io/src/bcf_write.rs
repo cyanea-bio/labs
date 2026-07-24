@@ -237,11 +237,14 @@ fn bgzf_compress_all(data: &[u8]) -> Result<Vec<u8>> {
 
     // EOF block
     let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
-    encoder.write_all(&[]).map_err(|e| {
-        CyaneaError::Io(std::io::Error::new(e.kind(), format!("BGZF EOF: {e}")))
-    })?;
+    encoder
+        .write_all(&[])
+        .map_err(|e| CyaneaError::Io(std::io::Error::new(e.kind(), format!("BGZF EOF: {e}"))))?;
     let eof_cdata = encoder.finish().map_err(|e| {
-        CyaneaError::Io(std::io::Error::new(e.kind(), format!("BGZF EOF finish: {e}")))
+        CyaneaError::Io(std::io::Error::new(
+            e.kind(),
+            format!("BGZF EOF finish: {e}"),
+        ))
     })?;
     write_bgzf_block(&mut output, &eof_cdata, &[]);
 

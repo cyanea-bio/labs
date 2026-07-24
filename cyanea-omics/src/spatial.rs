@@ -86,7 +86,11 @@ impl Xorshift64 {
     fn new(seed: u64) -> Self {
         // Avoid zero state.
         Self {
-            state: if seed == 0 { 0x5EED_DEAD_BEEF_CAFE } else { seed },
+            state: if seed == 0 {
+                0x5EED_DEAD_BEEF_CAFE
+            } else {
+                seed
+            },
         }
     }
 
@@ -155,39 +159,27 @@ struct Triangle {
 }
 
 /// Circumcircle: center (cx, cy) and radius squared.
-fn circumcircle(
-    ax: f64,
-    ay: f64,
-    bx: f64,
-    by: f64,
-    cx: f64,
-    cy: f64,
-) -> (f64, f64, f64) {
+fn circumcircle(ax: f64, ay: f64, bx: f64, by: f64, cx: f64, cy: f64) -> (f64, f64, f64) {
     let d = 2.0 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
     if d.abs() < 1e-20 {
         // Degenerate — return huge radius.
         return (0.0, 0.0, f64::MAX);
     }
-    let ux =
-        ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d;
-    let uy =
-        ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d;
+    let ux = ((ax * ax + ay * ay) * (by - cy)
+        + (bx * bx + by * by) * (cy - ay)
+        + (cx * cx + cy * cy) * (ay - by))
+        / d;
+    let uy = ((ax * ax + ay * ay) * (cx - bx)
+        + (bx * bx + by * by) * (ax - cx)
+        + (cx * cx + cy * cy) * (bx - ax))
+        / d;
     let r2 = (ax - ux).powi(2) + (ay - uy).powi(2);
     (ux, uy, r2)
 }
 
 /// Check if point (px, py) lies inside the circumcircle of the triangle
 /// defined by the three coordinate pairs.
-fn in_circumcircle(
-    ax: f64,
-    ay: f64,
-    bx: f64,
-    by: f64,
-    cx: f64,
-    cy: f64,
-    px: f64,
-    py: f64,
-) -> bool {
+fn in_circumcircle(ax: f64, ay: f64, bx: f64, by: f64, cx: f64, cy: f64, px: f64, py: f64) -> bool {
     let (ux, uy, r2) = circumcircle(ax, ay, bx, by, cx, cy);
     let dist2 = (px - ux).powi(2) + (py - uy).powi(2);
     dist2 < r2
@@ -227,7 +219,9 @@ pub fn delaunay_neighbors(points: &[SpatialPoint]) -> Result<SpatialGraph> {
     let st_b = n + 1;
     let st_c = n + 2;
 
-    let mut triangles: Vec<Triangle> = vec![Triangle { v: [st_a, st_b, st_c] }];
+    let mut triangles: Vec<Triangle> = vec![Triangle {
+        v: [st_a, st_b, st_c],
+    }];
 
     for i in 0..n {
         let px = xs[i];
@@ -248,7 +242,11 @@ pub fn delaunay_neighbors(points: &[SpatialPoint]) -> Result<SpatialGraph> {
             let v = triangles[ti].v;
             let edges = [[v[0], v[1]], [v[1], v[2]], [v[2], v[0]]];
             for e in &edges {
-                let key = if e[0] < e[1] { [e[0], e[1]] } else { [e[1], e[0]] };
+                let key = if e[0] < e[1] {
+                    [e[0], e[1]]
+                } else {
+                    [e[1], e[0]]
+                };
                 if let Some(entry) = edge_count.iter_mut().find(|(k, _)| *k == key) {
                     entry.1 += 1;
                 } else {
@@ -276,9 +274,7 @@ pub fn delaunay_neighbors(points: &[SpatialPoint]) -> Result<SpatialGraph> {
     }
 
     // Remove triangles that share a vertex with the super-triangle.
-    triangles.retain(|tri| {
-        !tri.v.iter().any(|&v| v == st_a || v == st_b || v == st_c)
-    });
+    triangles.retain(|tri| !tri.v.iter().any(|&v| v == st_a || v == st_b || v == st_c));
 
     // Build the neighbor graph from remaining triangles.
     let mut neighbors: Vec<Vec<(usize, f64)>> = vec![Vec::new(); n];
@@ -300,7 +296,10 @@ pub fn delaunay_neighbors(points: &[SpatialPoint]) -> Result<SpatialGraph> {
         add_edge(b, c);
     }
 
-    Ok(SpatialGraph { n_nodes: n, neighbors })
+    Ok(SpatialGraph {
+        n_nodes: n,
+        neighbors,
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -353,7 +352,10 @@ pub fn knn_spatial_neighbors(points: &[SpatialPoint], k: usize) -> Result<Spatia
         }
     }
 
-    Ok(SpatialGraph { n_nodes: n, neighbors })
+    Ok(SpatialGraph {
+        n_nodes: n,
+        neighbors,
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -557,8 +559,7 @@ pub fn gearys_c(values: &[f64], graph: &SpatialGraph) -> Result<GearysC> {
         let t2 = (nf - 1.0) * (nf - 2.0) * (nf - 3.0);
         let normal_var = t1 / (2.0 * (nf + 1.0) * w2);
         // Adjust with kurtosis.
-        let _adj = ((nf - 1.0) * s1 * (nf * nf - 3.0 * nf + 3.0 - (nf - 1.0) * b2))
-            / (t2 * w2);
+        let _adj = ((nf - 1.0) * s1 * (nf * nf - 3.0 * nf + 3.0 - (nf - 1.0) * b2)) / (t2 * w2);
         let _adj2 = ((nf - 1.0) * s2 * (nf * nf + 3.0 * nf - 6.0 - (nf * nf - nf + 2.0) * b2))
             / (4.0 * t2 * w2);
         let _adj3 = (w2 * (nf * nf - 3.0 - (nf - 1.0).powi(2) * b2)) / (t2 * w2);
@@ -642,8 +643,7 @@ pub fn cooccurrence(
             let observed = edges
                 .iter()
                 .filter(|&&(i, j)| {
-                    (expressed[a][i] && expressed[b][j])
-                        || (expressed[a][j] && expressed[b][i])
+                    (expressed[a][i] && expressed[b][j]) || (expressed[a][j] && expressed[b][i])
                 })
                 .count();
 
@@ -823,7 +823,8 @@ mod tests {
         assert_eq!(graph.n_nodes, 4);
         // Total edges: 2 triangles share 1 edge → 5 undirected edges, or
         // 4 outer + 1 diagonal = 5.
-        let total_undirected_edges: usize = graph.neighbors.iter().map(|nb| nb.len()).sum::<usize>() / 2;
+        let total_undirected_edges: usize =
+            graph.neighbors.iter().map(|nb| nb.len()).sum::<usize>() / 2;
         assert!(
             total_undirected_edges >= 4 && total_undirected_edges <= 6,
             "expected 4-6 undirected edges, got {}",
@@ -872,10 +873,14 @@ mod tests {
                     continue;
                 }
                 let inside = in_circumcircle(
-                    points[a].x, points[a].y,
-                    points[b].x, points[b].y,
-                    points[c].x, points[c].y,
-                    points[p].x, points[p].y,
+                    points[a].x,
+                    points[a].y,
+                    points[b].x,
+                    points[b].y,
+                    points[c].x,
+                    points[c].y,
+                    points[p].x,
+                    points[p].y,
                 );
                 assert!(
                     !inside,
@@ -957,7 +962,10 @@ mod tests {
             }
         }
 
-        let graph = SpatialGraph { n_nodes: n, neighbors };
+        let graph = SpatialGraph {
+            n_nodes: n,
+            neighbors,
+        };
         (points, graph)
     }
 
@@ -967,8 +975,7 @@ mod tests {
         let (_pts, graph) = grid_graph(4, 4);
         // Clustered: top-left is high, bottom-right is low.
         let values = vec![
-            10.0, 10.0, 9.0, 9.0, 10.0, 10.0, 9.0, 9.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0,
-            2.0,
+            10.0, 10.0, 9.0, 9.0, 10.0, 10.0, 9.0, 9.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0,
         ];
         let result = morans_i(&values, &graph).unwrap();
         assert!(
@@ -984,11 +991,8 @@ mod tests {
         let (_pts, graph) = grid_graph(5, 5);
         // Use a larger grid and shuffled values so spatial autocorrelation is weak.
         let values = vec![
-            12.0, 5.0, 18.0, 3.0, 15.0,
-            9.0, 22.0, 1.0, 14.0, 7.0,
-            20.0, 4.0, 16.0, 8.0, 11.0,
-            2.0, 17.0, 6.0, 23.0, 10.0,
-            13.0, 19.0, 24.0, 21.0, 25.0,
+            12.0, 5.0, 18.0, 3.0, 15.0, 9.0, 22.0, 1.0, 14.0, 7.0, 20.0, 4.0, 16.0, 8.0, 11.0, 2.0,
+            17.0, 6.0, 23.0, 10.0, 13.0, 19.0, 24.0, 21.0, 25.0,
         ];
         let result = morans_i(&values, &graph).unwrap();
         // For shuffled data on a grid, Moran's I should be modest in magnitude.
@@ -1025,8 +1029,7 @@ mod tests {
     fn test_gearys_c_clustered() {
         let (_pts, graph) = grid_graph(4, 4);
         let values = vec![
-            10.0, 10.0, 9.0, 9.0, 10.0, 10.0, 9.0, 9.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0,
-            2.0,
+            10.0, 10.0, 9.0, 9.0, 10.0, 10.0, 9.0, 9.0, 1.0, 1.0, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0,
         ];
         let result = gearys_c(&values, &graph).unwrap();
         assert!(
@@ -1112,16 +1115,8 @@ mod tests {
         // (spatially adjacent on the grid).
         let ligand = vec![10.0, 0.0, 0.0, 10.0, 0.0, 0.0, 10.0, 0.0, 0.0];
         let receptor = vec![0.0, 10.0, 0.0, 0.0, 10.0, 0.0, 0.0, 10.0, 0.0];
-        let result = ligand_receptor_score(
-            &ligand,
-            &receptor,
-            &graph,
-            "WNT3A",
-            "FZD1",
-            500,
-            42,
-        )
-        .unwrap();
+        let result =
+            ligand_receptor_score(&ligand, &receptor, &graph, "WNT3A", "FZD1", 500, 42).unwrap();
         assert!(
             result.interaction_score > 0.0,
             "ligand-receptor score should be positive, got {}",
@@ -1148,16 +1143,8 @@ mod tests {
                 }
             }
         }
-        let result = ligand_receptor_score(
-            &ligand,
-            &receptor,
-            &graph,
-            "CXCL12",
-            "CXCR4",
-            999,
-            77,
-        )
-        .unwrap();
+        let result =
+            ligand_receptor_score(&ligand, &receptor, &graph, "CXCL12", "CXCR4", 999, 77).unwrap();
         // p-value should be between 0 and 1 and on the smaller side since
         // the spatial arrangement is structured.
         assert!(

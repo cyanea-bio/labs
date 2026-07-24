@@ -83,9 +83,7 @@ fn bench_gc_content(c: &mut Criterion) {
     let mut group = c.benchmark_group("gc_content");
 
     let seq_10k = DnaSequence::new(&random_dna(10_000)).unwrap();
-    group.bench_function("10kb", |b| {
-        b.iter(|| black_box(&seq_10k).gc_content())
-    });
+    group.bench_function("10kb", |b| b.iter(|| black_box(&seq_10k).gc_content()));
 
     group.finish();
 }
@@ -105,5 +103,11 @@ fn bench_kmer(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_fasta_parse, bench_fastq_parse, bench_gc_content, bench_kmer);
+criterion_group!(
+    benches,
+    bench_fasta_parse,
+    bench_fastq_parse,
+    bench_gc_content,
+    bench_kmer
+);
 criterion_main!(benches);

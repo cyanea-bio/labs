@@ -38,10 +38,7 @@ impl IndexedBamReader {
     }
 
     /// Open a BAM file with an explicitly specified index path.
-    pub fn open_with_index(
-        bam_path: impl AsRef<Path>,
-        bai_path: impl AsRef<Path>,
-    ) -> Result<Self> {
+    pub fn open_with_index(bam_path: impl AsRef<Path>, bai_path: impl AsRef<Path>) -> Result<Self> {
         let bam_path = bam_path.as_ref();
         let bai_path = bai_path.as_ref();
 
@@ -65,13 +62,11 @@ impl IndexedBamReader {
     }
 
     fn from_reader(
-        mut reader: noodles_bam_crate::io::IndexedReader<
-            noodles_bgzf::Reader<std::fs::File>,
-        >,
+        mut reader: noodles_bam_crate::io::IndexedReader<noodles_bgzf::Reader<std::fs::File>>,
     ) -> Result<Self> {
-        let header = reader.read_header().map_err(|e| {
-            CyaneaError::Parse(format!("failed to read BAM header: {e}"))
-        })?;
+        let header = reader
+            .read_header()
+            .map_err(|e| CyaneaError::Parse(format!("failed to read BAM header: {e}")))?;
 
         Ok(Self { reader, header })
     }
@@ -85,18 +80,13 @@ impl IndexedBamReader {
             .reference_sequences()
             .get_index_of(&chrom.as_bytes()[..])
             .ok_or_else(|| {
-                CyaneaError::InvalidInput(format!(
-                    "chromosome '{}' not found in BAM header",
-                    chrom
-                ))
+                CyaneaError::InvalidInput(format!("chromosome '{}' not found in BAM header", chrom))
             })?;
 
-        let start_pos = noodles_core::Position::try_from((start + 1) as usize).map_err(|_| {
-            CyaneaError::InvalidInput(format!("invalid start position: {}", start))
-        })?;
-        let end_pos = noodles_core::Position::try_from(end as usize).map_err(|_| {
-            CyaneaError::InvalidInput(format!("invalid end position: {}", end))
-        })?;
+        let start_pos = noodles_core::Position::try_from((start + 1) as usize)
+            .map_err(|_| CyaneaError::InvalidInput(format!("invalid start position: {}", start)))?;
+        let end_pos = noodles_core::Position::try_from(end as usize)
+            .map_err(|_| CyaneaError::InvalidInput(format!("invalid end position: {}", end)))?;
 
         let region = noodles_core::Region::new(chrom, start_pos..=end_pos);
 
@@ -107,9 +97,8 @@ impl IndexedBamReader {
 
         let mut records = Vec::new();
         for result in query {
-            let noodles_rec = result.map_err(|e| {
-                CyaneaError::Parse(format!("error reading BAM record: {e}"))
-            })?;
+            let noodles_rec =
+                result.map_err(|e| CyaneaError::Parse(format!("error reading BAM record: {e}")))?;
 
             let sam = convert_noodles_record(&noodles_rec, &self.header)?;
             records.push(sam);
@@ -149,9 +138,9 @@ pub fn create_bai_index(bam_path: &Path, bai_path: &Path) -> Result<()> {
     })?;
 
     let mut reader = noodles_bam_crate::io::Reader::new(file);
-    let header = reader.read_header().map_err(|e| {
-        CyaneaError::Parse(format!("failed to read BAM header: {e}"))
-    })?;
+    let header = reader
+        .read_header()
+        .map_err(|e| CyaneaError::Parse(format!("failed to read BAM header: {e}")))?;
 
     let mut indexer = Indexer::<LinearIndex>::new(14, 5);
     let mut record = noodles_bam_crate::Record::default();
@@ -253,10 +242,7 @@ fn convert_noodles_record(
         .map(|p| usize::from(p) as u64)
         .unwrap_or(0);
 
-    let mapq = record
-        .mapping_quality()
-        .map(|m| u8::from(m))
-        .unwrap_or(255);
+    let mapq = record.mapping_quality().map(|m| u8::from(m)).unwrap_or(255);
 
     let cigar = {
         let cigar_obj = record.cigar();
@@ -372,9 +358,7 @@ mod tests {
             writer.write_header(&header).unwrap();
 
             for rec in records {
-                writer
-                    .write_alignment_record(&header, rec)
-                    .unwrap();
+                writer.write_alignment_record(&header, rec).unwrap();
             }
             writer.try_finish().unwrap();
         }
@@ -386,8 +370,7 @@ mod tests {
 
         // Build BAI index by reading back the BAM and tracking virtual positions
         let index = {
-            let mut reader =
-                noodles_bam_crate::io::Reader::new(std::io::Cursor::new(&bam_buf));
+            let mut reader = noodles_bam_crate::io::Reader::new(std::io::Cursor::new(&bam_buf));
             reader.read_header().unwrap();
 
             let mut indexer = Indexer::<LinearIndex>::new(14, 5);
@@ -494,8 +477,7 @@ mod tests {
     #[test]
     fn indexed_bam_references() {
         let (bam_file, bai_file) = write_indexed_bam(&[]);
-        let reader =
-            IndexedBamReader::open_with_index(bam_file.path(), bai_file.path()).unwrap();
+        let reader = IndexedBamReader::open_with_index(bam_file.path(), bai_file.path()).unwrap();
         let refs = reader.references();
         assert_eq!(refs.len(), 2);
         assert_eq!(refs[0].name, "chr1");

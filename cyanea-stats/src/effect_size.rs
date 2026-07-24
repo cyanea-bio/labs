@@ -53,9 +53,10 @@ pub fn eta_squared(groups: &[&[f64]]) -> Result<f64> {
     }
     for (i, g) in groups.iter().enumerate() {
         if g.is_empty() {
-            return Err(CyaneaError::InvalidInput(
-                format!("eta_squared: group {} is empty", i),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "eta_squared: group {} is empty",
+                i
+            )));
         }
     }
 

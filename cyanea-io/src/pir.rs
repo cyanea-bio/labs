@@ -99,10 +99,7 @@ pub fn parse_pir(input: &str) -> Result<Vec<PirRecord>> {
                 found_terminator = true;
                 break;
             } else {
-                let fragment: String = seq_line
-                    .chars()
-                    .filter(|c| !c.is_whitespace())
-                    .collect();
+                let fragment: String = seq_line.chars().filter(|c| !c.is_whitespace()).collect();
                 sequence.push_str(&fragment);
             }
         }

@@ -92,7 +92,13 @@ pub fn gpu_sw_cpu(
 
     let mut results = Vec::with_capacity(pairs.len());
     for &(query, target) in pairs {
-        results.push(sw_affine(query, target, substitution_matrix, gap_open, gap_extend));
+        results.push(sw_affine(
+            query,
+            target,
+            substitution_matrix,
+            gap_open,
+            gap_extend,
+        ));
     }
     Ok(results)
 }
@@ -275,18 +281,9 @@ fn gpu_sw_metal(
     let sm_buf = make_i32_buf(substitution_matrix);
     let go_buf = make_scalar_i32(gap_open);
     let ge_buf = make_scalar_i32(gap_extend);
-    let scores_buf = device.new_buffer(
-        (n_pairs * 4) as u64,
-        MTLResourceOptions::StorageModeShared,
-    );
-    let qe_buf = device.new_buffer(
-        (n_pairs * 4) as u64,
-        MTLResourceOptions::StorageModeShared,
-    );
-    let te_buf = device.new_buffer(
-        (n_pairs * 4) as u64,
-        MTLResourceOptions::StorageModeShared,
-    );
+    let scores_buf = device.new_buffer((n_pairs * 4) as u64, MTLResourceOptions::StorageModeShared);
+    let qe_buf = device.new_buffer((n_pairs * 4) as u64, MTLResourceOptions::StorageModeShared);
+    let te_buf = device.new_buffer((n_pairs * 4) as u64, MTLResourceOptions::StorageModeShared);
 
     let cmd = queue.new_command_buffer();
     let enc = cmd.new_compute_command_encoder();
@@ -369,13 +366,8 @@ mod tests {
     #[test]
     fn sw_identical_proteins() {
         let seq = b"ACDEFGHIKLMNPQRSTVWY";
-        let results = gpu_sw_cpu(
-            &[(seq.as_slice(), seq.as_slice())],
-            &BLOSUM62_24,
-            -11,
-            -1,
-        )
-        .unwrap();
+        let results =
+            gpu_sw_cpu(&[(seq.as_slice(), seq.as_slice())], &BLOSUM62_24, -11, -1).unwrap();
         assert_eq!(results.len(), 1);
         // Perfect self-alignment should have positive score
         assert!(results[0].score > 0);

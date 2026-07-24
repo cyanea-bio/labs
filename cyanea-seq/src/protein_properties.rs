@@ -162,26 +162,26 @@ const CHOU_FASMAN: [(f64, f64, f64); 20] = [
 /// Simplified GOR single-residue information values (I_helix, I_strand, I_coil),
 /// indexed by aa_index. Derived from published GOR I statistics.
 const GOR_INFO: [(f64, f64, f64); 20] = [
-    (0.36, -0.23, -0.13),  // A
-    (-0.20, 0.17, 0.03),   // C
-    (0.07, -0.42, 0.35),   // D
-    (0.42, -0.37, -0.05),  // E
-    (-0.09, 0.32, -0.23),  // F
-    (-0.43, -0.18, 0.61),  // G
-    (0.04, -0.09, 0.05),   // H
-    (-0.06, 0.42, -0.36),  // I
-    (0.13, -0.25, 0.12),   // K
-    (0.21, 0.22, -0.43),   // L
-    (0.36, 0.03, -0.39),   // M
-    (-0.29, -0.18, 0.47),  // N
-    (-0.42, -0.37, 0.79),  // P
-    (0.18, -0.10, -0.08),  // Q
-    (-0.01, -0.15, 0.16),  // R
-    (-0.15, -0.07, 0.22),  // S
-    (-0.11, 0.16, -0.05),  // T
-    (-0.06, 0.52, -0.46),  // V
-    (-0.02, 0.27, -0.25),  // W
-    (-0.17, 0.31, -0.14),  // Y
+    (0.36, -0.23, -0.13), // A
+    (-0.20, 0.17, 0.03),  // C
+    (0.07, -0.42, 0.35),  // D
+    (0.42, -0.37, -0.05), // E
+    (-0.09, 0.32, -0.23), // F
+    (-0.43, -0.18, 0.61), // G
+    (0.04, -0.09, 0.05),  // H
+    (-0.06, 0.42, -0.36), // I
+    (0.13, -0.25, 0.12),  // K
+    (0.21, 0.22, -0.43),  // L
+    (0.36, 0.03, -0.39),  // M
+    (-0.29, -0.18, 0.47), // N
+    (-0.42, -0.37, 0.79), // P
+    (0.18, -0.10, -0.08), // Q
+    (-0.01, -0.15, 0.16), // R
+    (-0.15, -0.07, 0.22), // S
+    (-0.11, 0.16, -0.05), // T
+    (-0.06, 0.52, -0.46), // V
+    (-0.02, 0.27, -0.25), // W
+    (-0.17, 0.31, -0.14), // Y
 ];
 
 /// GOR window half-width.
@@ -543,10 +543,7 @@ fn molecular_weight_from_seq(seq: &[u8]) -> f64 {
     if seq.is_empty() {
         return 0.0;
     }
-    let sum: f64 = seq
-        .iter()
-        .map(|&aa| WEIGHTS[aa_index(aa).unwrap()])
-        .sum();
+    let sum: f64 = seq.iter().map(|&aa| WEIGHTS[aa_index(aa).unwrap()]).sum();
     sum - (seq.len() as f64 - 1.0) * 18.015
 }
 
@@ -665,8 +662,14 @@ pub fn chou_fasman(seq: &[u8]) -> Result<SecondaryStructurePrediction> {
         });
     }
 
-    let helix_count = states.iter().filter(|&&s| s == SecondaryStructure::Helix).count();
-    let strand_count = states.iter().filter(|&&s| s == SecondaryStructure::Strand).count();
+    let helix_count = states
+        .iter()
+        .filter(|&&s| s == SecondaryStructure::Helix)
+        .count();
+    let strand_count = states
+        .iter()
+        .filter(|&&s| s == SecondaryStructure::Strand)
+        .count();
     let coil_count = n - helix_count - strand_count;
 
     Ok(SecondaryStructurePrediction {
@@ -758,10 +761,7 @@ pub fn gor(seq: &[u8]) -> Result<SecondaryStructurePrediction> {
     let norm = normalize_protein(seq)?;
     let n = norm.len();
 
-    let indices: Vec<usize> = norm
-        .iter()
-        .map(|&aa| aa_index(aa).unwrap())
-        .collect();
+    let indices: Vec<usize> = norm.iter().map(|&aa| aa_index(aa).unwrap()).collect();
 
     let mut helix_scores = vec![0.0f64; n];
     let mut strand_scores = vec![0.0f64; n];
@@ -774,7 +774,11 @@ pub fn gor(seq: &[u8]) -> Result<SecondaryStructurePrediction> {
         let mut c = 0.0;
         let mut weight_sum = 0.0;
 
-        let w_start = if i >= GOR_HALF_WIDTH { i - GOR_HALF_WIDTH } else { 0 };
+        let w_start = if i >= GOR_HALF_WIDTH {
+            i - GOR_HALF_WIDTH
+        } else {
+            0
+        };
         let w_end = (i + GOR_HALF_WIDTH).min(n - 1);
 
         for j in w_start..=w_end {
@@ -821,8 +825,14 @@ pub fn gor(seq: &[u8]) -> Result<SecondaryStructurePrediction> {
         }
     }
 
-    let helix_count = states.iter().filter(|&&s| s == SecondaryStructure::Helix).count();
-    let strand_count = states.iter().filter(|&&s| s == SecondaryStructure::Strand).count();
+    let helix_count = states
+        .iter()
+        .filter(|&&s| s == SecondaryStructure::Helix)
+        .count();
+    let strand_count = states
+        .iter()
+        .filter(|&&s| s == SecondaryStructure::Strand)
+        .count();
     let coil_count = n - helix_count - strand_count;
 
     Ok(SecondaryStructurePrediction {
@@ -885,8 +895,8 @@ pub fn predict_disorder(seq: &[u8], window: usize) -> Result<DisorderPrediction>
     for i in 0..n {
         let w_start = if i >= half { i - half } else { 0 };
         let w_end = (i + half).min(n - 1);
-        let avg: f64 = raw_props[w_start..=w_end].iter().sum::<f64>()
-            / (w_end - w_start + 1) as f64;
+        let avg: f64 =
+            raw_props[w_start..=w_end].iter().sum::<f64>() / (w_end - w_start + 1) as f64;
 
         // Logistic sigmoid: 1 / (1 + exp(-k * x))
         let score = 1.0 / (1.0 + (-5.0 * avg).exp());
@@ -991,9 +1001,7 @@ mod tests {
 
     #[test]
     fn hydro_even_window_error() {
-        assert!(
-            hydrophobicity_profile(b"AAAAAA", 4, HydrophobicityScale::KyteDoolittle).is_err()
-        );
+        assert!(hydrophobicity_profile(b"AAAAAA", 4, HydrophobicityScale::KyteDoolittle).is_err());
     }
 
     #[test]

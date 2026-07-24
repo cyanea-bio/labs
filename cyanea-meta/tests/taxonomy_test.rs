@@ -1,16 +1,20 @@
 /// Integration tests for taxonomy module.
-
-use cyanea_meta::taxonomy::{TaxonomyDB, TaxonRank};
+use cyanea_meta::taxonomy::{TaxonRank, TaxonomyDB};
 
 #[test]
 fn build_taxonomy_tree() {
     let mut db = TaxonomyDB::new(1);
     db.add_node(2, 1, TaxonRank::Domain, "Bacteria").unwrap();
-    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria").unwrap();
-    db.add_node(202, 2, TaxonRank::Phylum, "Firmicutes").unwrap();
-    db.add_node(2011, 201, TaxonRank::Species, "E. coli").unwrap();
-    db.add_node(2012, 201, TaxonRank::Species, "Salmonella").unwrap();
-    db.add_node(2021, 202, TaxonRank::Species, "B. subtilis").unwrap();
+    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria")
+        .unwrap();
+    db.add_node(202, 2, TaxonRank::Phylum, "Firmicutes")
+        .unwrap();
+    db.add_node(2011, 201, TaxonRank::Species, "E. coli")
+        .unwrap();
+    db.add_node(2012, 201, TaxonRank::Species, "Salmonella")
+        .unwrap();
+    db.add_node(2021, 202, TaxonRank::Species, "B. subtilis")
+        .unwrap();
 
     assert_eq!(db.len(), 7);
 }
@@ -19,8 +23,10 @@ fn build_taxonomy_tree() {
 fn get_lineage() {
     let mut db = TaxonomyDB::new(1);
     db.add_node(2, 1, TaxonRank::Domain, "Bacteria").unwrap();
-    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria").unwrap();
-    db.add_node(2011, 201, TaxonRank::Species, "E. coli").unwrap();
+    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria")
+        .unwrap();
+    db.add_node(2011, 201, TaxonRank::Species, "E. coli")
+        .unwrap();
 
     let lineage = db.get_lineage(2011).unwrap();
     assert_eq!(lineage, vec![2011, 201, 2, 1]);
@@ -30,9 +36,12 @@ fn get_lineage() {
 fn lca_sibling_species() {
     let mut db = TaxonomyDB::new(1);
     db.add_node(2, 1, TaxonRank::Domain, "Bacteria").unwrap();
-    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria").unwrap();
-    db.add_node(2011, 201, TaxonRank::Species, "E. coli").unwrap();
-    db.add_node(2012, 201, TaxonRank::Species, "Salmonella").unwrap();
+    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria")
+        .unwrap();
+    db.add_node(2011, 201, TaxonRank::Species, "E. coli")
+        .unwrap();
+    db.add_node(2012, 201, TaxonRank::Species, "Salmonella")
+        .unwrap();
 
     // LCA(E. coli, Salmonella) should be Proteobacteria
     let lca = db.lca(&[2011, 2012]).unwrap();
@@ -43,10 +52,14 @@ fn lca_sibling_species() {
 fn lca_cross_phylum() {
     let mut db = TaxonomyDB::new(1);
     db.add_node(2, 1, TaxonRank::Domain, "Bacteria").unwrap();
-    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria").unwrap();
-    db.add_node(202, 2, TaxonRank::Phylum, "Firmicutes").unwrap();
-    db.add_node(2011, 201, TaxonRank::Species, "E. coli").unwrap();
-    db.add_node(2021, 202, TaxonRank::Species, "B. subtilis").unwrap();
+    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria")
+        .unwrap();
+    db.add_node(202, 2, TaxonRank::Phylum, "Firmicutes")
+        .unwrap();
+    db.add_node(2011, 201, TaxonRank::Species, "E. coli")
+        .unwrap();
+    db.add_node(2021, 202, TaxonRank::Species, "B. subtilis")
+        .unwrap();
 
     // LCA(E. coli, B. subtilis) should be Bacteria
     let lca = db.lca(&[2011, 2021]).unwrap();
@@ -57,7 +70,8 @@ fn lca_cross_phylum() {
 fn lca_single_taxon() {
     let mut db = TaxonomyDB::new(1);
     db.add_node(2, 1, TaxonRank::Domain, "Bacteria").unwrap();
-    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria").unwrap();
+    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria")
+        .unwrap();
 
     let lca = db.lca(&[201]).unwrap();
     assert_eq!(lca, 201);
@@ -67,7 +81,8 @@ fn lca_single_taxon() {
 fn classify_sequence_kmer() {
     let mut db = TaxonomyDB::new(1);
     db.add_node(2, 1, TaxonRank::Domain, "Bacteria").unwrap();
-    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria").unwrap();
+    db.add_node(201, 2, TaxonRank::Phylum, "Proteobacteria")
+        .unwrap();
 
     let seq = b"ACGTACGTACGTACGTACGTACGTACGTACGT"; // 32 bp, long enough for k=31
     db.add_reference(seq, 201).unwrap();

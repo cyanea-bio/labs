@@ -113,12 +113,13 @@ pub fn learn_chromatin_states(
                 let mut denominator = 0.0;
 
                 for b in 0..n_bins {
-                    let gamma = if !forward.is_empty() && !backward.is_empty() && !forward[b].is_empty() {
-                        let norm = forward[b].iter().sum::<f64>().max(1e-10);
-                        forward[b][s] / norm
-                    } else {
-                        0.0
-                    };
+                    let gamma =
+                        if !forward.is_empty() && !backward.is_empty() && !forward[b].is_empty() {
+                            let norm = forward[b].iter().sum::<f64>().max(1e-10);
+                            forward[b][s] / norm
+                        } else {
+                            0.0
+                        };
 
                     numerator += gamma * (mark_matrix[b][m] as f64);
                     denominator += gamma;
@@ -163,8 +164,8 @@ pub fn learn_chromatin_states(
 /// Generate distinct colors for state visualization.
 fn generate_colors(n_states: usize) -> Vec<String> {
     let hues = [
-        0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 15, 45, 75, 105, 135, 165, 195,
-        225, 255, 285, 315, 345,
+        0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 15, 45, 75, 105, 135, 165, 195, 225,
+        255, 285, 315, 345,
     ];
 
     (0..n_states)
@@ -382,7 +383,8 @@ pub fn state_enrichment(
                 total_overlap += overlap;
 
                 // Find state for this segment
-                let bin_idx = (seg_start / 200).min(segmentation.state_assignments.len() as u64 - 1) as usize;
+                let bin_idx =
+                    (seg_start / 200).min(segmentation.state_assignments.len() as u64 - 1) as usize;
                 if bin_idx < segmentation.state_assignments.len() {
                     let state = segmentation.state_assignments[bin_idx];
                     state_overlap_counts[state] += overlap;
@@ -423,11 +425,7 @@ mod tests {
 
     #[test]
     fn test_learn_chromatin_states() {
-        let mark_matrix = vec![
-            vec![1, 0],
-            vec![1, 1],
-            vec![0, 1],
-        ];
+        let mark_matrix = vec![vec![1, 0], vec![1, 1], vec![0, 1]];
 
         let marks = vec!["H3K4me3".to_string(), "H3K27me3".to_string()];
         let params = ChromHMMParams {
@@ -444,12 +442,7 @@ mod tests {
 
     #[test]
     fn test_segment_genome() {
-        let mark_matrix = vec![
-            vec![1, 0],
-            vec![1, 1],
-            vec![0, 1],
-            vec![0, 0],
-        ];
+        let mark_matrix = vec![vec![1, 0], vec![1, 1], vec![0, 1], vec![0, 0]];
 
         let marks = vec!["H3K4me3".to_string(), "H3K27me3".to_string()];
         let params = ChromHMMParams::default();
@@ -466,10 +459,7 @@ mod tests {
         let segmentation = ChromatinSegmentation {
             state_assignments: vec![0, 0, 1, 1],
             state_names: vec!["Active".to_string(), "Repressed".to_string()],
-            segments: vec![
-                (0, 200, "chr1".to_string()),
-                (200, 400, "chr1".to_string()),
-            ],
+            segments: vec![(0, 200, "chr1".to_string()), (200, 400, "chr1".to_string())],
         };
 
         let annotations = vec![(0, 300)];

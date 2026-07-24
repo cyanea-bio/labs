@@ -3,12 +3,12 @@
 
 use serde::Serialize;
 
+use cyanea_chem::maccs;
+use cyanea_chem::sdf;
 use cyanea_chem::{
     canonical_smiles, compute_properties, find_substructure_matches, has_substructure,
     morgan_fingerprint, parse_smiles, tanimoto_similarity,
 };
-use cyanea_chem::sdf;
-use cyanea_chem::maccs;
 
 use crate::error::{wasm_err, wasm_ok};
 
@@ -255,7 +255,12 @@ pub struct JsAtomMapping {
 
 /// Embed a single 3D conformer from SMILES.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-pub fn embed_conformer(smiles: &str, seed: u64, use_torsion_prefs: bool, max_minimize_steps: usize) -> String {
+pub fn embed_conformer(
+    smiles: &str,
+    seed: u64,
+    use_torsion_prefs: bool,
+    max_minimize_steps: usize,
+) -> String {
     let mol = match parse_smiles(smiles) {
         Ok(m) => m,
         Err(e) => return wasm_err(e),
@@ -280,7 +285,12 @@ pub fn embed_conformer(smiles: &str, seed: u64, use_torsion_prefs: bool, max_min
 
 /// Embed multiple 3D conformers from SMILES with RMSD pruning.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-pub fn embed_conformers(smiles: &str, max_conformers: usize, rmsd_threshold: f64, seed: u64) -> String {
+pub fn embed_conformers(
+    smiles: &str,
+    max_conformers: usize,
+    rmsd_threshold: f64,
+    seed: u64,
+) -> String {
     let mol = match parse_smiles(smiles) {
         Ok(m) => m,
         Err(e) => return wasm_err(e),
@@ -293,10 +303,14 @@ pub fn embed_conformers(smiles: &str, max_conformers: usize, rmsd_threshold: f64
     };
     match cyanea_chem::embed_multiple(&mol, &config) {
         Ok(cset) => {
-            let conformers: Vec<JsConformer> = cset.conformers.iter().map(|c| JsConformer {
-                n_atoms: c.len(),
-                coords: c.coords.clone(),
-            }).collect();
+            let conformers: Vec<JsConformer> = cset
+                .conformers
+                .iter()
+                .map(|c| JsConformer {
+                    n_atoms: c.len(),
+                    coords: c.coords.clone(),
+                })
+                .collect();
             let js = JsConformerSet {
                 n_conformers: conformers.len(),
                 energies: cset.energies.clone(),
@@ -449,9 +463,12 @@ pub fn apply_reaction_js(smiles: &str, smirks: &str) -> String {
     };
     match cyanea_chem::apply_reaction(&mol, &rxn) {
         Ok(products) => {
-            let js: Vec<JsReactionProduct> = products.iter().map(|p| JsReactionProduct {
-                smiles: p.smiles.clone(),
-            }).collect();
+            let js: Vec<JsReactionProduct> = products
+                .iter()
+                .map(|p| JsReactionProduct {
+                    smiles: p.smiles.clone(),
+                })
+                .collect();
             wasm_ok(&js)
         }
         Err(e) => wasm_err(e),
@@ -466,11 +483,14 @@ pub fn retrosynthetic_disconnect(smiles: &str) -> String {
         Err(e) => return wasm_err(e),
     };
     let disconnections = cyanea_chem::retrosynthetic_disconnections(&mol);
-    let js: Vec<JsDisconnection> = disconnections.iter().map(|d| JsDisconnection {
-        transform_name: d.transform_name.clone(),
-        smirks: d.smirks.clone(),
-        precursors: d.precursors.clone(),
-    }).collect();
+    let js: Vec<JsDisconnection> = disconnections
+        .iter()
+        .map(|d| JsDisconnection {
+            transform_name: d.transform_name.clone(),
+            smirks: d.smirks.clone(),
+            precursors: d.precursors.clone(),
+        })
+        .collect();
     wasm_ok(&js)
 }
 

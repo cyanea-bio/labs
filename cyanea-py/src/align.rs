@@ -197,11 +197,14 @@ fn progressive_msa(
     let refs: Vec<&[u8]> = sequences.iter().map(|s| s.as_slice()).collect();
     let scoring = match mode {
         "dna" => {
-            let matrix = cyanea_align::ScoringMatrix::new(match_score, mismatch_score, gap_open, gap_extend)
-                .into_pyresult()?;
+            let matrix =
+                cyanea_align::ScoringMatrix::new(match_score, mismatch_score, gap_open, gap_extend)
+                    .into_pyresult()?;
             cyanea_align::ScoringScheme::Simple(matrix)
         }
-        "protein" => cyanea_align::ScoringScheme::Substitution(cyanea_align::SubstitutionMatrix::blosum62()),
+        "protein" => {
+            cyanea_align::ScoringScheme::Substitution(cyanea_align::SubstitutionMatrix::blosum62())
+        }
         _ => {
             return Err(pyo3::exceptions::PyValueError::new_err(format!(
                 "unknown MSA mode: {mode} (expected 'dna' or 'protein')"

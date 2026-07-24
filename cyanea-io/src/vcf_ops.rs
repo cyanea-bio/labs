@@ -48,7 +48,9 @@ pub fn join_biallelic(variants: &[Variant]) -> Option<Variant> {
 
     // Verify all have same chrom, position, ref_allele
     for v in &variants[1..] {
-        if v.chrom != first.chrom || v.position != first.position || v.ref_allele != first.ref_allele
+        if v.chrom != first.chrom
+            || v.position != first.position
+            || v.ref_allele != first.ref_allele
         {
             return None;
         }
@@ -176,10 +178,7 @@ pub fn merge_variants(inputs: &[&[Variant]]) -> Vec<Variant> {
 #[derive(Debug, Clone)]
 pub enum FilterExpr {
     /// Compare quality: QUAL > 30, QUAL >= 30, QUAL < 30, etc.
-    QualCmp {
-        op: CmpOp,
-        value: f64,
-    },
+    QualCmp { op: CmpOp, value: f64 },
     /// Compare variant type: TYPE == SNV, TYPE == INDEL, etc.
     TypeEq(String),
     /// Compare chromosome: CHROM == chr1.
@@ -331,10 +330,11 @@ fn tokenize(expr: &str) -> Result<Vec<Token>> {
                 tokens.push(Token::Op("<".to_string()));
                 i += 1;
             }
-            b'0'..=b'9' | b'.' if {
-                // Check it's a number, not just a dot in an identifier
-                bytes[i] != b'.' || (i + 1 < bytes.len() && bytes[i + 1].is_ascii_digit())
-            } =>
+            b'0'..=b'9' | b'.'
+                if {
+                    // Check it's a number, not just a dot in an identifier
+                    bytes[i] != b'.' || (i + 1 < bytes.len() && bytes[i + 1].is_ascii_digit())
+                } =>
             {
                 let start = i;
                 while i < bytes.len() && (bytes[i].is_ascii_digit() || bytes[i] == b'.') {
@@ -442,7 +442,13 @@ fn parse_primary<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
                                 )))
                             }
                         };
-                        return Ok((FilterExpr::QualCmp { op: cmp, value: *val }, &tokens[3..]));
+                        return Ok((
+                            FilterExpr::QualCmp {
+                                op: cmp,
+                                value: *val,
+                            },
+                            &tokens[3..],
+                        ));
                     }
                 }
                 "TYPE" => {
@@ -786,7 +792,14 @@ mod tests {
 
     #[test]
     fn split_multiallelic_multi() {
-        let v = variant("chr1", 100, "A", &["G", "T", "C"], Some(30.0), VariantFilter::Pass);
+        let v = variant(
+            "chr1",
+            100,
+            "A",
+            &["G", "T", "C"],
+            Some(30.0),
+            VariantFilter::Pass,
+        );
         let result = split_multiallelic(&v);
         assert_eq!(result.len(), 3);
         assert_eq!(result[0].alt_alleles, vec![b"G".to_vec()]);
@@ -823,7 +836,14 @@ mod tests {
 
     #[test]
     fn split_join_roundtrip() {
-        let v = variant("chr1", 100, "A", &["G", "T"], Some(30.0), VariantFilter::Pass);
+        let v = variant(
+            "chr1",
+            100,
+            "A",
+            &["G", "T"],
+            Some(30.0),
+            VariantFilter::Pass,
+        );
         let split = split_multiallelic(&v);
         let joined = join_biallelic(&split).unwrap();
         assert_eq!(joined.alt_alleles.len(), 2);
@@ -951,7 +971,14 @@ mod tests {
     fn filter_pass() {
         let expr = parse_filter("FILTER==PASS").unwrap();
         let pass_v = snv("chr1", 100, "A", "G", None);
-        let fail_v = variant("chr1", 100, "A", &["G"], None, VariantFilter::Fail(vec!["LQ".into()]));
+        let fail_v = variant(
+            "chr1",
+            100,
+            "A",
+            &["G"],
+            None,
+            VariantFilter::Fail(vec!["LQ".into()]),
+        );
         assert!(eval_filter(&pass_v, &expr));
         assert!(!eval_filter(&fail_v, &expr));
     }
@@ -1090,11 +1117,18 @@ mod tests {
     #[test]
     fn detailed_stats_basic() {
         let variants = vec![
-            snv("chr1", 100, "A", "G", Some(30.0)),        // transition
-            snv("chr1", 200, "C", "T", Some(40.0)),        // transition
-            snv("chr1", 300, "A", "C", Some(50.0)),        // transversion
+            snv("chr1", 100, "A", "G", Some(30.0)), // transition
+            snv("chr1", 200, "C", "T", Some(40.0)), // transition
+            snv("chr1", 300, "A", "C", Some(50.0)), // transversion
             variant("chr1", 400, "AC", &["A"], Some(20.0), VariantFilter::Pass), // deletion
-            variant("chr1", 500, "A", &["G", "T"], Some(60.0), VariantFilter::Pass), // multi-allelic SNV
+            variant(
+                "chr1",
+                500,
+                "A",
+                &["G", "T"],
+                Some(60.0),
+                VariantFilter::Pass,
+            ), // multi-allelic SNV
         ];
 
         let stats = detailed_vcf_stats(&variants);
@@ -1177,8 +1211,8 @@ mod tests {
         assert_eq!(stats.indel_size_distribution.len(), 4);
         assert_eq!(stats.indel_size_distribution[0], (-3, 1)); // 1 deletion of size 3
         assert_eq!(stats.indel_size_distribution[1], (-1, 1)); // 1 deletion of size 1
-        assert_eq!(stats.indel_size_distribution[2], (1, 2));  // 2 insertions of size 1
-        assert_eq!(stats.indel_size_distribution[3], (2, 1));  // 1 insertion of size 2
+        assert_eq!(stats.indel_size_distribution[2], (1, 2)); // 2 insertions of size 1
+        assert_eq!(stats.indel_size_distribution[3], (2, 1)); // 1 insertion of size 2
     }
 
     // -----------------------------------------------------------------------

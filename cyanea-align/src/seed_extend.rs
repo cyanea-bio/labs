@@ -62,9 +62,7 @@ pub struct SeedChain {
 /// Returns an error if `seeds` is empty.
 pub fn chain_seeds(seeds: &[(usize, usize)], k: usize, max_gap: usize) -> Result<SeedChain> {
     if seeds.is_empty() {
-        return Err(CyaneaError::InvalidInput(
-            "no seeds to chain".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("no seeds to chain".into()));
     }
 
     // Convert to Seed structs and sort by target position, breaking ties by
@@ -312,13 +310,21 @@ pub fn seed_extend_align(
     }
 
     // Compute alignment coordinates.
-    let query_start = if first_seed.query_pos > 0 { 0 } else { first_seed.query_pos };
+    let query_start = if first_seed.query_pos > 0 {
+        0
+    } else {
+        first_seed.query_pos
+    };
     let query_end = if q_suffix_start < query.len() {
         query.len()
     } else {
         (last_seed.query_pos + k).min(query.len())
     };
-    let target_start = if first_seed.target_pos > 0 { 0 } else { first_seed.target_pos };
+    let target_start = if first_seed.target_pos > 0 {
+        0
+    } else {
+        first_seed.target_pos
+    };
     let target_end = if t_suffix_start < target.len() {
         target.len()
     } else {
@@ -447,8 +453,8 @@ mod tests {
         // Close seeds should win because of lower gap penalty.
         let seeds = vec![
             (0, 0),
-            (2, 2),   // close to (0,0)
-            (4, 4),   // close to (2,2)
+            (2, 2),     // close to (0,0)
+            (4, 4),     // close to (2,2)
             (100, 100), // far from everything
         ];
         let chain = chain_seeds(&seeds, 15, 200).unwrap();
@@ -473,29 +479,29 @@ mod tests {
     #[test]
     fn identical_sequences() {
         let seq = b"ACGTACGTACGTACGT";
-        let result =
-            seed_extend_align(seq, seq, &dna_scheme(), 3, 2, 5).unwrap();
-        assert!(result.score > 0, "identical seqs should have positive score");
+        let result = seed_extend_align(seq, seq, &dna_scheme(), 3, 2, 5).unwrap();
+        assert!(
+            result.score > 0,
+            "identical seqs should have positive score"
+        );
         // Check that the alignment covers the full length.
         assert_eq!(result.query_start, 0);
     }
 
     #[test]
     fn related_sequences_with_mutations() {
-        let query  = b"ACGTACGTACGTACGT";
+        let query = b"ACGTACGTACGTACGT";
         let target = b"ACGTACCTACGTACGT"; // G->C at pos 6
-        let result =
-            seed_extend_align(query, target, &dna_scheme(), 3, 2, 5).unwrap();
+        let result = seed_extend_align(query, target, &dna_scheme(), 3, 2, 5).unwrap();
         assert!(result.score > 0);
     }
 
     #[test]
     fn completely_different_sequences_fallback() {
         // No shared k-mers -> falls back to banded alignment.
-        let query  = b"AAAAAAAAAA";
+        let query = b"AAAAAAAAAA";
         let target = b"CCCCCCCCCC";
-        let result =
-            seed_extend_align(query, target, &dna_scheme(), 3, 2, 10).unwrap();
+        let result = seed_extend_align(query, target, &dna_scheme(), 3, 2, 10).unwrap();
         // Smith-Waterman local alignment on completely different sequences
         // should produce a non-negative score (SW is always >= 0).
         assert!(result.score >= 0);
@@ -510,8 +516,7 @@ mod tests {
     #[test]
     fn short_sequences_fallback() {
         // Sequences shorter than k fall back to banded alignment.
-        let result =
-            seed_extend_align(b"AC", b"AC", &dna_scheme(), 3, 2, 5).unwrap();
+        let result = seed_extend_align(b"AC", b"AC", &dna_scheme(), 3, 2, 5).unwrap();
         assert!(result.score > 0);
     }
 
@@ -529,16 +534,14 @@ mod tests {
         target.extend_from_slice(common);
         target.extend_from_slice(b"AAAAAAA"); // different suffix
 
-        let result =
-            seed_extend_align(&query, &target, &dna_scheme(), 5, 3, 10).unwrap();
+        let result = seed_extend_align(&query, &target, &dna_scheme(), 5, 3, 10).unwrap();
         assert!(result.score > 0, "should align the shared region");
     }
 
     #[test]
     fn alignment_produces_valid_cigar() {
         let seq = b"ACGTACGTACGTACGT";
-        let result =
-            seed_extend_align(seq, seq, &dna_scheme(), 3, 2, 5).unwrap();
+        let result = seed_extend_align(seq, seq, &dna_scheme(), 3, 2, 5).unwrap();
         // CIGAR ops should all have non-zero length.
         for op in &result.cigar {
             assert!(op.len() > 0, "CIGAR ops should have non-zero length");
@@ -548,10 +551,9 @@ mod tests {
     #[test]
     fn alignment_with_insertions_and_deletions() {
         // Target has an insertion relative to query.
-        let query  = b"ACGTACGTACGT";
+        let query = b"ACGTACGTACGT";
         let target = b"ACGTAAACGTACGT"; // extra AA inserted
-        let result =
-            seed_extend_align(query, target, &dna_scheme(), 3, 2, 5).unwrap();
+        let result = seed_extend_align(query, target, &dna_scheme(), 3, 2, 5).unwrap();
         // Should still produce a valid alignment.
         assert!(result.score > 0 || result.score == 0);
     }

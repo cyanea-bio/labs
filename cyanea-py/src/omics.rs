@@ -100,7 +100,9 @@ impl PyGenomicInterval {
     }
 }
 
-fn to_rust_intervals(intervals: Vec<PyGenomicInterval>) -> PyResult<Vec<cyanea_omics::GenomicInterval>> {
+fn to_rust_intervals(
+    intervals: Vec<PyGenomicInterval>,
+) -> PyResult<Vec<cyanea_omics::GenomicInterval>> {
     intervals.iter().map(|iv| iv.to_rust()).collect()
 }
 
@@ -156,7 +158,10 @@ pub struct PyLiftoverResult {
 /// Merge overlapping intervals.
 #[pyfunction]
 #[pyo3(signature = (intervals, strand_mode="ignore"))]
-fn merge_intervals(intervals: Vec<PyGenomicInterval>, strand_mode: &str) -> PyResult<Vec<PyGenomicInterval>> {
+fn merge_intervals(
+    intervals: Vec<PyGenomicInterval>,
+    strand_mode: &str,
+) -> PyResult<Vec<PyGenomicInterval>> {
     let ivs = to_rust_intervals(intervals)?;
     let mode = parse_strand_mode(strand_mode)?;
     let result = cyanea_omics::merge(&ivs, mode);
@@ -252,10 +257,7 @@ fn jaccard_index(a: Vec<PyGenomicInterval>, b: Vec<PyGenomicInterval>) -> PyResu
 
 /// Jaccard statistics between two interval sets.
 #[pyfunction]
-fn jaccard_stats(
-    a: Vec<PyGenomicInterval>,
-    b: Vec<PyGenomicInterval>,
-) -> PyResult<PyJaccardStats> {
+fn jaccard_stats(a: Vec<PyGenomicInterval>, b: Vec<PyGenomicInterval>) -> PyResult<PyJaccardStats> {
     let a = to_rust_intervals(a)?;
     let b = to_rust_intervals(b)?;
     let s = cyanea_omics::jaccard_stats(&a, &b);
@@ -336,7 +338,10 @@ fn liftover_result_to_py(r: cyanea_omics::LiftoverResult) -> PyLiftoverResult {
             end: iv.end,
             fraction_mapped: 1.0,
         },
-        cyanea_omics::LiftoverResult::Partial { mapped, fraction_mapped } => PyLiftoverResult {
+        cyanea_omics::LiftoverResult::Partial {
+            mapped,
+            fraction_mapped,
+        } => PyLiftoverResult {
             status: "partial".to_string(),
             chrom: mapped.chrom.clone(),
             start: mapped.start,
@@ -384,46 +389,54 @@ fn annotate_variant(
         pos,
         ref_allele.as_bytes().to_vec(),
         vec![alt_allele.as_bytes().to_vec()],
-    ).into_pyresult()?;
+    )
+    .into_pyresult()?;
 
-    let gene_defs: Vec<cyanea_omics::Gene> = genes.iter().enumerate().map(|(i, iv)| {
-        let strand = match iv.strand.as_str() {
-            "+" | "forward" => cyanea_omics::Strand::Forward,
-            "-" | "reverse" => cyanea_omics::Strand::Reverse,
-            _ => cyanea_omics::Strand::Unknown,
-        };
-        let gene_id = format!("gene_{}", i);
-        cyanea_omics::Gene {
-            gene_id: gene_id.clone(),
-            gene_name: gene_id,
-            chrom: iv.chrom.clone(),
-            start: iv.start,
-            end: iv.end,
-            strand,
-            gene_type: cyanea_omics::GeneType::ProteinCoding,
-            transcripts: vec![cyanea_omics::Transcript {
-                transcript_id: format!("tx_{}", i),
+    let gene_defs: Vec<cyanea_omics::Gene> = genes
+        .iter()
+        .enumerate()
+        .map(|(i, iv)| {
+            let strand = match iv.strand.as_str() {
+                "+" | "forward" => cyanea_omics::Strand::Forward,
+                "-" | "reverse" => cyanea_omics::Strand::Reverse,
+                _ => cyanea_omics::Strand::Unknown,
+            };
+            let gene_id = format!("gene_{}", i);
+            cyanea_omics::Gene {
+                gene_id: gene_id.clone(),
+                gene_name: gene_id,
+                chrom: iv.chrom.clone(),
                 start: iv.start,
                 end: iv.end,
-                exons: vec![cyanea_omics::Exon {
-                    exon_number: 1,
+                strand,
+                gene_type: cyanea_omics::GeneType::ProteinCoding,
+                transcripts: vec![cyanea_omics::Transcript {
+                    transcript_id: format!("tx_{}", i),
                     start: iv.start,
                     end: iv.end,
+                    exons: vec![cyanea_omics::Exon {
+                        exon_number: 1,
+                        start: iv.start,
+                        end: iv.end,
+                    }],
+                    cds_start: Some(iv.start),
+                    cds_end: Some(iv.end),
                 }],
-                cds_start: Some(iv.start),
-                cds_end: Some(iv.end),
-            }],
-        }
-    }).collect();
+            }
+        })
+        .collect();
 
     let config = cyanea_omics::AnnotationConfig::default();
     let effects = cyanea_omics::annotate_variant(&variant, &gene_defs, &config);
-    Ok(effects.into_iter().map(|e| PyVariantEffect {
-        consequence: format!("{:?}", e.consequence),
-        gene_id: e.gene_id,
-        gene_name: e.gene_name,
-        transcript_id: e.transcript_id,
-    }).collect())
+    Ok(effects
+        .into_iter()
+        .map(|e| PyVariantEffect {
+            consequence: format!("{:?}", e.consequence),
+            gene_id: e.gene_id,
+            gene_name: e.gene_name,
+            transcript_id: e.transcript_id,
+        })
+        .collect())
 }
 
 // ---------------------------------------------------------------------------
@@ -453,16 +466,26 @@ pub struct PyCpgIsland {
 /// Find CpG islands in a DNA sequence using a sliding window approach.
 #[pyfunction]
 #[pyo3(signature = (seq, chrom="chr1", min_length=200, min_gc=0.5, min_obs_exp=0.6))]
-fn find_cpg_islands(seq: &str, chrom: &str, min_length: u64, min_gc: f64, min_obs_exp: f64) -> Vec<PyCpgIsland> {
-    let islands = cyanea_omics::find_cpg_islands(seq.as_bytes(), chrom, min_length, min_gc, min_obs_exp);
-    islands.into_iter().map(|i| PyCpgIsland {
-        chrom: i.chrom,
-        start: i.start,
-        end: i.end,
-        cpg_count: i.cpg_count,
-        gc_content: i.gc_content,
-        obs_exp_ratio: i.obs_exp_ratio,
-    }).collect()
+fn find_cpg_islands(
+    seq: &str,
+    chrom: &str,
+    min_length: u64,
+    min_gc: f64,
+    min_obs_exp: f64,
+) -> Vec<PyCpgIsland> {
+    let islands =
+        cyanea_omics::find_cpg_islands(seq.as_bytes(), chrom, min_length, min_gc, min_obs_exp);
+    islands
+        .into_iter()
+        .map(|i| PyCpgIsland {
+            chrom: i.chrom,
+            start: i.start,
+            end: i.end,
+            cpg_count: i.cpg_count,
+            gc_content: i.gc_content,
+            obs_exp_ratio: i.obs_exp_ratio,
+        })
+        .collect()
 }
 
 // ---------------------------------------------------------------------------

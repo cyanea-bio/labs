@@ -43,12 +43,17 @@ pub fn parse_mzml_text(text: &str) -> Result<Vec<MassSpectrum>> {
         }
 
         let attrs = parse_attrs(line);
-        let id = attrs.get("id").cloned().unwrap_or_else(|| "unknown".to_string());
-        let ms_level = attrs.get("ms_level")
+        let id = attrs
+            .get("id")
+            .cloned()
+            .unwrap_or_else(|| "unknown".to_string());
+        let ms_level = attrs
+            .get("ms_level")
             .and_then(|v| v.parse::<u8>().ok())
             .map(MsLevel::from_u8)
             .unwrap_or(MsLevel::Ms1);
-        let rt = attrs.get("rt")
+        let rt = attrs
+            .get("rt")
             .and_then(|v| v.parse::<f64>().ok())
             .unwrap_or(0.0);
 
@@ -67,7 +72,8 @@ pub fn parse_mzml_text(text: &str) -> Result<Vec<MassSpectrum>> {
                     charge: attrs.get("charge").and_then(|v| v.parse().ok()),
                     intensity: attrs.get("intensity").and_then(|v| v.parse().ok()),
                     isolation_width: attrs.get("isolation_width").and_then(|v| v.parse().ok()),
-                    fragmentation: attrs.get("fragmentation")
+                    fragmentation: attrs
+                        .get("fragmentation")
                         .map(|v| match v.as_str() {
                             "CID" => FragmentationMethod::CID,
                             "HCD" => FragmentationMethod::HCD,
@@ -89,7 +95,9 @@ pub fn parse_mzml_text(text: &str) -> Result<Vec<MassSpectrum>> {
                     }
                     let parts: Vec<&str> = peak_line.split_whitespace().collect();
                     if parts.len() >= 2 {
-                        if let (Ok(mz), Ok(intensity)) = (parts[0].parse::<f64>(), parts[1].parse::<f64>()) {
+                        if let (Ok(mz), Ok(intensity)) =
+                            (parts[0].parse::<f64>(), parts[1].parse::<f64>())
+                        {
                             peaks.push(Peak { mz, intensity });
                         }
                     }
@@ -184,8 +192,12 @@ pub fn mzml_stats(spectra: &[MassSpectrum]) -> Result<MzmlStats> {
             MsLevel::Ms2 => ms2 += 1,
             _ => {}
         }
-        if s.retention_time < min_rt { min_rt = s.retention_time; }
-        if s.retention_time > max_rt { max_rt = s.retention_time; }
+        if s.retention_time < min_rt {
+            min_rt = s.retention_time;
+        }
+        if s.retention_time > max_rt {
+            max_rt = s.retention_time;
+        }
         total_peaks += s.num_peaks();
     }
 

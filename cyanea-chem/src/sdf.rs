@@ -166,9 +166,8 @@ fn parse_v3000_atom_line(line: &str) -> Result<MolAtom> {
     }
 
     let symbol = parts[1];
-    let elem = element_by_symbol(symbol).ok_or_else(|| {
-        CyaneaError::Parse(format!("V3000: unknown element '{symbol}'"))
-    })?;
+    let elem = element_by_symbol(symbol)
+        .ok_or_else(|| CyaneaError::Parse(format!("V3000: unknown element '{symbol}'")))?;
 
     // Parse optional keyword=value pairs
     let mut charge: i8 = 0;
@@ -242,8 +241,7 @@ fn parse_v3000_bond_line(line: &str) -> Result<Bond> {
 
 /// Detect whether a MOL block uses V3000 format.
 fn is_v3000(block: &str) -> bool {
-    block.lines().take(5).any(|line| line.contains("V3000"))
-        || block.contains("M  V30 BEGIN CTAB")
+    block.lines().take(5).any(|line| line.contains("V3000")) || block.contains("M  V30 BEGIN CTAB")
 }
 
 /// Parse a multi-molecule SDF string, returning results for each molecule.
@@ -277,18 +275,14 @@ pub fn parse_sdf_file(path: impl AsRef<std::path::Path>) -> Result<Vec<Molecule>
             format!("{}: {}", path.as_ref().display(), e),
         ))
     })?;
-    parse_sdf(&content)
-        .into_iter()
-        .collect::<Result<Vec<_>>>()
+    parse_sdf(&content).into_iter().collect::<Result<Vec<_>>>()
 }
 
 fn parse_atom_line(line: &str) -> Result<MolAtom> {
     // V2000 atom line: xxxxx.xxxxyyyyy.yyyyzzzzz.zzzz aaaddcccssshhhbbbvvvHHHrrriiimmmnnneee
     // Columns: x(0..10) y(10..20) z(20..30) _ symbol(31..34) ...
     if line.len() < 34 {
-        return Err(CyaneaError::Parse(format!(
-            "atom line too short: '{line}'"
-        )));
+        return Err(CyaneaError::Parse(format!("atom line too short: '{line}'")));
     }
 
     let symbol = line[31..34].trim();
@@ -326,9 +320,7 @@ fn parse_bond_line(line: &str) -> Result<Bond> {
     // V2000 bond line: 111222tttsssxxxrrrccc
     // Columns: atom1(0..3) atom2(3..6) type(6..9) ...
     if line.len() < 9 {
-        return Err(CyaneaError::Parse(format!(
-            "bond line too short: '{line}'"
-        )));
+        return Err(CyaneaError::Parse(format!("bond line too short: '{line}'")));
     }
 
     let a1: usize = line[0..3]

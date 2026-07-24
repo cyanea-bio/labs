@@ -1,8 +1,8 @@
 //! Core utility wrappers: SHA-256 hashing and zstd compression.
 
-use crate::error::wasm_ok;
 #[cfg(feature = "compress")]
 use crate::error::wasm_err;
+use crate::error::wasm_ok;
 
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;

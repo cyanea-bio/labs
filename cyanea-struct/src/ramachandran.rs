@@ -115,13 +115,7 @@ fn ramachandran_report_chain(
             };
 
             let region = validate_ramachandran(phi, psi, res_type);
-            report.push((
-                curr.seq_num as usize,
-                curr.name.clone(),
-                phi,
-                psi,
-                region,
-            ));
+            report.push((curr.seq_num as usize, curr.name.clone(), phi, psi, region));
         }
     }
 }
@@ -198,8 +192,7 @@ fn validate_proline(phi: f64, psi: f64) -> RamachandranRegion {
 
     // Allowed (wider): phi in [-100, -30], psi in [-70, 0]
     //                  phi in [-100, -30], psi in [90, 180]
-    if in_rect(phi, psi, -100.0, -30.0, -70.0, 0.0)
-        || in_rect(phi, psi, -100.0, -30.0, 90.0, 180.0)
+    if in_rect(phi, psi, -100.0, -30.0, -70.0, 0.0) || in_rect(phi, psi, -100.0, -30.0, 90.0, 180.0)
     {
         return RamachandranRegion::Proline;
     }

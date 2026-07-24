@@ -43,27 +43,27 @@ pub mod fasta;
 #[cfg(feature = "std")]
 pub mod fasta_index;
 pub mod fastq;
-#[cfg(feature = "std")]
-pub mod paired;
 pub mod fm_index;
 pub mod fmd_index;
 pub mod kmer;
+pub mod longread;
 pub mod masking;
 pub mod minhash;
 pub mod motif;
 pub mod motif_io;
+pub mod nanopore;
 pub mod orf;
+#[cfg(feature = "std")]
+pub mod paired;
 pub mod pattern;
 pub mod protein_properties;
 pub mod pssm;
-pub mod restriction;
-pub mod rna_structure;
 pub mod quality;
 pub mod read_sim;
+pub mod restriction;
+pub mod rna_structure;
 pub mod seq;
 pub mod suffix;
-pub mod longread;
-pub mod nanopore;
 pub mod sv;
 pub mod taxonomy;
 pub mod trim;
@@ -102,13 +102,13 @@ pub use fasta_index::{FastaIndex, FastaIndexEntry, IndexedFastaReader};
 pub use fastq::{parse_fastq_file, parse_fastq_stats, FastqRecord, FastqStats};
 
 // Re-export compact encoding and indexing types
-pub use twobit::TwoBitSequence;
-pub use suffix::SuffixArray;
 pub use fm_index::FmIndex;
-pub use fmd_index::{FmdIndex, BiInterval};
+pub use fmd_index::{BiInterval, FmdIndex};
+pub use suffix::SuffixArray;
+pub use twobit::TwoBitSequence;
 
 // Re-export MinHash sketching types
-pub use minhash::{MinHash, FracMinHash};
+pub use minhash::{FracMinHash, MinHash};
 
 // Re-export pattern matching algorithms
 pub use pattern::{bndm, bom, horspool, kmp, myers_bitparallel, shift_and, ukkonen};
@@ -123,9 +123,9 @@ pub use orf::{find_orfs, find_orfs_both_strands, find_orfs_with_codons, OrfResul
 pub use bwt::Bwt;
 
 // Re-export quality trimming and filtering
-pub use trim::{TrimPipeline, TrimRange, TrimReport};
 #[cfg(feature = "std")]
 pub use trim::{OrphanPolicy, PairedTrimReport, PairedTrimResult};
+pub use trim::{TrimPipeline, TrimRange, TrimReport};
 
 // Re-export paired-end FASTQ types
 #[cfg(feature = "std")]
@@ -186,8 +186,8 @@ pub use motif_io::{
 // Re-export long-read sequencing types
 pub use longread::{
     common_adapters as longread_adapters, longread_stats, self_correct, simple_consensus,
-    simulate_long_reads, trim_adapters, CorrectedRead, LongRead, LongReadAdapter,
-    LongReadPlatform, LongReadSimConfig, LongReadStats,
+    simulate_long_reads, trim_adapters, CorrectedRead, LongRead, LongReadAdapter, LongReadPlatform,
+    LongReadSimConfig, LongReadStats,
 };
 
 // Re-export structural variant types

@@ -121,17 +121,22 @@ pub fn model_finder(
     }
 
     // Sort by AIC.
-    results.sort_by(|a, b| a.aic.partial_cmp(&b.aic).unwrap_or(std::cmp::Ordering::Equal));
+    results.sort_by(|a, b| {
+        a.aic
+            .partial_cmp(&b.aic)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
-    let best_aic = results
-        .first()
-        .map(|r| r.name.clone())
-        .unwrap_or_default();
+    let best_aic = results.first().map(|r| r.name.clone()).unwrap_or_default();
 
     // Find best BIC.
     let best_bic = results
         .iter()
-        .min_by(|a, b| a.bic.partial_cmp(&b.bic).unwrap_or(std::cmp::Ordering::Equal))
+        .min_by(|a, b| {
+            a.bic
+                .partial_cmp(&b.bic)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
         .map(|r| r.name.clone())
         .unwrap_or_default();
 
@@ -181,7 +186,8 @@ mod tests {
         assert!(
             (aic_val - aicc_val).abs() < 0.01,
             "AICc should approach AIC for large n: {} vs {}",
-            aicc_val, aic_val
+            aicc_val,
+            aic_val
         );
     }
 
@@ -189,10 +195,22 @@ mod tests {
     fn lrt_nested_models() {
         // Simple nested model test: JC69 (0 params) vs HKY85 (4 params)
         let result = lrt(-120.0, -110.0, 4);
-        assert!(result.stat > 0.0, "stat should be positive: {}", result.stat);
+        assert!(
+            result.stat > 0.0,
+            "stat should be positive: {}",
+            result.stat
+        );
         // stat = 2*((-110) - (-120)) = 20, should be significant
-        assert!((result.stat - 20.0).abs() < 1e-10, "stat should be 20: {}", result.stat);
-        assert!((0.0..=1.0).contains(&result.p_value), "p_value {} out of [0,1]", result.p_value);
+        assert!(
+            (result.stat - 20.0).abs() < 1e-10,
+            "stat should be 20: {}",
+            result.stat
+        );
+        assert!(
+            (0.0..=1.0).contains(&result.p_value),
+            "p_value {} out of [0,1]",
+            result.p_value
+        );
     }
 
     #[test]
@@ -200,7 +218,11 @@ mod tests {
         let result = lrt(-100.0, -100.0, 1);
         assert!(result.p_value >= 0.0 && result.p_value <= 1.0);
         // stat = 0, p-value should be 1.0
-        assert!(result.p_value > 0.9, "p = {} should be ~1.0", result.p_value);
+        assert!(
+            result.p_value > 0.9,
+            "p = {} should be ~1.0",
+            result.p_value
+        );
     }
 
     #[test]
@@ -217,8 +239,7 @@ mod tests {
         let jc = Jc69Model::new();
         let hky = Hky85Model::new(2.0, [0.25; 4]).unwrap();
 
-        let candidates: Vec<(&str, &dyn SubstitutionModel)> =
-            vec![("JC69", &jc), ("HKY85", &hky)];
+        let candidates: Vec<(&str, &dyn SubstitutionModel)> = vec![("JC69", &jc), ("HKY85", &hky)];
 
         let result = model_finder(&tree, &refs, &candidates, None).unwrap();
         assert_eq!(result.models.len(), 2);
@@ -243,8 +264,7 @@ mod tests {
         let lg = crate::protein_models::LgModel::new();
         let wag = crate::protein_models::WagModel::new();
 
-        let candidates: Vec<(&str, &dyn SubstitutionModel)> =
-            vec![("LG", &lg), ("WAG", &wag)];
+        let candidates: Vec<(&str, &dyn SubstitutionModel)> = vec![("LG", &lg), ("WAG", &wag)];
 
         let result = model_finder(&tree, &refs, &candidates, None).unwrap();
         assert_eq!(result.models.len(), 2);

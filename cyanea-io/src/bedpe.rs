@@ -205,13 +205,13 @@ fn parse_bedpe_line(line: &str, line_num: usize, path: &Path) -> Result<BedpeRec
         )));
     }
 
-    let name = fields.get(6).and_then(|s| {
-        if *s == "." { None } else { Some(s.to_string()) }
-    });
+    let name = fields
+        .get(6)
+        .and_then(|s| if *s == "." { None } else { Some(s.to_string()) });
 
-    let score = fields.get(7).and_then(|s| {
-        if *s == "." { None } else { s.parse().ok() }
-    });
+    let score = fields
+        .get(7)
+        .and_then(|s| if *s == "." { None } else { s.parse().ok() });
 
     let strand1 = fields.get(8).map_or(Strand::Unknown, |s| match *s {
         "+" => Strand::Forward,
@@ -269,9 +269,7 @@ mod tests {
 
     #[test]
     fn test_parse_bedpe10() {
-        let file = write_bedpe(
-            "chr1\t100\t200\tchr1\t300\t400\tpair1\t500\t+\t-\n",
-        );
+        let file = write_bedpe("chr1\t100\t200\tchr1\t300\t400\tpair1\t500\t+\t-\n");
         let records = parse_bedpe(file.path()).unwrap();
         assert_eq!(records.len(), 1);
         assert_eq!(records[0].name, Some("pair1".to_string()));
@@ -338,9 +336,7 @@ mod tests {
 
     #[test]
     fn test_bedpe_dot_name_score() {
-        let file = write_bedpe(
-            "chr1\t100\t200\tchr1\t300\t400\t.\t.\t+\t-\n",
-        );
+        let file = write_bedpe("chr1\t100\t200\tchr1\t300\t400\t.\t.\t+\t-\n");
         let records = parse_bedpe(file.path()).unwrap();
         assert!(records[0].name.is_none());
         assert!(records[0].score.is_none());

@@ -565,7 +565,9 @@ fn parse_gene_type(biotype: &str) -> GeneType {
         "miRNA" => GeneType::MiRNA,
         "rRNA" => GeneType::RRNA,
         "tRNA" => GeneType::TRNA,
-        "pseudogene" | "processed_pseudogene" | "unprocessed_pseudogene"
+        "pseudogene"
+        | "processed_pseudogene"
+        | "unprocessed_pseudogene"
         | "transcribed_pseudogene" => GeneType::Pseudogene,
         other => GeneType::Other(other.to_string()),
     }

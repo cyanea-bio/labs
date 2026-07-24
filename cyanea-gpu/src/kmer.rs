@@ -49,9 +49,9 @@ pub fn gpu_kmer_count(sequences: &[&[u8]], k: usize) -> Result<KmerCountResult> 
 pub fn gpu_kmer_count_cpu(sequences: &[&[u8]], k: usize) -> Result<KmerCountResult> {
     validate_inputs(sequences, k)?;
 
-    let table_size = 4usize.checked_pow(k as u32).ok_or_else(|| {
-        CyaneaError::InvalidInput(format!("k={k} too large: 4^{k} overflows"))
-    })?;
+    let table_size = 4usize
+        .checked_pow(k as u32)
+        .ok_or_else(|| CyaneaError::InvalidInput(format!("k={k} too large: 4^{k} overflows")))?;
     let mut counts = vec![0u32; table_size];
 
     for seq in sequences {
@@ -192,8 +192,7 @@ fn _gpu_kmer_count_cuda(sequences: &[&[u8]], k: usize) -> Result<KmerCountResult
     use cudarc::driver::{CudaContext, LaunchConfig, PushKernelArg};
     use cudarc::nvrtc::compile_ptx;
 
-    let ctx = CudaContext::new(0)
-        .map_err(|e| CyaneaError::Other(format!("CUDA context: {e}")))?;
+    let ctx = CudaContext::new(0).map_err(|e| CyaneaError::Other(format!("CUDA context: {e}")))?;
     let stream = ctx.default_stream();
 
     let ptx = compile_ptx(KMER_KERNEL_SOURCE)
@@ -260,7 +259,7 @@ mod tests {
         let result = gpu_kmer_count_cpu(&[seq.as_slice()], 2).unwrap();
         assert_eq!(result.k, 2);
         assert_eq!(result.counts.len(), 16); // 4^2
-        // AC appears at positions 0, 4 → count 2
+                                             // AC appears at positions 0, 4 → count 2
         let ac_idx = encode_kmer(b"AC").unwrap();
         assert_eq!(result.counts[ac_idx], 2);
         // CG appears at positions 1, 5 → count 2

@@ -72,7 +72,9 @@ impl<'a> Parser<'a> {
         let root = self.parse_subtree(None)?;
         self.skip_whitespace();
         if self.pos >= self.input.len() || self.input[self.pos] != b';' {
-            return Err(CyaneaError::Parse("expected ';' at end of Newick string".into()));
+            return Err(CyaneaError::Parse(
+                "expected ';' at end of Newick string".into(),
+            ));
         }
         self.pos += 1;
         Ok((std::mem::take(&mut self.nodes), root))
@@ -84,7 +86,7 @@ impl<'a> Parser<'a> {
 
         if self.peek() == Some(b'(') {
             self.pos += 1; // consume '('
-            // Parse children
+                           // Parse children
             let first_child = self.parse_subtree(Some(id))?;
             self.nodes[id].children.push(first_child);
 
@@ -126,9 +128,9 @@ impl<'a> Parser<'a> {
             if len_str.is_empty() {
                 return Err(CyaneaError::Parse("expected number after ':'".into()));
             }
-            let len: f64 = len_str.parse().map_err(|_| {
-                CyaneaError::Parse(format!("invalid branch length: '{}'", len_str))
-            })?;
+            let len: f64 = len_str
+                .parse()
+                .map_err(|_| CyaneaError::Parse(format!("invalid branch length: '{}'", len_str)))?;
             self.nodes[id].branch_length = Some(len);
         }
         Ok(())
@@ -296,19 +298,18 @@ mod proptests {
 
     /// Strategy for a simple Newick tree with 2-6 leaves (no branch lengths)
     fn simple_newick() -> impl Strategy<Value = String> {
-        proptest::collection::vec(leaf_name(), 2..=6)
-            .prop_map(|leaves| {
-                // Build a simple caterpillar tree
-                if leaves.len() == 2 {
-                    return format!("({},{});", leaves[0], leaves[1]);
-                }
-                let mut s = format!("({},{}", leaves[0], leaves[1]);
-                for leaf in &leaves[2..] {
-                    s = format!("({},{})", s, leaf);
-                }
-                s.push(';');
-                s
-            })
+        proptest::collection::vec(leaf_name(), 2..=6).prop_map(|leaves| {
+            // Build a simple caterpillar tree
+            if leaves.len() == 2 {
+                return format!("({},{});", leaves[0], leaves[1]);
+            }
+            let mut s = format!("({},{}", leaves[0], leaves[1]);
+            for leaf in &leaves[2..] {
+                s = format!("({},{})", s, leaf);
+            }
+            s.push(';');
+            s
+        })
     }
 
     proptest! {

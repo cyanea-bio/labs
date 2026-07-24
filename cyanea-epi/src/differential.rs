@@ -38,7 +38,9 @@ pub fn differential_peaks(
     pseudocount: f64,
 ) -> Result<Vec<DiffResult>> {
     if count_matrix.is_empty() {
-        return Err(EpiError::InsufficientData("Count matrix is empty".to_string()));
+        return Err(EpiError::InsufficientData(
+            "Count matrix is empty".to_string(),
+        ));
     }
 
     let n_samples = count_matrix[0].len();
@@ -107,11 +109,7 @@ pub fn differential_peaks(
             / g2_counts.len().max(1) as f64;
 
         let se = (var1 / g1_counts.len() as f64 + var2 / g2_counts.len() as f64).sqrt();
-        let t_stat = if se > 0.0 {
-            (mean1 - mean2) / se
-        } else {
-            0.0
-        };
+        let t_stat = if se > 0.0 { (mean1 - mean2) / se } else { 0.0 };
 
         let p_value = t_test_pvalue(t_stat, (g1_counts.len() + g2_counts.len() - 2) as f64);
 
@@ -134,7 +132,9 @@ pub fn differential_peaks(
 /// Compute size factors using median of ratios method.
 fn compute_size_factors(count_matrix: &[Vec<u32>]) -> Result<Vec<f64>> {
     if count_matrix.is_empty() {
-        return Err(EpiError::InsufficientData("Count matrix is empty".to_string()));
+        return Err(EpiError::InsufficientData(
+            "Count matrix is empty".to_string(),
+        ));
     }
 
     let n_samples = count_matrix[0].len();
@@ -288,10 +288,7 @@ fn apply_bh_correction(results: &mut [DiffResult]) {
 }
 
 /// Count reads overlapping peaks for each sample.
-pub fn count_reads_in_peaks(
-    reads: &[(String, u64, u64)],
-    peaks: &[(u64, u64)],
-) -> Vec<u32> {
+pub fn count_reads_in_peaks(reads: &[(String, u64, u64)], peaks: &[(u64, u64)]) -> Vec<u32> {
     let mut counts = vec![0u32; peaks.len()];
 
     for (_chrom, read_start, read_end) in reads {
@@ -330,7 +327,11 @@ mod tests {
         ];
 
         let conditions = vec![0, 0, 1, 1];
-        let region_ids = vec!["peak1".to_string(), "peak2".to_string(), "peak3".to_string()];
+        let region_ids = vec![
+            "peak1".to_string(),
+            "peak2".to_string(),
+            "peak3".to_string(),
+        ];
 
         let results = differential_peaks(&count_matrix, &conditions, &region_ids, 1.0).unwrap();
 
@@ -357,16 +358,14 @@ mod tests {
 
     #[test]
     fn test_ma_plot_data() {
-        let results = vec![
-            DiffResult {
-                region_id: "peak1".to_string(),
-                log2_fc: 2.0,
-                p_value: 0.01,
-                q_value: 0.05,
-                mean_count_1: 100.0,
-                mean_count_2: 25.0,
-            },
-        ];
+        let results = vec![DiffResult {
+            region_id: "peak1".to_string(),
+            log2_fc: 2.0,
+            p_value: 0.01,
+            q_value: 0.05,
+            mean_count_1: 100.0,
+            mean_count_2: 25.0,
+        }];
 
         let data = ma_plot_data(&results);
         assert_eq!(data.len(), 1);
@@ -375,11 +374,7 @@ mod tests {
 
     #[test]
     fn test_size_factor_computation() {
-        let count_matrix = vec![
-            vec![10, 20],
-            vec![100, 200],
-            vec![1000, 2000],
-        ];
+        let count_matrix = vec![vec![10, 20], vec![100, 200], vec![1000, 2000]];
 
         let sf = compute_size_factors(&count_matrix).unwrap();
         assert_eq!(sf.len(), 2);

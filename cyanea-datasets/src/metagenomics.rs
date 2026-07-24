@@ -16,8 +16,12 @@ pub fn demo_otu_table() -> DemoOtuTable {
             "Bifidobacterium_longum",
         ],
         samples: vec![
-            "Healthy_1", "Healthy_2", "Healthy_3",
-            "IBD_1", "IBD_2", "IBD_3",
+            "Healthy_1",
+            "Healthy_2",
+            "Healthy_3",
+            "IBD_1",
+            "IBD_2",
+            "IBD_3",
         ],
         counts: vec![
             // Bacteroides_fragilis — common in both
@@ -103,14 +107,70 @@ impl DemoOtuTable {
 /// Demo taxonomy lineage for the OTU table taxa.
 pub fn demo_taxonomy() -> Vec<DemoTaxonomy> {
     vec![
-        DemoTaxonomy { species: "Bacteroides_fragilis", genus: "Bacteroides", family: "Bacteroidaceae", order: "Bacteroidales", class: "Bacteroidia", phylum: "Bacteroidetes" },
-        DemoTaxonomy { species: "Faecalibacterium_prausnitzii", genus: "Faecalibacterium", family: "Ruminococcaceae", order: "Clostridiales", class: "Clostridia", phylum: "Firmicutes" },
-        DemoTaxonomy { species: "Escherichia_coli", genus: "Escherichia", family: "Enterobacteriaceae", order: "Enterobacterales", class: "Gammaproteobacteria", phylum: "Proteobacteria" },
-        DemoTaxonomy { species: "Lactobacillus_acidophilus", genus: "Lactobacillus", family: "Lactobacillaceae", order: "Lactobacillales", class: "Bacilli", phylum: "Firmicutes" },
-        DemoTaxonomy { species: "Ruminococcus_bromii", genus: "Ruminococcus", family: "Ruminococcaceae", order: "Clostridiales", class: "Clostridia", phylum: "Firmicutes" },
-        DemoTaxonomy { species: "Akkermansia_muciniphila", genus: "Akkermansia", family: "Akkermansiaceae", order: "Verrucomicrobiales", class: "Verrucomicrobiae", phylum: "Verrucomicrobia" },
-        DemoTaxonomy { species: "Clostridium_difficile", genus: "Clostridioides", family: "Peptostreptococcaceae", order: "Clostridiales", class: "Clostridia", phylum: "Firmicutes" },
-        DemoTaxonomy { species: "Bifidobacterium_longum", genus: "Bifidobacterium", family: "Bifidobacteriaceae", order: "Bifidobacteriales", class: "Actinobacteria", phylum: "Actinobacteria" },
+        DemoTaxonomy {
+            species: "Bacteroides_fragilis",
+            genus: "Bacteroides",
+            family: "Bacteroidaceae",
+            order: "Bacteroidales",
+            class: "Bacteroidia",
+            phylum: "Bacteroidetes",
+        },
+        DemoTaxonomy {
+            species: "Faecalibacterium_prausnitzii",
+            genus: "Faecalibacterium",
+            family: "Ruminococcaceae",
+            order: "Clostridiales",
+            class: "Clostridia",
+            phylum: "Firmicutes",
+        },
+        DemoTaxonomy {
+            species: "Escherichia_coli",
+            genus: "Escherichia",
+            family: "Enterobacteriaceae",
+            order: "Enterobacterales",
+            class: "Gammaproteobacteria",
+            phylum: "Proteobacteria",
+        },
+        DemoTaxonomy {
+            species: "Lactobacillus_acidophilus",
+            genus: "Lactobacillus",
+            family: "Lactobacillaceae",
+            order: "Lactobacillales",
+            class: "Bacilli",
+            phylum: "Firmicutes",
+        },
+        DemoTaxonomy {
+            species: "Ruminococcus_bromii",
+            genus: "Ruminococcus",
+            family: "Ruminococcaceae",
+            order: "Clostridiales",
+            class: "Clostridia",
+            phylum: "Firmicutes",
+        },
+        DemoTaxonomy {
+            species: "Akkermansia_muciniphila",
+            genus: "Akkermansia",
+            family: "Akkermansiaceae",
+            order: "Verrucomicrobiales",
+            class: "Verrucomicrobiae",
+            phylum: "Verrucomicrobia",
+        },
+        DemoTaxonomy {
+            species: "Clostridium_difficile",
+            genus: "Clostridioides",
+            family: "Peptostreptococcaceae",
+            order: "Clostridiales",
+            class: "Clostridia",
+            phylum: "Firmicutes",
+        },
+        DemoTaxonomy {
+            species: "Bifidobacterium_longum",
+            genus: "Bifidobacterium",
+            family: "Bifidobacteriaceae",
+            order: "Bifidobacteriales",
+            class: "Actinobacteria",
+            phylum: "Actinobacteria",
+        },
     ]
 }
 
@@ -172,7 +232,8 @@ mod tests {
         let taxa = demo_taxonomy();
         assert_eq!(taxa.len(), 8);
         // Check Firmicutes are correctly assigned
-        let firmicutes: Vec<&str> = taxa.iter()
+        let firmicutes: Vec<&str> = taxa
+            .iter()
             .filter(|t| t.phylum == "Firmicutes")
             .map(|t| t.species)
             .collect();

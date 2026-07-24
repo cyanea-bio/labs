@@ -100,7 +100,9 @@ pub fn parse_graphml(content: &str) -> Result<Graph> {
     for line in content.lines() {
         let line = line.trim();
         if line.starts_with("<key") {
-            if let (Some(id), Some(name)) = (extract_attr(line, "id"), extract_attr(line, "attr.name")) {
+            if let (Some(id), Some(name)) =
+                (extract_attr(line, "id"), extract_attr(line, "attr.name"))
+            {
                 key_names.insert(id, name);
             }
         }
@@ -174,8 +176,11 @@ pub fn write_graphml(graph: &Graph) -> String {
     lines.push(r#"<graphml xmlns="http://graphml.graphstruct.org/graphml">"#.to_string());
 
     // Key definitions
-    lines.push(r#"  <key id="label" for="node" attr.name="label" attr.type="string"/>"#.to_string());
-    lines.push(r#"  <key id="weight" for="edge" attr.name="weight" attr.type="double"/>"#.to_string());
+    lines
+        .push(r#"  <key id="label" for="node" attr.name="label" attr.type="string"/>"#.to_string());
+    lines.push(
+        r#"  <key id="weight" for="edge" attr.name="weight" attr.type="double"/>"#.to_string(),
+    );
 
     // Collect all node attribute keys
     let mut node_attr_keys = std::collections::HashSet::new();
@@ -205,10 +210,7 @@ pub fn write_graphml(graph: &Graph) -> String {
     for id in node_ids {
         let node = &graph.nodes[id];
         lines.push(format!(r#"    <node id="{}">"#, node.id));
-        lines.push(format!(
-            r#"      <data key="label">{}</data>"#,
-            node.label
-        ));
+        lines.push(format!(r#"      <data key="label">{}</data>"#, node.label));
         for (key, value) in &node.attributes {
             lines.push(format!(r#"      <data key="{}">{}</data>"#, key, value));
         }

@@ -162,23 +162,19 @@ pub fn mcmc_sample(
     for gen in 0..config.n_generations {
         // Choose proposal type.
         let r = rng.next_f64() * total_weight;
-        let (proposal_name, proposed_tree, hastings_ratio) = if r
-            < config.proposal_weights.nni
-        {
+        let (proposal_name, proposed_tree, hastings_ratio) = if r < config.proposal_weights.nni {
             propose_nni(&current_tree, &mut rng)
         } else if r < config.proposal_weights.nni + config.proposal_weights.spr {
             propose_spr(&current_tree, &mut rng)
-        } else if r
-            < config.proposal_weights.nni
-                + config.proposal_weights.spr
-                + config.proposal_weights.branch_scale
+        } else if r < config.proposal_weights.nni
+            + config.proposal_weights.spr
+            + config.proposal_weights.branch_scale
         {
             propose_branch_scale(&current_tree, &mut rng)
-        } else if r
-            < config.proposal_weights.nni
-                + config.proposal_weights.spr
-                + config.proposal_weights.branch_scale
-                + config.proposal_weights.branch_slide
+        } else if r < config.proposal_weights.nni
+            + config.proposal_weights.spr
+            + config.proposal_weights.branch_scale
+            + config.proposal_weights.branch_slide
         {
             propose_branch_slide(&current_tree, &mut rng)
         } else {
@@ -354,9 +350,7 @@ pub fn posterior_summary(samples: &[McmcSample]) -> PosteriorSummary {
 fn tree_prior_ln(tree: &PhyloTree, prior: &TreePrior, clock: &ClockModel) -> f64 {
     let topology_prior = match prior {
         TreePrior::Uniform => 0.0,
-        TreePrior::CoalescentConstant { pop_size } => {
-            coalescent_prior_ln(tree, *pop_size)
-        }
+        TreePrior::CoalescentConstant { pop_size } => coalescent_prior_ln(tree, *pop_size),
         TreePrior::CoalescentExponential {
             initial_pop,
             growth_rate,
@@ -383,8 +377,7 @@ fn tree_prior_ln(tree: &PhyloTree, prior: &TreePrior, clock: &ClockModel) -> f64
                             let log_bl = bl.ln();
                             let log_mean = mean_rate.ln();
                             lp -= (log_bl - log_mean).powi(2) / (2.0 * stdev * stdev);
-                            lp -= log_bl + (2.0 * std::f64::consts::PI).sqrt().ln()
-                                + stdev.ln();
+                            lp -= log_bl + (2.0 * std::f64::consts::PI).sqrt().ln() + stdev.ln();
                         }
                     }
                 }
@@ -486,9 +479,7 @@ fn propose_spr(tree: &PhyloTree, rng: &mut Xorshift64) -> (&'static str, PhyloTr
     }
 
     // Pick random non-root node to prune.
-    let non_root: Vec<NodeId> = (0..n)
-        .filter(|&id| id != tree.root())
-        .collect();
+    let non_root: Vec<NodeId> = (0..n).filter(|&id| id != tree.root()).collect();
     if non_root.is_empty() {
         return ("spr", tree.clone(), 1.0);
     }
@@ -511,10 +502,7 @@ fn propose_spr(tree: &PhyloTree, rng: &mut Xorshift64) -> (&'static str, PhyloTr
 }
 
 /// Propose branch length scaling (multiply all by exp(delta)).
-fn propose_branch_scale(
-    tree: &PhyloTree,
-    rng: &mut Xorshift64,
-) -> (&'static str, PhyloTree, f64) {
+fn propose_branch_scale(tree: &PhyloTree, rng: &mut Xorshift64) -> (&'static str, PhyloTree, f64) {
     let epsilon = 0.1;
     let delta = rng.uniform(-epsilon, epsilon);
     let factor = delta.exp();
@@ -542,17 +530,10 @@ fn propose_branch_scale(
 }
 
 /// Propose sliding a single branch length.
-fn propose_branch_slide(
-    tree: &PhyloTree,
-    rng: &mut Xorshift64,
-) -> (&'static str, PhyloTree, f64) {
+fn propose_branch_slide(tree: &PhyloTree, rng: &mut Xorshift64) -> (&'static str, PhyloTree, f64) {
     let n = tree.node_count();
     let nodes_with_bl: Vec<NodeId> = (0..n)
-        .filter(|&id| {
-            tree.get_node(id)
-                .and_then(|n| n.branch_length)
-                .is_some()
-        })
+        .filter(|&id| tree.get_node(id).and_then(|n| n.branch_length).is_some())
         .collect();
 
     if nodes_with_bl.is_empty() {
@@ -634,8 +615,7 @@ mod tests {
     use crate::subst_model::Jc69Model;
 
     fn small_tree_and_seqs() -> (PhyloTree, Vec<Vec<u8>>) {
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
         let seqs = vec![
             b"ACGTACGTAC".to_vec(),
             b"ACGTACGTAC".to_vec(),
@@ -696,7 +676,8 @@ mod tests {
             assert!(
                 (0.0..=1.0).contains(rate),
                 "{} acceptance rate {} out of range",
-                name, rate
+                name,
+                rate
             );
         }
     }
@@ -725,7 +706,12 @@ mod tests {
 
         let diag = convergence_diagnostics(&result.samples);
         for (name, &ess_val) in &diag.ess {
-            assert!(ess_val > 0.0, "ESS for {} should be > 0, got {}", name, ess_val);
+            assert!(
+                ess_val > 0.0,
+                "ESS for {} should be > 0, got {}",
+                name,
+                ess_val
+            );
         }
     }
 
@@ -768,7 +754,8 @@ mod tests {
         assert!(
             lp_short > lp_long,
             "short branches should have higher prior: {} vs {}",
-            lp_short, lp_long
+            lp_short,
+            lp_long
         );
     }
 
@@ -785,7 +772,8 @@ mod tests {
         assert!(
             lp_low > lp_high,
             "low rate should have higher prior: {} vs {}",
-            lp_low, lp_high
+            lp_low,
+            lp_high
         );
     }
 

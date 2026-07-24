@@ -204,7 +204,12 @@ fn ln_gamma(x: f64) -> f64 {
 /// Given prior (alpha, beta) and observed (successes, trials),
 /// returns posterior (alpha', beta').
 #[pyfunction]
-fn bayesian_beta_update(alpha: f64, beta: f64, successes: u64, trials: u64) -> PyResult<(f64, f64)> {
+fn bayesian_beta_update(
+    alpha: f64,
+    beta: f64,
+    successes: u64,
+    trials: u64,
+) -> PyResult<(f64, f64)> {
     let prior = cyanea_stats::bayesian::Beta::new(alpha, beta).into_pyresult()?;
     let posterior = prior.update_binomial(successes, trials);
     Ok((posterior.alpha(), posterior.beta()))
@@ -292,8 +297,7 @@ fn log_rank_test(
     status.extend(s2);
     let mut groups: Vec<usize> = vec![0; n1];
     groups.extend(vec![1; times.len() - n1]);
-    let lr =
-        cyanea_stats::survival::log_rank_test(&times, &status, &groups).into_pyresult()?;
+    let lr = cyanea_stats::survival::log_rank_test(&times, &status, &groups).into_pyresult()?;
     Ok(PyLogRankResult {
         statistic: lr.statistic,
         p_value: lr.p_value,
@@ -310,8 +314,7 @@ fn cox_ph(
     n_features: usize,
 ) -> PyResult<PyCoxPhResult> {
     let result =
-        cyanea_stats::survival::cox_ph(&times, &status, &covariates, n_features)
-            .into_pyresult()?;
+        cyanea_stats::survival::cox_ph(&times, &status, &covariates, n_features).into_pyresult()?;
     Ok(PyCoxPhResult {
         coefficients: result.coefficients,
         standard_errors: result.std_errors,
@@ -340,9 +343,8 @@ fn wright_fisher(
     n_gens: usize,
     seed: u64,
 ) -> PyResult<PyWrightFisherResult> {
-    let result =
-        cyanea_stats::null_model::wright_fisher(pop_size, init_freq, n_gens, seed)
-            .into_pyresult()?;
+    let result = cyanea_stats::null_model::wright_fisher(pop_size, init_freq, n_gens, seed)
+        .into_pyresult()?;
     Ok(PyWrightFisherResult {
         trajectory: result.frequencies,
         fixation_generation: result.fixation_gen,
@@ -558,9 +560,8 @@ fn tajimas_d(genotypes: Vec<Vec<u8>>) -> PyResult<f64> {
         0.0
     };
 
-    let result =
-        cyanea_stats::popgen::tajimas_d(seg_sites, n_sequences, avg_pairwise_diff)
-            .into_pyresult()?;
+    let result = cyanea_stats::popgen::tajimas_d(seg_sites, n_sequences, avg_pairwise_diff)
+        .into_pyresult()?;
     Ok(result.d)
 }
 
@@ -617,14 +618,9 @@ fn gsea_preranked(
         })
         .collect();
 
-    let results = cyanea_stats::enrichment::gsea_preranked(
-        &gene_indices,
-        &scores,
-        &gs,
-        1.0,
-        n_perms,
-    )
-    .into_pyresult()?;
+    let results =
+        cyanea_stats::enrichment::gsea_preranked(&gene_indices, &scores, &gs, 1.0, n_perms)
+            .into_pyresult()?;
 
     Ok(results
         .into_iter()
@@ -686,8 +682,7 @@ fn ora(
         })
         .collect();
 
-    let results =
-        cyanea_stats::enrichment::ora(&sig_indices, &gs, background).into_pyresult()?;
+    let results = cyanea_stats::enrichment::ora(&sig_indices, &gs, background).into_pyresult()?;
 
     Ok(results
         .into_iter()

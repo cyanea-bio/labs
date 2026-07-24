@@ -48,12 +48,11 @@ pub fn parse_cigar(s: &str) -> Result<Vec<CigarOp>> {
             let start = num_start.ok_or_else(|| {
                 CyaneaError::Parse(format!("CIGAR op '{}' at position {} has no count", c, i))
             })?;
-            let n: usize = s[start..i].parse().map_err(|e| {
-                CyaneaError::Parse(format!("invalid CIGAR count: {}", e))
-            })?;
-            let op = char_to_cigar_op(c, n).ok_or_else(|| {
-                CyaneaError::Parse(format!("invalid CIGAR op character '{}'", c))
-            })?;
+            let n: usize = s[start..i]
+                .parse()
+                .map_err(|e| CyaneaError::Parse(format!("invalid CIGAR count: {}", e)))?;
+            let op = char_to_cigar_op(c, n)
+                .ok_or_else(|| CyaneaError::Parse(format!("invalid CIGAR op character '{}'", c)))?;
             ops.push(op);
             num_start = None;
         }
@@ -120,7 +119,8 @@ pub fn validate_cigar(ops: &[CigarOp]) -> Result<()> {
     for (i, op) in ops.iter().enumerate() {
         if op.is_empty() {
             return Err(CyaneaError::InvalidInput(format!(
-                "zero-length CIGAR op at position {}", i
+                "zero-length CIGAR op at position {}",
+                i
             )));
         }
     }
@@ -130,7 +130,9 @@ pub fn validate_cigar(ops: &[CigarOp]) -> Result<()> {
         if ops[i].code() == ops[i - 1].code() {
             return Err(CyaneaError::InvalidInput(format!(
                 "adjacent CIGAR ops of same type '{}' at positions {} and {}",
-                ops[i].code(), i - 1, i
+                ops[i].code(),
+                i - 1,
+                i
             )));
         }
     }
@@ -139,7 +141,8 @@ pub fn validate_cigar(ops: &[CigarOp]) -> Result<()> {
     for (i, op) in ops.iter().enumerate() {
         if matches!(op, CigarOp::HardClip(_)) && i != 0 && i != ops.len() - 1 {
             return Err(CyaneaError::InvalidInput(format!(
-                "hard clip (H) at interior position {}", i
+                "hard clip (H) at interior position {}",
+                i
             )));
         }
     }
@@ -149,11 +152,11 @@ pub fn validate_cigar(ops: &[CigarOp]) -> Result<()> {
         if matches!(op, CigarOp::SoftClip(_)) {
             let at_start = i == 0 || (i == 1 && matches!(ops[0], CigarOp::HardClip(_)));
             let at_end = i == ops.len() - 1
-                || (i == ops.len() - 2
-                    && matches!(ops[ops.len() - 1], CigarOp::HardClip(_)));
+                || (i == ops.len() - 2 && matches!(ops[ops.len() - 1], CigarOp::HardClip(_)));
             if !at_start && !at_end {
                 return Err(CyaneaError::InvalidInput(format!(
-                    "soft clip (S) at invalid position {}", i
+                    "soft clip (S) at invalid position {}",
+                    i
                 )));
             }
         }
@@ -489,11 +492,7 @@ pub fn alignment_to_cigar(query: &[u8], target: &[u8]) -> Result<Vec<CigarOp>> {
 /// # Errors
 ///
 /// Returns an error if sequences are too short for the CIGAR.
-pub fn generate_md_tag(
-    ops: &[CigarOp],
-    query: &[u8],
-    reference: &[u8],
-) -> Result<String> {
+pub fn generate_md_tag(ops: &[CigarOp], query: &[u8], reference: &[u8]) -> Result<String> {
     let mut md = String::new();
     let mut match_count = 0usize;
     let mut qi = 0usize;
@@ -877,7 +876,7 @@ mod tests {
 
     #[test]
     fn alignment_to_cigar_basic() {
-        let query  = b"ACGTAC-G";
+        let query = b"ACGTAC-G";
         let target = b"ACG-ACGA";
         let ops = alignment_to_cigar(query, target).unwrap();
         assert_eq!(
@@ -900,7 +899,7 @@ mod tests {
     #[test]
     fn cigar_alignment_round_trip() {
         // Start with gapped alignment, extract CIGAR, reconstruct
-        let query  = b"AC-GT";
+        let query = b"AC-GT";
         let target = b"ACAGT";
         let ops = alignment_to_cigar(query, target).unwrap();
         // ungapped sequences

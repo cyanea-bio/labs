@@ -193,9 +193,21 @@ mod tests {
                     start: 7668421,
                     end: 7687490,
                     exons: vec![
-                        Exon { exon_number: 1, start: 7668421, end: 7668586 },
-                        Exon { exon_number: 2, start: 7670609, end: 7670715 },
-                        Exon { exon_number: 3, start: 7673534, end: 7673608 },
+                        Exon {
+                            exon_number: 1,
+                            start: 7668421,
+                            end: 7668586,
+                        },
+                        Exon {
+                            exon_number: 2,
+                            start: 7670609,
+                            end: 7670715,
+                        },
+                        Exon {
+                            exon_number: 3,
+                            start: 7673534,
+                            end: 7673608,
+                        },
                     ],
                     cds_start: Some(7668421),
                     cds_end: Some(7687490),
@@ -204,9 +216,11 @@ mod tests {
                     transcript_id: "ENST00000413465".into(),
                     start: 7669608,
                     end: 7687490,
-                    exons: vec![
-                        Exon { exon_number: 1, start: 7669608, end: 7669690 },
-                    ],
+                    exons: vec![Exon {
+                        exon_number: 1,
+                        start: 7669608,
+                        end: 7669690,
+                    }],
                     cds_start: None,
                     cds_end: None,
                 },
@@ -216,7 +230,11 @@ mod tests {
 
     #[test]
     fn test_exon_len() {
-        let exon = Exon { exon_number: 1, start: 100, end: 300 };
+        let exon = Exon {
+            exon_number: 1,
+            start: 100,
+            end: 300,
+        };
         assert_eq!(exon.len(), 200);
     }
 

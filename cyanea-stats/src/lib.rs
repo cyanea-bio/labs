@@ -35,8 +35,8 @@ pub mod descriptive;
 pub mod diffexpr;
 pub mod distribution;
 pub mod diversity;
-pub mod enrichment;
 pub mod effect_size;
+pub mod enrichment;
 pub mod multivariate;
 pub mod normalization;
 pub mod null_model;
@@ -56,23 +56,17 @@ pub use correction::CorrectionMethod;
 pub use correlation::CorrelationMatrix;
 pub use descriptive::DescriptiveStats;
 pub use diffexpr::{DeGeneResult, DeMethod, DeResults, VolcanoPoint};
-pub use enrichment::{
-    GeneSet, GoAnnotation, GoEnrichmentConfig, GoEnrichmentResult, GoNamespace, GoTerm, GseaResult,
-    OraResult,
-};
 pub use distribution::{
     Binomial, ChiSquared, Distribution, FDistribution, NegativeBinomial, Normal, Poisson,
 };
-pub use popgen::{
-    AlleleFrequencies, DiversityStats, FstMethod, FstResult, HweResult, LdResult, TajimaD,
-};
-pub use rank::RankMethod;
-pub use survival::{CoxPhResult, KmResult, KmStep, LogRankResult};
-pub use testing::TestResult;
 pub use diversity::{
     alpha_diversity, alpha_rarefaction, bray_curtis, bray_curtis_matrix, chao1, hill_numbers,
     jaccard, jaccard_matrix, rarefaction_curve, shannon_index, simpson_index, weighted_jaccard,
     AlphaDiversity,
+};
+pub use enrichment::{
+    GeneSet, GoAnnotation, GoEnrichmentConfig, GoEnrichmentResult, GoNamespace, GoTerm, GseaResult,
+    OraResult,
 };
 pub use multivariate::{
     amova, anosim, bioenv, mantel_test, permanova, AmovaResult, AnosimResult, BioenvResult,
@@ -82,3 +76,9 @@ pub use ordination::{
     cca, nmds, pcoa, procrustes, rda, ConstrainedOrdinationResult, NmdsConfig, NmdsResult,
     PcoaResult, ProcrustesResult,
 };
+pub use popgen::{
+    AlleleFrequencies, DiversityStats, FstMethod, FstResult, HweResult, LdResult, TajimaD,
+};
+pub use rank::RankMethod;
+pub use survival::{CoxPhResult, KmResult, KmStep, LogRankResult};
+pub use testing::TestResult;

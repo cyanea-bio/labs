@@ -6,8 +6,8 @@
 
 use serde::Serialize;
 
-use cyanea_stats::correlation;
 use cyanea_stats::correction;
+use cyanea_stats::correlation;
 use cyanea_stats::descriptive;
 use cyanea_stats::diversity;
 use cyanea_stats::null_model;
@@ -572,11 +572,7 @@ pub fn fst_hudson(pop1_json: &str, pop2_json: &str) -> String {
 ///
 /// Output: JSON `JsTajimaD`.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-pub fn tajimas_d(
-    segregating_sites: usize,
-    n_sequences: usize,
-    avg_pairwise_diff: f64,
-) -> String {
+pub fn tajimas_d(segregating_sites: usize, n_sequences: usize, avg_pairwise_diff: f64) -> String {
     match popgen::tajimas_d(segregating_sites, n_sequences, avg_pairwise_diff) {
         Ok(result) => {
             let js = JsTajimaD {
@@ -791,7 +787,12 @@ mod tests {
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let h = v["ok"].as_f64().unwrap();
         let expected = (3.0f64).ln();
-        assert!((h - expected).abs() < 1e-10, "H={}, expected={}", h, expected);
+        assert!(
+            (h - expected).abs() < 1e-10,
+            "H={}, expected={}",
+            h,
+            expected
+        );
     }
 
     #[test]
@@ -802,7 +803,12 @@ mod tests {
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let d = v["ok"].as_f64().unwrap();
         let expected = 270.0 / 870.0;
-        assert!((d - expected).abs() < 1e-10, "D={}, expected={}", d, expected);
+        assert!(
+            (d - expected).abs() < 1e-10,
+            "D={}, expected={}",
+            d,
+            expected
+        );
     }
 
     #[test]

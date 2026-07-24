@@ -161,8 +161,7 @@ pub fn simulate_reads(
     let mut rng = Xorshift64::new(config.seed);
 
     // Total reads needed to achieve the requested coverage.
-    let n_reads =
-        ((ref_len as f64 * config.coverage) / config.read_length as f64).round() as usize;
+    let n_reads = ((ref_len as f64 * config.coverage) / config.read_length as f64).round() as usize;
 
     // Pre-compute per-position quality scores.
     let qualities: Vec<u8> = (0..config.read_length)
@@ -210,24 +209,10 @@ pub fn simulate_reads(
 
             // Introduce errors and build reads.
             let r1 = build_read(
-                &mut rng,
-                &r1_bases,
-                &qualities,
-                config,
-                frag_idx,
-                true,
-                r1_pos,
-                chrom_name,
+                &mut rng, &r1_bases, &qualities, config, frag_idx, true, r1_pos, chrom_name,
             );
             let r2 = build_read(
-                &mut rng,
-                &r2_bases,
-                &qualities,
-                config,
-                frag_idx,
-                false,
-                r2_pos,
-                chrom_name,
+                &mut rng, &r2_bases, &qualities, config, frag_idx, false, r2_pos, chrom_name,
             );
             reads.push(r1);
             reads.push(r2);
@@ -273,8 +258,7 @@ fn build_read(
     let mut seq = bases.to_vec();
 
     for i in 0..read_len {
-        let error_prob =
-            config.error_rate * (1.0 + 2.0 * i as f64 / read_len as f64);
+        let error_prob = config.error_rate * (1.0 + 2.0 * i as f64 / read_len as f64);
         if rng.next_f64() < error_prob {
             seq[i] = substitute_base(rng, seq[i]);
         }

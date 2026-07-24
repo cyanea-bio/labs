@@ -177,11 +177,26 @@ impl RnaSequence {
 /// Average molecular weights (Da) for each amino acid.
 fn amino_acid_weight(aa: u8) -> f64 {
     match aa {
-        b'A' => 89.09, b'R' => 174.20, b'N' => 132.12, b'D' => 133.10,
-        b'C' => 121.16, b'E' => 147.13, b'Q' => 146.15, b'G' => 75.03,
-        b'H' => 155.16, b'I' => 131.17, b'L' => 131.17, b'K' => 146.19,
-        b'M' => 149.21, b'F' => 165.19, b'P' => 115.13, b'S' => 105.09,
-        b'T' => 119.12, b'W' => 204.23, b'Y' => 181.19, b'V' => 117.15,
+        b'A' => 89.09,
+        b'R' => 174.20,
+        b'N' => 132.12,
+        b'D' => 133.10,
+        b'C' => 121.16,
+        b'E' => 147.13,
+        b'Q' => 146.15,
+        b'G' => 75.03,
+        b'H' => 155.16,
+        b'I' => 131.17,
+        b'L' => 131.17,
+        b'K' => 146.19,
+        b'M' => 149.21,
+        b'F' => 165.19,
+        b'P' => 115.13,
+        b'S' => 105.09,
+        b'T' => 119.12,
+        b'W' => 204.23,
+        b'Y' => 181.19,
+        b'V' => 117.15,
         // Ambiguous / non-standard — use average of all 20
         _ => 128.16,
     }
@@ -301,7 +316,10 @@ mod proptests {
 
     /// Strategy: generate a random DNA string of length 1..=500 using only ACGT
     fn dna_string(max_len: usize) -> impl Strategy<Value = Vec<u8>> {
-        proptest::collection::vec(prop_oneof![Just(b'A'), Just(b'C'), Just(b'G'), Just(b'T')], 1..=max_len)
+        proptest::collection::vec(
+            prop_oneof![Just(b'A'), Just(b'C'), Just(b'G'), Just(b'T')],
+            1..=max_len,
+        )
     }
 
     proptest! {

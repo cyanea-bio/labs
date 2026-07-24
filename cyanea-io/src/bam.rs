@@ -69,7 +69,9 @@ fn parse_bam_reader(reader: &mut impl Read) -> Result<Vec<SamRecord>> {
 
     // Validate BAM magic
     if data[pos..pos + 4] != BAM_MAGIC {
-        return Err(CyaneaError::Parse("not a valid BAM file (bad magic)".into()));
+        return Err(CyaneaError::Parse(
+            "not a valid BAM file (bad magic)".into(),
+        ));
     }
     pos += 4;
 
@@ -206,7 +208,11 @@ fn parse_bam_record(
     };
 
     // Mate position: 0-based to 1-based, 0 if unavailable (-1 in BAM)
-    let pnext = if next_pos < 0 { 0u64 } else { (next_pos + 1) as u64 };
+    let pnext = if next_pos < 0 {
+        0u64
+    } else {
+        (next_pos + 1) as u64
+    };
 
     Ok(SamRecord {
         qname,
@@ -235,12 +241,7 @@ fn decode_cigar(data: &[u8], pos: &mut usize, n_ops: usize) -> String {
 
     let mut cigar = String::new();
     for _ in 0..n_ops {
-        let val = u32::from_le_bytes([
-            data[*pos],
-            data[*pos + 1],
-            data[*pos + 2],
-            data[*pos + 3],
-        ]);
+        let val = u32::from_le_bytes([data[*pos], data[*pos + 1], data[*pos + 2], data[*pos + 3]]);
         *pos += 4;
 
         let op_len = val >> 4;
@@ -264,8 +265,7 @@ fn decode_cigar(data: &[u8], pos: &mut usize, n_ops: usize) -> String {
 
 /// Decode BAM 4-bit encoded sequence to ASCII.
 const SEQ_DECODE: [u8; 16] = [
-    b'=', b'A', b'C', b'M', b'G', b'R', b'S', b'V', b'T', b'W', b'Y', b'H', b'K', b'D', b'N',
-    b'N',
+    b'=', b'A', b'C', b'M', b'G', b'R', b'S', b'V', b'T', b'W', b'Y', b'H', b'K', b'D', b'N', b'N',
 ];
 
 fn decode_sequence(data: &[u8], offset: usize, seq_len: usize) -> String {
@@ -484,9 +484,7 @@ mod test_helpers {
     }
 
     /// Build a complete BAM file (BGZF-compressed) and write to a temp file.
-    pub(super) fn write_test_bam(
-        records: &[BamTestRecord],
-    ) -> tempfile::NamedTempFile {
+    pub(super) fn write_test_bam(records: &[BamTestRecord]) -> tempfile::NamedTempFile {
         let content = build_bam_content(records);
         let compressed = bgzf_compress(&content);
         let eof = bgzf_eof_block();
@@ -667,7 +665,7 @@ mod tests {
             pos: 99,
             mapq: 60,
             cigar: vec![(3, 0), (1, 1), (2, 0), (1, 2), (1, 0)], // 3M1I2M1D1M
-            seq: b"ACGTTGA",                                       // 3+1+2+1 = 7 bases
+            seq: b"ACGTTGA",                                     // 3+1+2+1 = 7 bases
             qual: &[],
             next_ref_id: -1,
             next_pos: -1,

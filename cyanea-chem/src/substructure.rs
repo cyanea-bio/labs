@@ -135,9 +135,7 @@ impl<'a> Vf2State<'a> {
 
         for &(p_neighbor, _) in &self.pattern.adjacency[pattern_atom] {
             if let Some(t_mapped) = self.core_pattern[p_neighbor] {
-                let t_neighbors: Vec<usize> = self
-                    .target
-                    .adjacency[t_mapped]
+                let t_neighbors: Vec<usize> = self.target.adjacency[t_mapped]
                     .iter()
                     .map(|&(n, _)| n)
                     .filter(|&n| self.core_target[n].is_none())

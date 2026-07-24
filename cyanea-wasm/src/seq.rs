@@ -5,12 +5,12 @@
 //! type used by `cyanea-seq`.
 
 use cyanea_core::{Annotated, CyaneaError, Result, Sequence};
-use cyanea_seq::FastaStats;
-use cyanea_seq::rna_structure;
+use cyanea_seq::assembly;
+use cyanea_seq::codon::CodonUsage;
 use cyanea_seq::protein_properties;
 use cyanea_seq::read_sim::{self, ReadSimConfig};
-use cyanea_seq::codon::CodonUsage;
-use cyanea_seq::assembly;
+use cyanea_seq::rna_structure;
+use cyanea_seq::FastaStats;
 
 use crate::error::{wasm_err, wasm_ok, wasm_result};
 
@@ -408,7 +408,11 @@ fn make_fastq_record(
     qual_str: &str,
 ) -> cyanea_core::Result<cyanea_seq::FastqRecord> {
     let sequence = cyanea_seq::DnaSequence::new(seq_str.as_bytes())?;
-    let qual_bytes: Vec<u8> = qual_str.as_bytes().iter().map(|&q| q.saturating_sub(33)).collect();
+    let qual_bytes: Vec<u8> = qual_str
+        .as_bytes()
+        .iter()
+        .map(|&q| q.saturating_sub(33))
+        .collect();
     let quality = cyanea_seq::QualityScores::from_raw(qual_bytes);
     cyanea_seq::FastqRecord::new(name.to_string(), None, sequence, quality)
 }
@@ -436,7 +440,12 @@ fn trim_fastq_impl(data: &str, config_json: &str) -> cyanea_core::Result<Vec<JsF
     for rec in &records {
         let fq = make_fastq_record(&rec.name, &rec.sequence, &rec.quality)?;
         if let Some(trimmed) = pipeline.process(&fq) {
-            let quality: Vec<u8> = trimmed.quality().as_slice().iter().map(|&q| q + 33).collect();
+            let quality: Vec<u8> = trimmed
+                .quality()
+                .as_slice()
+                .iter()
+                .map(|&q| q + 33)
+                .collect();
             results.push(JsFastqRecord {
                 name: trimmed.name().to_string(),
                 sequence: String::from_utf8_lossy(trimmed.sequence().as_bytes()).into_owned(),
@@ -499,8 +508,7 @@ fn trim_paired_fastq_impl(
         "drop_both" | "keep_first" | "keep_second" => {}
         _ => {
             return Err(CyaneaError::InvalidInput(format!(
-                "invalid orphan_policy: '{}' (expected 'drop_both', 'keep_first', or 'keep_second')",
-                orphan_policy
+                "invalid orphan_policy: '{orphan_policy}' (expected 'drop_both', 'keep_first', or 'keep_second')"
             )))
         }
     }
@@ -673,18 +681,16 @@ pub fn minhash_sketch(seq: &str, k: usize, sketch_size: usize) -> String {
 /// Returns Jaccard similarity, containment (both directions), and ANI estimate.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn minhash_compare(seq_a: &str, seq_b: &str, k: usize, sketch_size: usize) -> String {
-    let sketch_a = match cyanea_seq::minhash::MinHash::from_sequence(
-        seq_a.as_bytes(), k, sketch_size,
-    ) {
-        Ok(s) => s,
-        Err(e) => return wasm_err(e),
-    };
-    let sketch_b = match cyanea_seq::minhash::MinHash::from_sequence(
-        seq_b.as_bytes(), k, sketch_size,
-    ) {
-        Ok(s) => s,
-        Err(e) => return wasm_err(e),
-    };
+    let sketch_a =
+        match cyanea_seq::minhash::MinHash::from_sequence(seq_a.as_bytes(), k, sketch_size) {
+            Ok(s) => s,
+            Err(e) => return wasm_err(e),
+        };
+    let sketch_b =
+        match cyanea_seq::minhash::MinHash::from_sequence(seq_b.as_bytes(), k, sketch_size) {
+            Ok(s) => s,
+            Err(e) => return wasm_err(e),
+        };
     let jaccard = match sketch_a.jaccard(&sketch_b) {
         Ok(j) => j,
         Err(e) => return wasm_err(e),

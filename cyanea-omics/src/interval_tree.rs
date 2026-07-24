@@ -277,8 +277,10 @@ impl<T> IntervalTree<T> {
             // This interval ends before point — candidate
             let is_better = match best {
                 None => true,
-                Some(b) => node.interval.end > b.end
-                    || (node.interval.end == b.end && node.interval.start > b.start),
+                Some(b) => {
+                    node.interval.end > b.end
+                        || (node.interval.end == b.end && node.interval.start > b.start)
+                }
             };
             if is_better {
                 *best = Some(&node.interval);
@@ -361,10 +363,7 @@ fn build_implicit<T>(
 
     if let Some(interval) = sorted[mid].take() {
         let max_end = interval.end;
-        nodes[node_idx] = Some(Node {
-            interval,
-            max_end,
-        });
+        nodes[node_idx] = Some(Node { interval, max_end });
 
         let left = 2 * node_idx + 1;
         let right = 2 * node_idx + 2;
@@ -528,11 +527,7 @@ mod tests {
 
     #[test]
     fn adjacent_intervals() {
-        let tree = IntervalTree::from_unsorted(vec![
-            iv(0, 10),
-            iv(10, 20),
-            iv(20, 30),
-        ]);
+        let tree = IntervalTree::from_unsorted(vec![iv(0, 10), iv(10, 20), iv(20, 30)]);
 
         // Abutting intervals don't overlap in half-open semantics
         assert_eq!(tree.query(10, 20).len(), 1);
@@ -541,12 +536,8 @@ mod tests {
 
     #[test]
     fn all_same_start() {
-        let tree = IntervalTree::from_unsorted(vec![
-            iv(10, 20),
-            iv(10, 30),
-            iv(10, 40),
-            iv(10, 50),
-        ]);
+        let tree =
+            IntervalTree::from_unsorted(vec![iv(10, 20), iv(10, 30), iv(10, 40), iv(10, 50)]);
 
         assert_eq!(tree.query(10, 11).len(), 4);
         assert_eq!(tree.query(25, 26).len(), 3);
@@ -556,11 +547,7 @@ mod tests {
 
     #[test]
     fn count_overlaps() {
-        let tree = IntervalTree::from_unsorted(vec![
-            iv(0, 10),
-            iv(5, 15),
-            iv(20, 30),
-        ]);
+        let tree = IntervalTree::from_unsorted(vec![iv(0, 10), iv(5, 15), iv(20, 30)]);
         assert_eq!(tree.count_overlaps(8, 12), 2);
         assert_eq!(tree.count_overlaps(25, 35), 1);
         assert_eq!(tree.count_overlaps(16, 19), 0);
@@ -568,11 +555,7 @@ mod tests {
 
     #[test]
     fn nearest_basic() {
-        let tree = IntervalTree::from_unsorted(vec![
-            iv(10, 20),
-            iv(30, 40),
-            iv(60, 70),
-        ]);
+        let tree = IntervalTree::from_unsorted(vec![iv(10, 20), iv(30, 40), iv(60, 70)]);
 
         // Point inside an interval
         let n = tree.nearest(15).unwrap();
@@ -593,11 +576,7 @@ mod tests {
 
     #[test]
     fn preceding_basic() {
-        let tree = IntervalTree::from_unsorted(vec![
-            iv(10, 20),
-            iv(30, 40),
-            iv(60, 70),
-        ]);
+        let tree = IntervalTree::from_unsorted(vec![iv(10, 20), iv(30, 40), iv(60, 70)]);
 
         // Before first interval
         assert!(tree.preceding(5).is_none());
@@ -617,11 +596,7 @@ mod tests {
 
     #[test]
     fn following_basic() {
-        let tree = IntervalTree::from_unsorted(vec![
-            iv(10, 20),
-            iv(30, 40),
-            iv(60, 70),
-        ]);
+        let tree = IntervalTree::from_unsorted(vec![iv(10, 20), iv(30, 40), iv(60, 70)]);
 
         // Before first interval
         let f = tree.following(0).unwrap();
@@ -665,12 +640,7 @@ mod tests {
 
     #[test]
     fn iter_in_order() {
-        let tree = IntervalTree::from_unsorted(vec![
-            iv(30, 40),
-            iv(10, 20),
-            iv(50, 60),
-            iv(0, 5),
-        ]);
+        let tree = IntervalTree::from_unsorted(vec![iv(30, 40), iv(10, 20), iv(50, 60), iv(0, 5)]);
 
         let starts: Vec<u64> = tree.iter().map(|i| i.start).collect();
         // In-order traversal should yield sorted by start
@@ -688,10 +658,7 @@ mod tests {
 
     #[test]
     fn data_preserved() {
-        let tree = IntervalTree::from_unsorted(vec![
-            iv_data(10, 20, 42),
-            iv_data(30, 40, 99),
-        ]);
+        let tree = IntervalTree::from_unsorted(vec![iv_data(10, 20, 42), iv_data(30, 40, 99)]);
 
         let hits = tree.query(15, 35);
         assert_eq!(hits.len(), 2);

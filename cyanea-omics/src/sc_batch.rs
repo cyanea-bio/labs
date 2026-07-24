@@ -133,7 +133,8 @@ pub fn correct_combat(
                 let gamma_star = shrink_gamma * batch_means[b] + (1.0 - shrink_gamma) * gamma_hat;
 
                 let shrink_delta = delta_var / (delta_var + batch_vars[b].powi(2) / nb.max(1.0));
-                let delta_star = (shrink_delta * batch_vars[b] + (1.0 - shrink_delta) * delta_mean).max(1e-10);
+                let delta_star =
+                    (shrink_delta * batch_vars[b] + (1.0 - shrink_delta) * delta_mean).max(1e-10);
 
                 // Correct: x' = (x - gamma*) * sqrt(overall_var / delta*) + overall_mean
                 let scale = (overall_var / delta_star).sqrt();
@@ -205,7 +206,9 @@ pub fn compute_lisi(
 
     let n_dims = embedding.first().map_or(0, |r| r.len());
     if n_dims == 0 {
-        return Err(CyaneaError::InvalidInput("embedding has no dimensions".into()));
+        return Err(CyaneaError::InvalidInput(
+            "embedding has no dimensions".into(),
+        ));
     }
 
     let n_labels = labels.iter().max().map_or(0, |&m| m + 1);
@@ -259,7 +262,10 @@ pub fn compute_lisi(
         lisi_values.iter().sum::<f64>() / lisi_values.len() as f64
     };
 
-    Ok(LisiResult { lisi_values, mean_lisi })
+    Ok(LisiResult {
+        lisi_values,
+        mean_lisi,
+    })
 }
 
 // ── Silhouette Score ───────────────────────────────────────────────────────
@@ -289,7 +295,9 @@ pub fn silhouette_batch(
 
     let n_dims = embedding.first().map_or(0, |r| r.len());
     if n_dims == 0 {
-        return Err(CyaneaError::InvalidInput("embedding has no dimensions".into()));
+        return Err(CyaneaError::InvalidInput(
+            "embedding has no dimensions".into(),
+        ));
     }
 
     let k = config.n_neighbors.min(n_cells - 1);
@@ -451,7 +459,8 @@ mod tests {
     fn combat_single_batch() {
         let expr = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
         let batches = vec![0, 0];
-        let corrected = correct_combat(&expr, &batches, &StandaloneCombatConfig::default()).unwrap();
+        let corrected =
+            correct_combat(&expr, &batches, &StandaloneCombatConfig::default()).unwrap();
         // No correction for single batch
         assert_eq!(corrected, expr);
     }
@@ -463,7 +472,8 @@ mod tests {
             vec![2.0, 3.0, 20.0, 21.0], // gene 1: batch 0 [2,3], batch 1 [20,21]
         ];
         let batches = vec![0, 0, 1, 1];
-        let corrected = correct_combat(&expr, &batches, &StandaloneCombatConfig::default()).unwrap();
+        let corrected =
+            correct_combat(&expr, &batches, &StandaloneCombatConfig::default()).unwrap();
         assert_eq!(corrected.len(), 2);
         assert_eq!(corrected[0].len(), 4);
         // After ComBat, the matrices should be modified (not identical to input)
@@ -482,13 +492,14 @@ mod tests {
 
     #[test]
     fn lisi_single_label() {
-        let embedding = vec![
-            vec![0.0, 0.0],
-            vec![0.1, 0.0],
-            vec![0.2, 0.0],
-        ];
+        let embedding = vec![vec![0.0, 0.0], vec![0.1, 0.0], vec![0.2, 0.0]];
         let labels = vec![0, 0, 0];
-        let result = compute_lisi(&embedding, &labels, &IntegrationMetricsConfig { n_neighbors: 2 }).unwrap();
+        let result = compute_lisi(
+            &embedding,
+            &labels,
+            &IntegrationMetricsConfig { n_neighbors: 2 },
+        )
+        .unwrap();
         // Single label in neighborhood → LISI = 1
         assert!(result.lisi_values.iter().all(|&v| (v - 1.0).abs() < 1e-10));
         assert!((result.mean_lisi - 1.0).abs() < 1e-10);
@@ -503,7 +514,12 @@ mod tests {
             vec![0.9, 0.0],
         ];
         let labels = vec![0, 0, 1, 1];
-        let result = compute_lisi(&embedding, &labels, &IntegrationMetricsConfig { n_neighbors: 2 }).unwrap();
+        let result = compute_lisi(
+            &embedding,
+            &labels,
+            &IntegrationMetricsConfig { n_neighbors: 2 },
+        )
+        .unwrap();
         // LISI should be > 1 (some diversity)
         assert!(result.mean_lisi > 1.0);
     }
@@ -549,7 +565,12 @@ mod tests {
             vec![10.1, 0.0],
         ];
         let batches = vec![0, 0, 1, 1];
-        let score = silhouette_batch(&embedding, &batches, &IntegrationMetricsConfig { n_neighbors: 2 }).unwrap();
+        let score = silhouette_batch(
+            &embedding,
+            &batches,
+            &IntegrationMetricsConfig { n_neighbors: 2 },
+        )
+        .unwrap();
         // Well-separated batches → positive score
         assert!(score > 0.0);
     }

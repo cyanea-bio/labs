@@ -148,14 +148,10 @@ pub fn umap(data: &[f64], n_features: usize, config: &UmapConfig) -> Result<Umap
     }
     let n_samples = data.len() / n_features;
     if n_samples < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "need at least 2 samples".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("need at least 2 samples".into()));
     }
     if config.n_neighbors < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "n_neighbors must be >= 2".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_neighbors must be >= 2".into()));
     }
     if config.n_neighbors >= n_samples {
         return Err(CyaneaError::InvalidInput(format!(
@@ -164,9 +160,7 @@ pub fn umap(data: &[f64], n_features: usize, config: &UmapConfig) -> Result<Umap
         )));
     }
     if config.n_components == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "n_components must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_components must be > 0".into()));
     }
 
     let k = config.n_neighbors;
@@ -292,11 +286,7 @@ fn compute_knn_graph(
 
 /// For each point, find sigma_i such that sum of exp(-d / sigma) over k
 /// neighbors yields the target log2(n_neighbors).
-fn smooth_knn_distances(
-    knn_dists: &[Vec<f64>],
-    n_samples: usize,
-    k: usize,
-) -> Vec<f64> {
+fn smooth_knn_distances(knn_dists: &[Vec<f64>], n_samples: usize, k: usize) -> Vec<f64> {
     let target = (k as f64).ln();
     let mut sigmas = Vec::with_capacity(n_samples);
 
@@ -389,11 +379,7 @@ fn compute_fuzzy_graph(
     for (&(i, j), &(w_ij, w_ji)) in &pair_weights {
         let sym = w_ij + w_ji - w_ij * w_ji;
         if sym > 0.0 {
-            edges.push(Edge {
-                i,
-                j,
-                weight: sym,
-            });
+            edges.push(Edge { i, j, weight: sym });
         }
     }
 
@@ -513,18 +499,14 @@ fn initialize_embedding(
             for i in 0..n_samples {
                 for d in 0..n_components {
                     if d < pca_dims {
-                        embedding[i * n_components + d] =
-                            pca_result.transformed[i * pca_dims + d];
+                        embedding[i * n_components + d] = pca_result.transformed[i * pca_dims + d];
                     } else {
                         embedding[i * n_components + d] = rng.next_f64() * 0.01 - 0.005;
                     }
                 }
             }
             // Scale PCA embedding to small range for SGD stability
-            let max_abs = embedding
-                .iter()
-                .map(|x| x.abs())
-                .fold(0.0_f64, f64::max);
+            let max_abs = embedding.iter().map(|x| x.abs()).fold(0.0_f64, f64::max);
             if max_abs > 0.0 {
                 let scale = 10.0 / max_abs;
                 for v in embedding.iter_mut() {
@@ -565,10 +547,7 @@ fn optimize_embedding(
     }
 
     // Compute epochs_per_sample: how often each edge is sampled
-    let max_weight = edges
-        .iter()
-        .map(|e| e.weight)
-        .fold(0.0_f64, f64::max);
+    let max_weight = edges.iter().map(|e| e.weight).fold(0.0_f64, f64::max);
     if max_weight <= 0.0 {
         return;
     }
@@ -610,8 +589,7 @@ fn optimize_embedding(
             let dist_sq = dist_sq.max(1e-10);
 
             // Attractive force
-            let grad_coeff = -2.0 * a * b * dist_sq.powf(b - 1.0)
-                / (1.0 + a * dist_sq.powf(b));
+            let grad_coeff = -2.0 * a * b * dist_sq.powf(b - 1.0) / (1.0 + a * dist_sq.powf(b));
 
             for d in 0..n_components {
                 let diff = embedding[i * n_components + d] - embedding[j * n_components + d];
@@ -630,18 +608,16 @@ fn optimize_embedding(
 
                 let mut neg_dist_sq = 0.0;
                 for d in 0..n_components {
-                    let diff =
-                        embedding[i * n_components + d] - embedding[neg * n_components + d];
+                    let diff = embedding[i * n_components + d] - embedding[neg * n_components + d];
                     neg_dist_sq += diff * diff;
                 }
                 let neg_dist_sq = neg_dist_sq.max(1e-10);
 
-                let grad_coeff = 2.0 * b
-                    / ((0.001 + neg_dist_sq) * (1.0 + a * neg_dist_sq.powf(b)));
+                let grad_coeff =
+                    2.0 * b / ((0.001 + neg_dist_sq) * (1.0 + a * neg_dist_sq.powf(b)));
 
                 for d in 0..n_components {
-                    let diff =
-                        embedding[i * n_components + d] - embedding[neg * n_components + d];
+                    let diff = embedding[i * n_components + d] - embedding[neg * n_components + d];
                     let grad = grad_coeff * diff;
                     let grad = grad.clamp(-clip, clip);
                     embedding[i * n_components + d] += lr * grad;
@@ -763,9 +739,7 @@ mod tests {
 
     #[test]
     fn umap_summary() {
-        let data = vec![
-            0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0];
         let config = UmapConfig {
             n_neighbors: 3,
             n_epochs: 50,
@@ -780,9 +754,7 @@ mod tests {
 
     #[test]
     fn umap_random_init() {
-        let data = vec![
-            0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0];
         let config = UmapConfig {
             n_neighbors: 3,
             n_epochs: 50,
@@ -797,9 +769,7 @@ mod tests {
 
     #[test]
     fn umap_pca_init() {
-        let data = vec![
-            0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0];
         let config = UmapConfig {
             n_neighbors: 3,
             n_epochs: 50,
@@ -813,9 +783,7 @@ mod tests {
 
     #[test]
     fn umap_deterministic() {
-        let data = vec![
-            0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0];
         let config = UmapConfig {
             n_neighbors: 3,
             n_epochs: 50,
@@ -829,9 +797,7 @@ mod tests {
 
     #[test]
     fn umap_custom_metric() {
-        let data = vec![
-            0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0];
         let config_manhattan = UmapConfig {
             n_neighbors: 3,
             n_epochs: 50,

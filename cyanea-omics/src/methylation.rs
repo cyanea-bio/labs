@@ -205,8 +205,12 @@ pub fn find_dmrs(
     for (key, g1_entries) in &g1_map {
         if let Some(g2_entries) = g2_map.get(key) {
             // Check min coverage in both groups.
-            let g1_pass = g1_entries.iter().all(|(_, cov)| *cov >= config.min_coverage);
-            let g2_pass = g2_entries.iter().all(|(_, cov)| *cov >= config.min_coverage);
+            let g1_pass = g1_entries
+                .iter()
+                .all(|(_, cov)| *cov >= config.min_coverage);
+            let g2_pass = g2_entries
+                .iter()
+                .all(|(_, cov)| *cov >= config.min_coverage);
             if !g1_pass || !g2_pass {
                 continue;
             }
@@ -466,8 +470,7 @@ pub fn find_cpg_islands(
 ///
 /// Other bases (G, A, T) are unaffected.
 pub fn bisulfite_convert(sequence: &[u8], methylated_positions: &[u64]) -> Vec<u8> {
-    let meth_set: std::collections::HashSet<u64> =
-        methylated_positions.iter().copied().collect();
+    let meth_set: std::collections::HashSet<u64> = methylated_positions.iter().copied().collect();
 
     sequence
         .iter()

@@ -223,9 +223,7 @@ pub fn analyze_communication(
         || cell_types.len() != n_cells
         || coords.len() != n_cells
     {
-        return Err(CyaneaError::InvalidInput(
-            "dimension mismatch".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("dimension mismatch".into()));
     }
 
     // Build gene name → index map
@@ -244,9 +242,7 @@ pub fn analyze_communication(
     let cells_by_type: std::collections::HashMap<&str, Vec<usize>> = type_set
         .iter()
         .map(|t| {
-            let members: Vec<usize> = (0..n_cells)
-                .filter(|&i| cell_types[i] == *t)
-                .collect();
+            let members: Vec<usize> = (0..n_cells).filter(|&i| cell_types[i] == *t).collect();
             (t.as_str(), members)
         })
         .collect();
@@ -284,13 +280,19 @@ pub fn analyze_communication(
         // Compute ligand/receptor scores per cell (geometric mean of subunits)
         let lig_scores: Vec<f64> = (0..n_cells)
             .map(|i| {
-                let prod: f64 = lig_indices.iter().map(|&g| expression[i][g].max(0.0)).product();
+                let prod: f64 = lig_indices
+                    .iter()
+                    .map(|&g| expression[i][g].max(0.0))
+                    .product();
                 prod.powf(1.0 / lig_indices.len() as f64)
             })
             .collect();
         let rec_scores: Vec<f64> = (0..n_cells)
             .map(|i| {
-                let prod: f64 = rec_indices.iter().map(|&g| expression[i][g].max(0.0)).product();
+                let prod: f64 = rec_indices
+                    .iter()
+                    .map(|&g| expression[i][g].max(0.0))
+                    .product();
                 prod.powf(1.0 / rec_indices.len() as f64)
             })
             .collect();
@@ -426,13 +428,15 @@ pub fn aggregate_pathways(
 
     let mut pathways: Vec<PathwayCommunication> = pathway_map
         .into_iter()
-        .map(|((pathway, source, target), (strength, n_sig))| PathwayCommunication {
-            pathway,
-            source,
-            target,
-            strength,
-            n_significant: n_sig,
-        })
+        .map(
+            |((pathway, source, target), (strength, n_sig))| PathwayCommunication {
+                pathway,
+                source,
+                target,
+                strength,
+                n_significant: n_sig,
+            },
+        )
         .collect();
 
     pathways.sort_by(|a, b| {
@@ -541,9 +545,9 @@ mod tests {
         // Multi-subunit receptor: both subunits must be expressed
         let gene_names = vec!["LIG".into(), "REC_A".into(), "REC_B".into()];
         let expression = vec![
-            vec![10.0, 0.0, 0.0], // type A
+            vec![10.0, 0.0, 0.0],  // type A
             vec![0.0, 10.0, 10.0], // type B: both receptor subunits
-            vec![0.0, 10.0, 0.0], // type C: only one subunit
+            vec![0.0, 10.0, 0.0],  // type C: only one subunit
         ];
         let cell_types = vec!["A".into(), "B".into(), "C".into()];
         let coords = vec![(0.0, 0.0), (5.0, 0.0), (10.0, 0.0)];

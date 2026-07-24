@@ -121,11 +121,7 @@ fn emit(a: u8, b: u8, params: &PairHmmParams) -> f64 {
 /// # Errors
 ///
 /// Returns an error if either sequence is empty.
-pub fn pair_hmm_forward(
-    seq_a: &[u8],
-    seq_b: &[u8],
-    params: &PairHmmParams,
-) -> Result<f64> {
+pub fn pair_hmm_forward(seq_a: &[u8], seq_b: &[u8], params: &PairHmmParams) -> Result<f64> {
     let n = seq_a.len();
     let m = seq_b.len();
 
@@ -152,12 +148,11 @@ pub fn pair_hmm_forward(
             // --- M state: requires both i > 0 and j > 0 ---
             if i > 0 && j > 0 {
                 let e = emit(seq_a[i - 1], seq_b[j - 1], params);
-                fm[idx(i, j)] = e
-                    + log_sum_exp3(
-                        fm[idx(i - 1, j - 1)] + params.log_trans_mm,
-                        fx[idx(i - 1, j - 1)] + params.log_trans_xm,
-                        fy[idx(i - 1, j - 1)] + params.log_trans_ym,
-                    );
+                fm[idx(i, j)] = e + log_sum_exp3(
+                    fm[idx(i - 1, j - 1)] + params.log_trans_mm,
+                    fx[idx(i - 1, j - 1)] + params.log_trans_xm,
+                    fy[idx(i - 1, j - 1)] + params.log_trans_ym,
+                );
             }
 
             // --- X state: only sequence A emits (i > 0) ---
@@ -178,11 +173,7 @@ pub fn pair_hmm_forward(
         }
     }
 
-    Ok(log_sum_exp3(
-        fm[idx(n, m)],
-        fx[idx(n, m)],
-        fy[idx(n, m)],
-    ))
+    Ok(log_sum_exp3(fm[idx(n, m)], fx[idx(n, m)], fy[idx(n, m)]))
 }
 
 // ---------------------------------------------------------------------------

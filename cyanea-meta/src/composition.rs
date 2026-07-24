@@ -6,8 +6,8 @@
 //! - [`differential_abundance`] — ALDEx2-style: CLR + Welch's t-test per taxon
 //! - [`ancom`] — ANCOM differential abundance (W-statistic)
 
-use std::collections::HashMap;
 use crate::error::{MetaError, Result};
+use std::collections::HashMap;
 
 /// CLR (Centered Log-Ratio) transformed composition.
 #[derive(Debug, Clone)]
@@ -54,18 +54,14 @@ impl Default for CompositionTransform {
 /// Returns an error if any abundance is zero or negative.
 pub fn clr_transform(abundances: &[Vec<f64>]) -> Result<Vec<CompositionTransform>> {
     if abundances.is_empty() {
-        return Err(MetaError::Functional(
-            "abundances matrix is empty".into(),
-        ));
+        return Err(MetaError::Functional("abundances matrix is empty".into()));
     }
 
     let mut results = Vec::new();
 
     for sample in abundances {
         if sample.is_empty() {
-            return Err(MetaError::Functional(
-                "sample is empty".into(),
-            ));
+            return Err(MetaError::Functional("sample is empty".into()));
         }
 
         // Check for zeros and negatives
@@ -99,9 +95,7 @@ pub fn clr_transform(abundances: &[Vec<f64>]) -> Result<Vec<CompositionTransform
 /// Returns an error if abundances is empty or contain invalid values.
 pub fn ilr_transform(abundances: &[Vec<f64>]) -> Result<Vec<Vec<f64>>> {
     if abundances.is_empty() {
-        return Err(MetaError::Functional(
-            "abundances matrix is empty".into(),
-        ));
+        return Err(MetaError::Functional("abundances matrix is empty".into()));
     }
 
     // First apply CLR
@@ -181,24 +175,12 @@ pub fn differential_abundance(
         let mean1 = values1.iter().sum::<f64>() / values1.len() as f64;
         let mean2 = values2.iter().sum::<f64>() / values2.len() as f64;
 
-        let var1 = values1
-            .iter()
-            .map(|&x| (x - mean1).powi(2))
-            .sum::<f64>()
-            / values1.len() as f64;
-        let var2 = values2
-            .iter()
-            .map(|&x| (x - mean2).powi(2))
-            .sum::<f64>()
-            / values2.len() as f64;
+        let var1 = values1.iter().map(|&x| (x - mean1).powi(2)).sum::<f64>() / values1.len() as f64;
+        let var2 = values2.iter().map(|&x| (x - mean2).powi(2)).sum::<f64>() / values2.len() as f64;
 
         // Welch's t-statistic
         let se = ((var1 / values1.len() as f64) + (var2 / values2.len() as f64)).sqrt();
-        let t_stat = if se > 0.0 {
-            (mean1 - mean2) / se
-        } else {
-            0.0
-        };
+        let t_stat = if se > 0.0 { (mean1 - mean2) / se } else { 0.0 };
 
         let log2_fc = (mean1 - mean2) / std::f64::consts::LN_2;
 
@@ -213,7 +195,11 @@ pub fn differential_abundance(
         });
     }
 
-    results.sort_by(|a, b| a.p_value.partial_cmp(&b.p_value).unwrap_or(std::cmp::Ordering::Equal));
+    results.sort_by(|a, b| {
+        a.p_value
+            .partial_cmp(&b.p_value)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     Ok(results)
 }
 

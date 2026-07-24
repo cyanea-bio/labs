@@ -56,7 +56,9 @@ pub struct NamedTree {
 pub fn parse(input: &str) -> Result<NexusFile> {
     let trimmed = input.trim();
     if !trimmed.starts_with("#NEXUS") && !trimmed.starts_with("#nexus") {
-        return Err(CyaneaError::Parse("not a NEXUS file (missing #NEXUS header)".into()));
+        return Err(CyaneaError::Parse(
+            "not a NEXUS file (missing #NEXUS header)".into(),
+        ));
     }
 
     let mut taxa = Vec::new();
@@ -179,7 +181,10 @@ fn parse_trees_block(content: &str) -> Result<(Vec<(String, String)>, Vec<NamedT
                 let parts: Vec<&str> = entry.split_whitespace().collect();
                 if parts.len() >= 2 {
                     let num = parts[0].trim().to_string();
-                    let name = parts[1].trim().trim_matches(|c: char| c == '\'' || c == '"').to_string();
+                    let name = parts[1]
+                        .trim()
+                        .trim_matches(|c: char| c == '\'' || c == '"')
+                        .to_string();
                     translate_table.push((num, name));
                 }
             }

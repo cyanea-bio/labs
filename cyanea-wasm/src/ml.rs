@@ -7,14 +7,14 @@ use std::collections::HashMap;
 
 use serde::Serialize;
 
+use cyanea_ml::cross_validation;
 use cyanea_ml::distance;
-use cyanea_ml::kmer::KmerCounter;
+use cyanea_ml::feature_selection;
 use cyanea_ml::forest::{RandomForest, RandomForestConfig};
 use cyanea_ml::gbdt::{GbdtConfig, GradientBoostedTrees};
 use cyanea_ml::hmm::HmmModel;
+use cyanea_ml::kmer::KmerCounter;
 use cyanea_ml::metrics::{self, ConfusionMatrix};
-use cyanea_ml::cross_validation;
-use cyanea_ml::feature_selection;
 
 use crate::error::{wasm_err, wasm_ok};
 
@@ -883,11 +883,7 @@ pub fn cross_validate_rf(
 /// `n_features`: number of features per sample.
 /// `threshold`: minimum variance (features with variance > threshold are kept).
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-pub fn feature_importance_variance(
-    data_json: &str,
-    n_features: usize,
-    threshold: f64,
-) -> String {
+pub fn feature_importance_variance(data_json: &str, n_features: usize, threshold: f64) -> String {
     let data = match parse_f64_array(data_json) {
         Ok(d) => d,
         Err(e) => return wasm_err(e),
@@ -967,7 +963,9 @@ mod tests {
     #[test]
     fn pca_basic() {
         // 4 samples, 3 features each -> reduce to 2 components
-        let data = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0];
+        let data = vec![
+            1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0,
+        ];
         let json = pca(&serde_json::to_string(&data).unwrap(), 3, 2);
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let obj = &v["ok"];
@@ -989,7 +987,15 @@ mod tests {
     fn tsne_basic() {
         // 4 samples, 2 features each
         let data = vec![0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0];
-        let json = tsne(&serde_json::to_string(&data).unwrap(), 2, 2, 2.0, 100.0, 100, 42);
+        let json = tsne(
+            &serde_json::to_string(&data).unwrap(),
+            2,
+            2,
+            2.0,
+            100.0,
+            100,
+            42,
+        );
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let obj = &v["ok"];
         assert_eq!(obj["n_components"], 2);
@@ -1007,15 +1013,21 @@ mod tests {
     #[test]
     fn kmeans_basic() {
         // 6 points in 2D, should cluster into 2 groups
-        let data = vec![0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0];
+        let data = vec![
+            0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0,
+        ];
         let json = kmeans(&serde_json::to_string(&data).unwrap(), 2, 2, 100, 42);
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let obj = &v["ok"];
         assert_eq!(obj["labels"].as_array().unwrap().len(), 6);
         assert_eq!(obj["n_features"], 2);
         // First 3 should be in same cluster, last 3 in another
-        let labels: Vec<usize> = obj["labels"].as_array().unwrap()
-            .iter().map(|l| l.as_u64().unwrap() as usize).collect();
+        let labels: Vec<usize> = obj["labels"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|l| l.as_u64().unwrap() as usize)
+            .collect();
         assert_eq!(labels[0], labels[1]);
         assert_eq!(labels[0], labels[2]);
         assert_eq!(labels[3], labels[4]);
@@ -1035,7 +1047,9 @@ mod tests {
     #[test]
     fn random_forest_basic() {
         // 6 samples, 2 features, 2 classes
-        let data = vec![0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0];
+        let data = vec![
+            0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0,
+        ];
         let labels = vec![0, 0, 0, 1, 1, 1];
         let json = random_forest_classify(
             &serde_json::to_string(&data).unwrap(),
@@ -1054,7 +1068,9 @@ mod tests {
 
     #[test]
     fn random_forest_importance() {
-        let data = vec![0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0];
+        let data = vec![
+            0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0,
+        ];
         let labels = vec![0, 0, 0, 1, 1, 1];
         let json = random_forest_classify(
             &serde_json::to_string(&data).unwrap(),
@@ -1118,7 +1134,9 @@ mod tests {
     #[test]
     fn gbdt_classify_basic() {
         // 2-class classification
-        let data = vec![0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0];
+        let data = vec![
+            0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0,
+        ];
         let labels = vec![0, 0, 0, 1, 1, 1];
         let json = gbdt_classify(
             &serde_json::to_string(&data).unwrap(),
@@ -1137,7 +1155,9 @@ mod tests {
 
     #[test]
     fn gbdt_classify_predictions() {
-        let data = vec![0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0];
+        let data = vec![
+            0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0,
+        ];
         let labels = vec![0, 0, 0, 1, 1, 1];
         let json = gbdt_classify(
             &serde_json::to_string(&data).unwrap(),
@@ -1251,7 +1271,11 @@ mod tests {
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let obj = &v["ok"];
         let auc = obj["auc"].as_f64().unwrap();
-        assert!((auc - 1.0).abs() < 1e-10, "perfect separation should give AUC=1.0, got {}", auc);
+        assert!(
+            (auc - 1.0).abs() < 1e-10,
+            "perfect separation should give AUC=1.0, got {}",
+            auc
+        );
         assert!(!obj["points"].as_array().unwrap().is_empty());
     }
 
@@ -1278,8 +1302,7 @@ mod tests {
     fn cross_validate_rf_basic() {
         // Well-separated 2-class data, k=2 fold CV
         let data = vec![
-            0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 0.0, 0.2,
-            10.0, 10.0, 10.1, 10.1, 10.2, 10.0, 10.0, 10.2,
+            0.0, 0.0, 0.1, 0.1, 0.2, 0.0, 0.0, 0.2, 10.0, 10.0, 10.1, 10.1, 10.2, 10.0, 10.0, 10.2,
         ];
         let labels = vec![0, 0, 0, 0, 1, 1, 1, 1];
         let json = cross_validate_rf(
@@ -1300,17 +1323,8 @@ mod tests {
     #[test]
     fn feature_importance_variance_basic() {
         // Feature 0: varies, Feature 1: constant, Feature 2: varies
-        let data = vec![
-            1.0, 5.0, 0.0,
-            2.0, 5.0, 1.0,
-            3.0, 5.0, 2.0,
-            4.0, 5.0, 3.0,
-        ];
-        let json = feature_importance_variance(
-            &serde_json::to_string(&data).unwrap(),
-            3,
-            0.0,
-        );
+        let data = vec![1.0, 5.0, 0.0, 2.0, 5.0, 1.0, 3.0, 5.0, 2.0, 4.0, 5.0, 3.0];
+        let json = feature_importance_variance(&serde_json::to_string(&data).unwrap(), 3, 0.0);
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let obj = &v["ok"];
         let selected: Vec<usize> = obj["selected"]

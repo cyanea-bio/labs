@@ -71,8 +71,7 @@ pub struct ParquetInfo {
 pub fn parquet_info(path: impl AsRef<Path>) -> Result<ParquetInfo> {
     let path = path.as_ref();
     let file = open_file(path)?;
-    let builder =
-        ParquetRecordBatchReaderBuilder::try_new(file).map_err(|e| pq_err(e, path))?;
+    let builder = ParquetRecordBatchReaderBuilder::try_new(file).map_err(|e| pq_err(e, path))?;
     let metadata = builder.metadata();
     let file_meta = metadata.file_metadata();
     let schema_desc = file_meta.schema_descr();
@@ -121,10 +120,7 @@ fn string_to_filter(s: &str) -> VariantFilter {
 }
 
 /// Write a slice of [`Variant`] records to a Parquet file.
-pub fn write_variants_parquet(
-    variants: &[Variant],
-    path: impl AsRef<Path>,
-) -> Result<()> {
+pub fn write_variants_parquet(variants: &[Variant], path: impl AsRef<Path>) -> Result<()> {
     let path = path.as_ref();
     let schema = Arc::new(variant_schema());
 
@@ -147,7 +143,10 @@ pub fn write_variants_parquet(
         .collect();
     let alt_refs: Vec<&str> = alts.iter().map(|s| s.as_str()).collect();
     let qualities: Vec<Option<f64>> = variants.iter().map(|v| v.quality).collect();
-    let filters: Vec<String> = variants.iter().map(|v| filter_to_owned(&v.filter)).collect();
+    let filters: Vec<String> = variants
+        .iter()
+        .map(|v| filter_to_owned(&v.filter))
+        .collect();
     let filter_refs: Vec<&str> = filters.iter().map(|s| s.as_str()).collect();
 
     let columns: Vec<ArrayRef> = vec![
@@ -160,12 +159,10 @@ pub fn write_variants_parquet(
         Arc::new(StringArray::from(filter_refs)),
     ];
 
-    let batch =
-        RecordBatch::try_new(schema.clone(), columns).map_err(|e| pq_err(e, path))?;
+    let batch = RecordBatch::try_new(schema.clone(), columns).map_err(|e| pq_err(e, path))?;
 
     let file = create_file(path)?;
-    let mut writer =
-        ArrowWriter::try_new(file, schema, None).map_err(|e| pq_err(e, path))?;
+    let mut writer = ArrowWriter::try_new(file, schema, None).map_err(|e| pq_err(e, path))?;
     writer.write(&batch).map_err(|e| pq_err(e, path))?;
     writer.close().map_err(|e| pq_err(e, path))?;
 
@@ -176,8 +173,7 @@ pub fn write_variants_parquet(
 pub fn read_variants_parquet(path: impl AsRef<Path>) -> Result<Vec<Variant>> {
     let path = path.as_ref();
     let file = open_file(path)?;
-    let builder =
-        ParquetRecordBatchReaderBuilder::try_new(file).map_err(|e| pq_err(e, path))?;
+    let builder = ParquetRecordBatchReaderBuilder::try_new(file).map_err(|e| pq_err(e, path))?;
     let reader = builder.build().map_err(|e| pq_err(e, path))?;
 
     let mut variants = Vec::new();
@@ -328,12 +324,10 @@ pub fn write_intervals_parquet(
         Arc::new(StringArray::from(strand_refs)),
     ];
 
-    let batch =
-        RecordBatch::try_new(schema.clone(), columns).map_err(|e| pq_err(e, path))?;
+    let batch = RecordBatch::try_new(schema.clone(), columns).map_err(|e| pq_err(e, path))?;
 
     let file = create_file(path)?;
-    let mut writer =
-        ArrowWriter::try_new(file, schema, None).map_err(|e| pq_err(e, path))?;
+    let mut writer = ArrowWriter::try_new(file, schema, None).map_err(|e| pq_err(e, path))?;
     writer.write(&batch).map_err(|e| pq_err(e, path))?;
     writer.close().map_err(|e| pq_err(e, path))?;
 
@@ -344,8 +338,7 @@ pub fn write_intervals_parquet(
 pub fn read_intervals_parquet(path: impl AsRef<Path>) -> Result<Vec<GenomicInterval>> {
     let path = path.as_ref();
     let file = open_file(path)?;
-    let builder =
-        ParquetRecordBatchReaderBuilder::try_new(file).map_err(|e| pq_err(e, path))?;
+    let builder = ParquetRecordBatchReaderBuilder::try_new(file).map_err(|e| pq_err(e, path))?;
     let reader = builder.build().map_err(|e| pq_err(e, path))?;
 
     let mut intervals = Vec::new();
@@ -433,10 +426,7 @@ pub struct ExpressionMatrix {
 ///
 /// The schema has one `Utf8` column for gene IDs, followed by one `Float64`
 /// column per sample. This columnar layout is efficient for per-sample queries.
-pub fn write_expression_parquet(
-    matrix: &ExpressionMatrix,
-    path: impl AsRef<Path>,
-) -> Result<()> {
+pub fn write_expression_parquet(matrix: &ExpressionMatrix, path: impl AsRef<Path>) -> Result<()> {
     let path = path.as_ref();
 
     let mut fields = vec![Field::new("gene_id", DataType::Utf8, false)];
@@ -465,12 +455,10 @@ pub fn write_expression_parquet(
         columns.push(Arc::new(Float64Array::from(values)));
     }
 
-    let batch =
-        RecordBatch::try_new(schema.clone(), columns).map_err(|e| pq_err(e, path))?;
+    let batch = RecordBatch::try_new(schema.clone(), columns).map_err(|e| pq_err(e, path))?;
 
     let file = create_file(path)?;
-    let mut writer =
-        ArrowWriter::try_new(file, schema, None).map_err(|e| pq_err(e, path))?;
+    let mut writer = ArrowWriter::try_new(file, schema, None).map_err(|e| pq_err(e, path))?;
     writer.write(&batch).map_err(|e| pq_err(e, path))?;
     writer.close().map_err(|e| pq_err(e, path))?;
 
@@ -481,8 +469,7 @@ pub fn write_expression_parquet(
 pub fn read_expression_parquet(path: impl AsRef<Path>) -> Result<ExpressionMatrix> {
     let path = path.as_ref();
     let file = open_file(path)?;
-    let builder =
-        ParquetRecordBatchReaderBuilder::try_new(file).map_err(|e| pq_err(e, path))?;
+    let builder = ParquetRecordBatchReaderBuilder::try_new(file).map_err(|e| pq_err(e, path))?;
 
     let schema = builder.schema().clone();
     let reader = builder.build().map_err(|e| pq_err(e, path))?;

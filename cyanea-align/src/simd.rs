@@ -311,8 +311,16 @@ fn banded_align(
     ops.reverse();
 
     let cigar = merge_cigar(ops);
-    let (query_start, query_end) = if is_local || is_semi_global { (ci, end_i) } else { (0, m) };
-    let (target_start, target_end) = if is_local || is_semi_global { (cj, end_j) } else { (0, n) };
+    let (query_start, query_end) = if is_local || is_semi_global {
+        (ci, end_i)
+    } else {
+        (0, m)
+    };
+    let (target_start, target_end) = if is_local || is_semi_global {
+        (cj, end_j)
+    } else {
+        (0, n)
+    };
 
     Ok(AlignmentResult {
         score: best_score,
@@ -403,9 +411,14 @@ mod tests {
 
     #[test]
     fn banded_score_only_local() {
-        let score =
-            banded_score_only(b"AAACGTAAA", b"TTTCGTTTT", &dna_scheme(), 5, AlignmentMode::Local)
-                .unwrap();
+        let score = banded_score_only(
+            b"AAACGTAAA",
+            b"TTTCGTTTT",
+            &dna_scheme(),
+            5,
+            AlignmentMode::Local,
+        )
+        .unwrap();
         assert!(score > 0);
     }
 

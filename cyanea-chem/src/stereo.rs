@@ -21,10 +21,7 @@ pub fn assign_rs(mol: &Molecule, atom_idx: usize) -> Option<char> {
     // A tetrahedral center needs exactly 4 neighbors (including implicit H as a virtual neighbor).
     // Gather explicit neighbors in the order they appear in the adjacency list
     // (which matches the SMILES input order).
-    let explicit_neighbors: Vec<usize> = mol.adjacency[atom_idx]
-        .iter()
-        .map(|&(n, _)| n)
-        .collect();
+    let explicit_neighbors: Vec<usize> = mol.adjacency[atom_idx].iter().map(|&(n, _)| n).collect();
 
     let total_neighbors = explicit_neighbors.len() + atom.implicit_hydrogens as usize;
     if total_neighbors != 4 {
@@ -33,7 +30,8 @@ pub fn assign_rs(mol: &Molecule, atom_idx: usize) -> Option<char> {
 
     // Build list of neighbor priorities. We represent implicit H as None (atomic number 1),
     // explicit neighbors as Some(idx).
-    let mut neighbor_list: Vec<Option<usize>> = explicit_neighbors.iter().map(|&n| Some(n)).collect();
+    let mut neighbor_list: Vec<Option<usize>> =
+        explicit_neighbors.iter().map(|&n| Some(n)).collect();
     for _ in 0..atom.implicit_hydrogens {
         neighbor_list.push(None); // implicit hydrogen
     }
@@ -94,9 +92,15 @@ pub fn assign_rs(mol: &Molecule, atom_idx: usize) -> Option<char> {
     let p2 = others[2].1;
 
     let mut inversions = 0u32;
-    if p0 < p1 { inversions += 1; }
-    if p0 < p2 { inversions += 1; }
-    if p1 < p2 { inversions += 1; }
+    if p0 < p1 {
+        inversions += 1;
+    }
+    if p0 < p2 {
+        inversions += 1;
+    }
+    if p1 < p2 {
+        inversions += 1;
+    }
 
     let is_even_perm = inversions % 2 == 0;
 
@@ -301,7 +305,9 @@ fn cip_priority(mol: &Molecule, center: usize, neighbor: Option<usize>) -> u64 {
             // Encode level1: up to 4 neighbors, each 7 bits (values 0-127) = 28 bits
             let mut l1: u64 = 0;
             for (i, &v) in level1.iter().enumerate() {
-                if i >= 4 { break; }
+                if i >= 4 {
+                    break;
+                }
                 l1 = l1 * 128 + v as u64;
             }
 
@@ -325,7 +331,9 @@ fn cip_priority(mol: &Molecule, center: usize, neighbor: Option<usize>) -> u64 {
 
             let mut l2: u64 = 0;
             for (i, &v) in level2.iter().enumerate() {
-                if i >= 2 { break; }
+                if i >= 2 {
+                    break;
+                }
                 l2 = l2 * 128 + v as u64;
             }
 
@@ -401,7 +409,11 @@ mod tests {
         let rs1 = assign_rs(&mol1, 1);
         let rs2 = assign_rs(&mol2, 1);
         assert!(rs1.is_some() && rs2.is_some());
-        assert_ne!(rs1.unwrap(), rs2.unwrap(), "@ and @@ should give opposite R/S");
+        assert_ne!(
+            rs1.unwrap(),
+            rs2.unwrap(),
+            "@ and @@ should give opposite R/S"
+        );
     }
 
     #[test]
@@ -424,7 +436,11 @@ mod tests {
         // F/C=C/F is trans (E)
         let mol = parse_smiles("F/C=C/F").unwrap();
         // Find the double bond
-        let db_idx = mol.bonds.iter().position(|b| b.order == BondOrder::Double).unwrap();
+        let db_idx = mol
+            .bonds
+            .iter()
+            .position(|b| b.order == BondOrder::Double)
+            .unwrap();
         let ez = assign_ez(&mol, db_idx);
         assert!(ez.is_some(), "should have E/Z assignment");
         assert_eq!(ez.unwrap(), 'E', "F/C=C/F should be E (trans)");
@@ -434,7 +450,11 @@ mod tests {
     fn assign_ez_cis() {
         // F/C=C\F is cis (Z)
         let mol = parse_smiles("F/C=C\\F").unwrap();
-        let db_idx = mol.bonds.iter().position(|b| b.order == BondOrder::Double).unwrap();
+        let db_idx = mol
+            .bonds
+            .iter()
+            .position(|b| b.order == BondOrder::Double)
+            .unwrap();
         let ez = assign_ez(&mol, db_idx);
         assert!(ez.is_some(), "should have E/Z assignment");
         assert_eq!(ez.unwrap(), 'Z', "F/C=C\\F should be Z (cis)");
@@ -449,7 +469,11 @@ mod tests {
     #[test]
     fn assign_ez_returns_none_without_stereo_markers() {
         let mol = parse_smiles("FC=CF").unwrap();
-        let db_idx = mol.bonds.iter().position(|b| b.order == BondOrder::Double).unwrap();
+        let db_idx = mol
+            .bonds
+            .iter()
+            .position(|b| b.order == BondOrder::Double)
+            .unwrap();
         assert_eq!(assign_ez(&mol, db_idx), None);
     }
 }

@@ -397,12 +397,11 @@ pub fn hwe_test(genotypes: &[Option<u8>]) -> Result<HweResult> {
 /// # Errors
 ///
 /// Returns an error if no loci are provided or populations are empty.
-pub fn fst_weir_cockerham(
-    pop1: &[&[Option<u8>]],
-    pop2: &[&[Option<u8>]],
-) -> Result<FstResult> {
+pub fn fst_weir_cockerham(pop1: &[&[Option<u8>]], pop2: &[&[Option<u8>]]) -> Result<FstResult> {
     if pop1.is_empty() || pop2.is_empty() {
-        return Err(CyaneaError::InvalidInput("empty loci or populations".into()));
+        return Err(CyaneaError::InvalidInput(
+            "empty loci or populations".into(),
+        ));
     }
 
     let mut sum_a = 0.0;
@@ -426,8 +425,7 @@ pub fn fst_weir_cockerham(
 
         let p_bar = (ni1 * q1 + ni2 * q2) / n_total;
 
-        let s_sq = (ni1 * (q1 - p_bar).powi(2) + ni2 * (q2 - p_bar).powi(2))
-            / ((r - 1.0) * n_bar);
+        let s_sq = (ni1 * (q1 - p_bar).powi(2) + ni2 * (q2 - p_bar).powi(2)) / ((r - 1.0) * n_bar);
 
         let h_bar = (ni1 * n1_1 as f64 / ni1 + ni2 * n1_2 as f64 / ni2) / n_total;
 
@@ -436,10 +434,13 @@ pub fn fst_weir_cockerham(
 
         // Weir-Cockerham variance components
         let a = (n_bar / nc)
-            * (s_sq - (1.0 / (n_bar - 1.0)) * (p_bar * (1.0 - p_bar) - (r - 1.0) / r * s_sq - 0.25 * h_bar));
+            * (s_sq
+                - (1.0 / (n_bar - 1.0))
+                    * (p_bar * (1.0 - p_bar) - (r - 1.0) / r * s_sq - 0.25 * h_bar));
 
         let b = (n_bar / (n_bar - 1.0))
-            * (p_bar * (1.0 - p_bar) - (r - 1.0) / r * s_sq
+            * (p_bar * (1.0 - p_bar)
+                - (r - 1.0) / r * s_sq
                 - (2.0 * n_bar - 1.0) / (4.0 * n_bar) * h_bar);
 
         let c = 0.5 * h_bar;
@@ -467,12 +468,11 @@ pub fn fst_weir_cockerham(
 /// # Errors
 ///
 /// Returns an error if no loci are provided or populations are empty.
-pub fn fst_hudson(
-    pop1: &[&[Option<u8>]],
-    pop2: &[&[Option<u8>]],
-) -> Result<FstResult> {
+pub fn fst_hudson(pop1: &[&[Option<u8>]], pop2: &[&[Option<u8>]]) -> Result<FstResult> {
     if pop1.is_empty() || pop2.is_empty() {
-        return Err(CyaneaError::InvalidInput("empty loci or populations".into()));
+        return Err(CyaneaError::InvalidInput(
+            "empty loci or populations".into(),
+        ));
     }
 
     let mut sum_num = 0.0;
@@ -589,7 +589,8 @@ pub fn fst_multi_population(populations: &[&[&[Option<u8>]]]) -> Result<FstResul
                     * (p_bar * (1.0 - p_bar) - (r_f - 1.0) / r_f * s_sq - 0.25 * h_bar));
 
         let b = (n_bar / (n_bar - 1.0))
-            * (p_bar * (1.0 - p_bar) - (r_f - 1.0) / r_f * s_sq
+            * (p_bar * (1.0 - p_bar)
+                - (r_f - 1.0) / r_f * s_sq
                 - (2.0 * n_bar - 1.0) / (4.0 * n_bar) * h_bar);
 
         let c = 0.5 * h_bar;
@@ -620,10 +621,7 @@ pub fn fst_multi_population(populations: &[&[&[Option<u8>]]]) -> Result<FstResul
 /// # Errors
 ///
 /// Returns an error if `n_sequences` < 2 or no loci are provided.
-pub fn diversity(
-    genotype_matrix: &[&[Option<u8>]],
-    n_sequences: usize,
-) -> Result<DiversityStats> {
+pub fn diversity(genotype_matrix: &[&[Option<u8>]], n_sequences: usize) -> Result<DiversityStats> {
     if n_sequences < 2 {
         return Err(CyaneaError::InvalidInput(
             "need at least 2 sequences for diversity".into(),
@@ -775,10 +773,7 @@ pub fn tajimas_d(
 ///
 /// Returns an error if sites have different lengths, either site is monomorphic,
 /// or all genotypes are missing.
-pub fn linkage_disequilibrium(
-    site_a: &[Option<u8>],
-    site_b: &[Option<u8>],
-) -> Result<LdResult> {
+pub fn linkage_disequilibrium(site_a: &[Option<u8>], site_b: &[Option<u8>]) -> Result<LdResult> {
     if site_a.len() != site_b.len() {
         return Err(CyaneaError::InvalidInput(
             "site vectors must have the same length".into(),
@@ -869,9 +864,7 @@ pub fn genotype_pca(
     n_components: usize,
 ) -> Result<crate::reduction::PcaResult> {
     if genotype_matrix.is_empty() {
-        return Err(CyaneaError::InvalidInput(
-            "empty genotype matrix".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("empty genotype matrix".into()));
     }
     let n_features = genotype_matrix[0].len();
     if n_features == 0 {
@@ -1296,10 +1289,8 @@ mod tests {
     #[test]
     fn ld_intermediate() {
         // Some LD but not perfect
-        let site_a: Vec<Option<u8>> =
-            vec![Some(0), Some(0), Some(0), Some(2), Some(2), Some(1)];
-        let site_b: Vec<Option<u8>> =
-            vec![Some(0), Some(0), Some(2), Some(2), Some(2), Some(1)];
+        let site_a: Vec<Option<u8>> = vec![Some(0), Some(0), Some(0), Some(2), Some(2), Some(1)];
+        let site_b: Vec<Option<u8>> = vec![Some(0), Some(0), Some(2), Some(2), Some(2), Some(1)];
         let result = linkage_disequilibrium(&site_a, &site_b).unwrap();
         assert!(result.r_squared >= 0.0 && result.r_squared <= 1.0);
         assert!(result.d_prime >= 0.0 && result.d_prime <= 1.0);
@@ -1308,10 +1299,24 @@ mod tests {
     #[test]
     fn ld_d_prime_vs_r_squared() {
         // D' and r² measure different things: D' can be 1 when r² < 1
-        let site_a: Vec<Option<u8>> =
-            vec![Some(0), Some(0), Some(0), Some(0), Some(1), Some(1), Some(2)];
-        let site_b: Vec<Option<u8>> =
-            vec![Some(0), Some(0), Some(0), Some(1), Some(1), Some(2), Some(2)];
+        let site_a: Vec<Option<u8>> = vec![
+            Some(0),
+            Some(0),
+            Some(0),
+            Some(0),
+            Some(1),
+            Some(1),
+            Some(2),
+        ];
+        let site_b: Vec<Option<u8>> = vec![
+            Some(0),
+            Some(0),
+            Some(0),
+            Some(1),
+            Some(1),
+            Some(2),
+            Some(2),
+        ];
         let result = linkage_disequilibrium(&site_a, &site_b).unwrap();
         // Both should be in valid range
         assert!(result.r_squared >= 0.0 && result.r_squared <= 1.0);

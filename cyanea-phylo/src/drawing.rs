@@ -135,15 +135,13 @@ pub fn tree_layout(
 
     // Step 4: Build coordinates.
     let coords = match style {
-        LayoutStyle::Rectangular | LayoutStyle::Cladogram => {
-            (0..n_nodes)
-                .map(|id| NodeCoord {
-                    node_id: id,
-                    x: x_raw[id] * x_scale,
-                    y: y_raw[id] * y_scale,
-                })
-                .collect()
-        }
+        LayoutStyle::Rectangular | LayoutStyle::Cladogram => (0..n_nodes)
+            .map(|id| NodeCoord {
+                node_id: id,
+                x: x_raw[id] * x_scale,
+                y: y_raw[id] * y_scale,
+            })
+            .collect(),
         LayoutStyle::Radial => {
             let n_leaves = tree.leaf_count() as f64;
             let angle_scale = if n_leaves > 1.0 {
@@ -187,8 +185,7 @@ mod tests {
     #[test]
     fn rectangular_leaf_x_equals_distance() {
         // Leaf x should be proportional to root-to-leaf distance.
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);").unwrap();
         let layout = tree_layout(&tree, LayoutStyle::Rectangular, None, None).unwrap();
 
         // Find leaf coordinates.
@@ -213,8 +210,7 @@ mod tests {
 
     #[test]
     fn rectangular_leaves_evenly_spaced() {
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
         let layout = tree_layout(&tree, LayoutStyle::Rectangular, None, None).unwrap();
 
         let mut leaf_ys: Vec<f64> = tree
@@ -241,8 +237,7 @@ mod tests {
 
     #[test]
     fn cladogram_leaves_same_x() {
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.6);").unwrap();
         let layout = tree_layout(&tree, LayoutStyle::Cladogram, None, None).unwrap();
 
         let leaf_xs: Vec<f64> = tree
@@ -264,8 +259,7 @@ mod tests {
 
     #[test]
     fn radial_leaves_same_radius() {
-        let tree =
-            PhyloTree::from_newick("((A:0.5,B:0.5):0.5,(C:0.5,D:0.5):0.5);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.5,B:0.5):0.5,(C:0.5,D:0.5):0.5);").unwrap();
         let layout = tree_layout(&tree, LayoutStyle::Radial, None, None).unwrap();
 
         let leaf_radii: Vec<f64> = tree

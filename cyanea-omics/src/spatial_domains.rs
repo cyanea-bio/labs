@@ -115,9 +115,7 @@ pub fn detect_domains(
     }
     for row in expression {
         if row.len() != n_genes {
-            return Err(CyaneaError::InvalidInput(
-                "inconsistent gene counts".into(),
-            ));
+            return Err(CyaneaError::InvalidInput("inconsistent gene counts".into()));
         }
     }
 
@@ -131,7 +129,11 @@ pub fn detect_domains(
     let mut expr_norm: Vec<Vec<f64>> = expression.to_vec();
     for g in 0..n_genes {
         let mean = expression.iter().map(|r| r[g]).sum::<f64>() / n_spots as f64;
-        let var = expression.iter().map(|r| (r[g] - mean).powi(2)).sum::<f64>() / n_spots as f64;
+        let var = expression
+            .iter()
+            .map(|r| (r[g] - mean).powi(2))
+            .sum::<f64>()
+            / n_spots as f64;
         let std = var.sqrt().max(1e-10);
         for s in 0..n_spots {
             expr_norm[s][g] = (expression[s][g] - mean) / std;
@@ -224,7 +226,8 @@ pub fn detect_domains(
             }
             let count = members.len() as f64;
             for g in 0..n_genes {
-                centroids_expr[ki][g] = members.iter().map(|&s| expr_norm[s][g]).sum::<f64>() / count;
+                centroids_expr[ki][g] =
+                    members.iter().map(|&s| expr_norm[s][g]).sum::<f64>() / count;
             }
             centroids_coord[ki] = (
                 members.iter().map(|&s| coords_norm[s].0).sum::<f64>() / count,
@@ -397,7 +400,11 @@ pub fn find_spatially_variable_genes(
         w_total += nb.len() as f64;
     }
 
-    let mut rng_state = if seed == 0 { 0x5EED_DEAD_BEEF_CAFE } else { seed };
+    let mut rng_state = if seed == 0 {
+        0x5EED_DEAD_BEEF_CAFE
+    } else {
+        seed
+    };
     let xorshift = |state: &mut u64| -> u64 {
         let mut x = *state;
         x ^= x << 13;
@@ -574,11 +581,11 @@ mod tests {
         ];
         let labels = vec![0, 0, 1, 1, 1]; // spot 2 mislabeled
         let neighbors = vec![
-            vec![1],       // 0 -> 1
-            vec![0, 2],    // 1 -> 0, 2
-            vec![1, 3],    // 2 -> 1, 3
-            vec![2, 4],    // 3 -> 2, 4
-            vec![3],       // 4 -> 3
+            vec![1],    // 0 -> 1
+            vec![0, 2], // 1 -> 0, 2
+            vec![1, 3], // 2 -> 1, 3
+            vec![2, 4], // 3 -> 2, 4
+            vec![3],    // 4 -> 3
         ];
         let smoothed = hmrf_smooth(&labels, &expression, &neighbors, 1.0, 20).unwrap();
         assert_eq!(smoothed.len(), 5);
@@ -614,26 +621,30 @@ mod tests {
         let neighbors: Vec<Vec<usize>> = (0..n)
             .map(|i| {
                 let mut nb = Vec::new();
-                if i > 0 { nb.push(i - 1); }
-                if i < n - 1 { nb.push(i + 1); }
+                if i > 0 {
+                    nb.push(i - 1);
+                }
+                if i < n - 1 {
+                    nb.push(i + 1);
+                }
                 nb
             })
             .collect();
 
         let gene_names = vec!["SpatialGene".into(), "RandomGene".into()];
-        let results = find_spatially_variable_genes(
-            &expression,
-            &gene_names,
-            &neighbors,
-            199,
-            42,
-        )
-        .unwrap();
+        let results =
+            find_spatially_variable_genes(&expression, &gene_names, &neighbors, 199, 42).unwrap();
 
         assert_eq!(results.len(), 2);
         // SpatialGene should have higher Moran's I
-        let spatial = results.iter().find(|r| r.gene_name == "SpatialGene").unwrap();
-        let random = results.iter().find(|r| r.gene_name == "RandomGene").unwrap();
+        let spatial = results
+            .iter()
+            .find(|r| r.gene_name == "SpatialGene")
+            .unwrap();
+        let random = results
+            .iter()
+            .find(|r| r.gene_name == "RandomGene")
+            .unwrap();
         assert!(spatial.morans_i > random.morans_i);
     }
 
@@ -643,20 +654,18 @@ mod tests {
         let neighbors: Vec<Vec<usize>> = (0..10)
             .map(|i| {
                 let mut nb = Vec::new();
-                if i > 0 { nb.push(i - 1); }
-                if i < 9 { nb.push(i + 1); }
+                if i > 0 {
+                    nb.push(i - 1);
+                }
+                if i < 9 {
+                    nb.push(i + 1);
+                }
                 nb
             })
             .collect();
         let gene_names = vec!["Constant".into(), "Zero".into()];
-        let results = find_spatially_variable_genes(
-            &expression,
-            &gene_names,
-            &neighbors,
-            50,
-            1,
-        )
-        .unwrap();
+        let results =
+            find_spatially_variable_genes(&expression, &gene_names, &neighbors, 50, 1).unwrap();
         // Constant gene should have p_value = 1.0
         let constant = results.iter().find(|r| r.gene_name == "Constant").unwrap();
         assert!((constant.p_value - 1.0).abs() < 1e-10);
@@ -682,14 +691,8 @@ mod tests {
             vec![3, 4],
         ];
         let gene_names = vec!["G1".into(), "G2".into(), "G3".into()];
-        let results = find_spatially_variable_genes(
-            &expression,
-            &gene_names,
-            &neighbors,
-            99,
-            42,
-        )
-        .unwrap();
+        let results =
+            find_spatially_variable_genes(&expression, &gene_names, &neighbors, 99, 42).unwrap();
         for r in &results {
             assert!(r.adjusted_p_value >= r.p_value - 1e-10);
             assert!(r.adjusted_p_value <= 1.0 + 1e-10);

@@ -147,11 +147,11 @@ pub use pileup::{
 pub use pileup::call_snps;
 
 #[cfg(feature = "bam")]
-pub use bam::{parse_bam, bam_stats, BamReference};
+pub use bam::{bam_stats, parse_bam, BamReference};
 
 #[cfg(feature = "bam")]
 pub use bam_ops::{
-    alignment_stats, coordinate_sort, flagstat, fixmate, idxstats, mark_duplicates,
+    alignment_stats, coordinate_sort, fixmate, flagstat, idxstats, mark_duplicates,
     merge_bam_records, queryname_sort, AlignmentStats, DuplicateStats, FlagStats, IdxStats,
     SortOrder,
 };
@@ -224,9 +224,7 @@ pub use stockholm::{parse_stockholm, write_stockholm, StockholmAlignment};
 pub use clustal::{parse_clustal, write_clustal, ClustalAlignment};
 
 #[cfg(feature = "phylip")]
-pub use phylip::{
-    parse_phylip, parse_phylip_sequential, write_phylip, PhylipAlignment,
-};
+pub use phylip::{parse_phylip, parse_phylip_sequential, write_phylip, PhylipAlignment};
 
 #[cfg(feature = "embl")]
 pub use embl::{parse_embl, write_embl, EmblRecord};
@@ -235,9 +233,7 @@ pub use embl::{parse_embl, write_embl, EmblRecord};
 pub use pir::{parse_pir, write_pir, PirRecord};
 
 #[cfg(feature = "bedgraph")]
-pub use bedgraph::{
-    parse_bedgraph_str, parse_wiggle_str, write_bedgraph_string, BedGraphRecord,
-};
+pub use bedgraph::{parse_bedgraph_str, parse_wiggle_str, write_bedgraph_string, BedGraphRecord};
 
 #[cfg(feature = "gfa")]
 pub use gfa::{
@@ -253,11 +249,11 @@ pub use blast_xml::{
 pub use abi::{parse_abi_bytes, AbiRecord, AbiTraces};
 
 pub use microarray::{
-    parse_cel_v3, parse_gpr, parse_idat, write_cel_v3,
-    CelFile, CelVersion, GprFile, GprSpot, IdatFile,
+    parse_cel_v3, parse_gpr, parse_idat, write_cel_v3, CelFile, CelVersion, GprFile, GprSpot,
+    IdatFile,
 };
 
-pub use fcs::{parse_fcs, write_fcs, fcs_stats, FcsFile, FcsParameter, FcsStats};
+pub use fcs::{fcs_stats, parse_fcs, write_fcs, FcsFile, FcsParameter, FcsStats};
 
 #[cfg(feature = "fetch")]
 pub use fetch::{

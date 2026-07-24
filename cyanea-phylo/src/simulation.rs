@@ -113,15 +113,11 @@ pub fn simulate_evolution(
 ) -> Result<SimulatedAlignment> {
     // --- validation ---
     if seq_length == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "seq_length must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("seq_length must be > 0".into()));
     }
     let leaves = tree.leaves();
     if leaves.is_empty() {
-        return Err(CyaneaError::InvalidInput(
-            "tree has no leaf nodes".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("tree has no leaf nodes".into()));
     }
 
     let n_states = model.n_states();
@@ -239,20 +235,12 @@ pub fn simulate_evolution(
 /// let tree = simulate_coalescent(10, 1000.0, 42).unwrap();
 /// assert_eq!(tree.leaf_count(), 10);
 /// ```
-pub fn simulate_coalescent(
-    n_samples: usize,
-    pop_size: f64,
-    seed: u64,
-) -> Result<PhyloTree> {
+pub fn simulate_coalescent(n_samples: usize, pop_size: f64, seed: u64) -> Result<PhyloTree> {
     if n_samples < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "n_samples must be >= 2".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_samples must be >= 2".into()));
     }
     if pop_size <= 0.0 {
-        return Err(CyaneaError::InvalidInput(
-            "pop_size must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("pop_size must be > 0".into()));
     }
 
     let mut rng = Xorshift64::new(seed);
@@ -366,19 +354,13 @@ pub fn simulate_coalescent_growth(
     seed: u64,
 ) -> Result<PhyloTree> {
     if n_samples < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "n_samples must be >= 2".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_samples must be >= 2".into()));
     }
     if current_pop <= 0.0 {
-        return Err(CyaneaError::InvalidInput(
-            "current_pop must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("current_pop must be > 0".into()));
     }
     if growth_rate < 0.0 {
-        return Err(CyaneaError::InvalidInput(
-            "growth_rate must be >= 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("growth_rate must be >= 0".into()));
     }
 
     // If growth_rate is effectively zero, delegate to constant-size coalescent.
@@ -492,12 +474,8 @@ mod tests {
     fn balanced_tree() -> PhyloTree {
         // ((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);
         let mut tree = PhyloTree::new();
-        let ab = tree
-            .add_child(0, Some("AB".into()), Some(0.1))
-            .unwrap();
-        let cd = tree
-            .add_child(0, Some("CD".into()), Some(0.1))
-            .unwrap();
+        let ab = tree.add_child(0, Some("AB".into()), Some(0.1)).unwrap();
+        let cd = tree.add_child(0, Some("CD".into()), Some(0.1)).unwrap();
         tree.add_child(ab, Some("A".into()), Some(0.1)).unwrap();
         tree.add_child(ab, Some("B".into()), Some(0.1)).unwrap();
         tree.add_child(cd, Some("C".into()), Some(0.1)).unwrap();
@@ -551,7 +529,10 @@ mod tests {
         // identical to each other).
         let first = &aln.sequences[0];
         for seq in &aln.sequences[1..] {
-            assert_eq!(first, seq, "all leaf sequences must be identical when branches are zero");
+            assert_eq!(
+                first, seq,
+                "all leaf sequences must be identical when branches are zero"
+            );
         }
         assert_eq!(aln.n_substitutions, 0);
     }
@@ -658,8 +639,7 @@ mod tests {
         for rep in 0..replicates {
             let s = 100 + rep as u64;
             let tree_const = simulate_coalescent(n, pop, s).unwrap();
-            let tree_growth =
-                simulate_coalescent_growth(n, pop, 0.05, s).unwrap();
+            let tree_growth = simulate_coalescent_growth(n, pop, 0.05, s).unwrap();
             total_constant += tree_const.total_branch_length();
             total_growth += tree_growth.total_branch_length();
         }
@@ -692,8 +672,7 @@ mod tests {
                 }
             }
 
-            let tree_growth =
-                simulate_coalescent_growth(n, 500.0, 0.01, 77).unwrap();
+            let tree_growth = simulate_coalescent_growth(n, 500.0, 0.01, 77).unwrap();
             for node in tree_growth.nodes() {
                 if let Some(bl) = node.branch_length {
                     assert!(

@@ -281,21 +281,11 @@ pub fn write_called_vcf_string(
     out.push_str("##fileformat=VCFv4.3\n");
     out.push_str("##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth\">\n");
     out.push_str("##INFO=<ID=AF,Number=A,Type=Float,Description=\"Allele Frequency\">\n");
-    out.push_str(
-        "##INFO=<ID=SB,Number=1,Type=Float,Description=\"Strand Bias Fisher p-value\">\n",
-    );
-    out.push_str(
-        "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n",
-    );
-    out.push_str(
-        "##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">\n",
-    );
-    out.push_str(
-        "##FORMAT=<ID=AD,Number=R,Type=Integer,Description=\"Allelic Depths\">\n",
-    );
-    out.push_str(
-        "##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Genotype Quality\">\n",
-    );
+    out.push_str("##INFO=<ID=SB,Number=1,Type=Float,Description=\"Strand Bias Fisher p-value\">\n");
+    out.push_str("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n");
+    out.push_str("##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">\n");
+    out.push_str("##FORMAT=<ID=AD,Number=R,Type=Integer,Description=\"Allelic Depths\">\n");
+    out.push_str("##FORMAT=<ID=GQ,Number=1,Type=Integer,Description=\"Genotype Quality\">\n");
     out.push_str(
         "##FORMAT=<ID=PL,Number=G,Type=Integer,Description=\"Phred-scaled Likelihoods\">\n",
     );
@@ -427,7 +417,10 @@ mod tests {
 
         // Multi-allelic
         assert_eq!(variants[2].alt_alleles.len(), 2);
-        assert_eq!(variants[2].filter, VariantFilter::Fail(vec!["LowQual".to_string()]));
+        assert_eq!(
+            variants[2].filter,
+            VariantFilter::Fail(vec!["LowQual".to_string()])
+        );
     }
 
     #[test]
@@ -450,7 +443,8 @@ mod tests {
 
     #[test]
     fn test_vcf_empty_file() {
-        let file = write_vcf("##fileformat=VCFv4.3\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n");
+        let file =
+            write_vcf("##fileformat=VCFv4.3\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n");
         let variants = parse_vcf(file.path()).unwrap();
         assert!(variants.is_empty());
     }

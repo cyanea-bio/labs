@@ -206,9 +206,10 @@ pub fn infer_grn(
 
     for &tf in tf_genes {
         if tf >= n_genes {
-            return Err(CyaneaError::InvalidInput(
-                format!("TF index {} out of range ({})", tf, n_genes),
-            ));
+            return Err(CyaneaError::InvalidInput(format!(
+                "TF index {} out of range ({})",
+                tf, n_genes
+            )));
         }
     }
 
@@ -240,18 +241,12 @@ pub fn infer_grn(
             let score = match method {
                 CorrelationMethod::Pearson => pearson(tf_expr, target_expr).abs(),
                 CorrelationMethod::Spearman => spearman(tf_expr, target_expr).abs(),
-                CorrelationMethod::MutualInformation => {
-                    mutual_information(tf_expr, target_expr)
-                }
+                CorrelationMethod::MutualInformation => mutual_information(tf_expr, target_expr),
             };
 
             if score >= threshold {
-                let edge = Edge::weighted(
-                    &expr.genes[tf_idx],
-                    &expr.genes[target_idx],
-                    score,
-                )
-                .with_type("regulation");
+                let edge = Edge::weighted(&expr.genes[tf_idx], &expr.genes[target_idx], score)
+                    .with_type("regulation");
                 graph.add_edge_struct(edge)?;
                 scores.insert(
                     (expr.genes[tf_idx].clone(), expr.genes[target_idx].clone()),
@@ -281,11 +276,7 @@ pub fn infer_grn(
 /// false positives from highly variable genes.
 ///
 /// CLR score = sqrt(z_tf² + z_target²) where z = (MI - mean) / std.
-pub fn clr(
-    expr: &ExpressionMatrix,
-    tf_genes: &[usize],
-    threshold: f64,
-) -> Result<GrnResult> {
+pub fn clr(expr: &ExpressionMatrix, tf_genes: &[usize], threshold: f64) -> Result<GrnResult> {
     let n_genes = expr.num_genes();
 
     // Compute full MI matrix between TFs and all genes
@@ -297,7 +288,8 @@ pub fn clr(
             if target_idx == tf_idx {
                 continue;
             }
-            mi_matrix[ti][target_idx] = mutual_information(tf_expr, expr.gene_expression(target_idx));
+            mi_matrix[ti][target_idx] =
+                mutual_information(tf_expr, expr.gene_expression(target_idx));
         }
     }
 
@@ -313,7 +305,8 @@ pub fn clr(
         let std = if vals.len() < 2 {
             1.0
         } else {
-            let var = vals.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / (vals.len() - 1) as f64;
+            let var =
+                vals.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / (vals.len() - 1) as f64;
             var.sqrt().max(1e-15)
         };
         for j in 0..n_genes {
@@ -336,7 +329,8 @@ pub fn clr(
         let std = if vals.len() < 2 {
             1.0
         } else {
-            let var = vals.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / (vals.len() - 1) as f64;
+            let var =
+                vals.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / (vals.len() - 1) as f64;
             var.sqrt().max(1e-15)
         };
         for ti in 0..tf_genes.len() {
@@ -357,14 +351,11 @@ pub fn clr(
             if target_idx == tf_idx {
                 continue;
             }
-            let clr_score = (z_tf[ti][target_idx].powi(2) + z_target[ti][target_idx].powi(2)).sqrt();
+            let clr_score =
+                (z_tf[ti][target_idx].powi(2) + z_target[ti][target_idx].powi(2)).sqrt();
             if clr_score >= threshold {
-                let edge = Edge::weighted(
-                    &expr.genes[tf_idx],
-                    &expr.genes[target_idx],
-                    clr_score,
-                )
-                .with_type("regulation");
+                let edge = Edge::weighted(&expr.genes[tf_idx], &expr.genes[target_idx], clr_score)
+                    .with_type("regulation");
                 graph.add_edge_struct(edge)?;
                 scores_map.insert(
                     (expr.genes[tf_idx].clone(), expr.genes[target_idx].clone()),
@@ -479,13 +470,7 @@ mod tests {
     #[test]
     fn test_infer_grn_mi() {
         let expr = sample_expression();
-        let result = infer_grn(
-            &expr,
-            &[0, 1],
-            CorrelationMethod::MutualInformation,
-            0.0,
-        )
-        .unwrap();
+        let result = infer_grn(&expr, &[0, 1], CorrelationMethod::MutualInformation, 0.0).unwrap();
         assert!(!result.scores.is_empty());
     }
 

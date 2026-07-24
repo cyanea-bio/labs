@@ -4,9 +4,9 @@ use std::collections::HashMap;
 
 use cyanea_core::{CyaneaError, Result};
 
-use crate::single_cell::{AnnData, ColumnData};
 #[cfg(test)]
 use crate::single_cell::MatrixData;
+use crate::single_cell::{AnnData, ColumnData};
 
 // ── Harmony ────────────────────────────────────────────────────────────────
 
@@ -55,18 +55,21 @@ pub fn harmony(adata: &mut AnnData, config: &HarmonyConfig) -> Result<()> {
     let n_dims = pca[0].len();
 
     // Get batch assignments
-    let batch_col = adata
-        .get_obs(&config.batch_key)
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput(format!("obs['{}'] not found", config.batch_key))
-        })?;
+    let batch_col = adata.get_obs(&config.batch_key).ok_or_else(|| {
+        CyaneaError::InvalidInput(format!("obs['{}'] not found", config.batch_key))
+    })?;
 
     let batch_labels: Vec<String> = match batch_col {
         ColumnData::Strings(v) => v.clone(),
         ColumnData::Numeric(v) => v.iter().map(|x| x.to_string()).collect(),
         ColumnData::Categorical { codes, categories } => codes
             .iter()
-            .map(|&c| categories.get(c as usize).cloned().unwrap_or_else(|| c.to_string()))
+            .map(|&c| {
+                categories
+                    .get(c as usize)
+                    .cloned()
+                    .unwrap_or_else(|| c.to_string())
+            })
             .collect(),
     };
 
@@ -86,10 +89,16 @@ pub fn harmony(adata: &mut AnnData, config: &HarmonyConfig) -> Result<()> {
     let batch_counts: Vec<usize> = (0..n_batches)
         .map(|b| batch_ids.iter().filter(|&&x| x == b).count())
         .collect();
-    let batch_freq: Vec<f64> = batch_counts.iter().map(|&c| c as f64 / n_obs as f64).collect();
+    let batch_freq: Vec<f64> = batch_counts
+        .iter()
+        .map(|&c| c as f64 / n_obs as f64)
+        .collect();
 
     // Number of clusters
-    let k = config.n_clusters.unwrap_or((n_obs as f64).sqrt().ceil() as usize).max(2);
+    let k = config
+        .n_clusters
+        .unwrap_or((n_obs as f64).sqrt().ceil() as usize)
+        .max(2);
 
     // Initialize corrected embeddings
     let mut z: Vec<Vec<f64>> = pca.clone();
@@ -253,18 +262,21 @@ pub fn combat(adata: &mut AnnData, config: &CombatConfig) -> Result<()> {
     let n_obs = adata.n_obs();
     let n_vars = adata.n_vars();
 
-    let batch_col = adata
-        .get_obs(&config.batch_key)
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput(format!("obs['{}'] not found", config.batch_key))
-        })?;
+    let batch_col = adata.get_obs(&config.batch_key).ok_or_else(|| {
+        CyaneaError::InvalidInput(format!("obs['{}'] not found", config.batch_key))
+    })?;
 
     let batch_labels: Vec<String> = match batch_col {
         ColumnData::Strings(v) => v.clone(),
         ColumnData::Numeric(v) => v.iter().map(|x| x.to_string()).collect(),
         ColumnData::Categorical { codes, categories } => codes
             .iter()
-            .map(|&c| categories.get(c as usize).cloned().unwrap_or_else(|| c.to_string()))
+            .map(|&c| {
+                categories
+                    .get(c as usize)
+                    .cloned()
+                    .unwrap_or_else(|| c.to_string())
+            })
             .collect(),
     };
 
@@ -433,18 +445,21 @@ pub fn mnn_correct(adata: &mut AnnData, config: &MnnConfig) -> Result<()> {
     let n_obs = pca.len();
     let n_dims = pca[0].len();
 
-    let batch_col = adata
-        .get_obs(&config.batch_key)
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput(format!("obs['{}'] not found", config.batch_key))
-        })?;
+    let batch_col = adata.get_obs(&config.batch_key).ok_or_else(|| {
+        CyaneaError::InvalidInput(format!("obs['{}'] not found", config.batch_key))
+    })?;
 
     let batch_labels: Vec<String> = match batch_col {
         ColumnData::Strings(v) => v.clone(),
         ColumnData::Numeric(v) => v.iter().map(|x| x.to_string()).collect(),
         ColumnData::Categorical { codes, categories } => codes
             .iter()
-            .map(|&c| categories.get(c as usize).cloned().unwrap_or_else(|| c.to_string()))
+            .map(|&c| {
+                categories
+                    .get(c as usize)
+                    .cloned()
+                    .unwrap_or_else(|| c.to_string())
+            })
             .collect(),
     };
 
@@ -549,7 +564,9 @@ pub fn mnn_correct(adata: &mut AnnData, config: &MnnConfig) -> Result<()> {
         let mut pair_query_indices: Vec<usize> = Vec::new();
 
         for &(ri, qi) in &mnn_pairs {
-            let correction: Vec<f64> = (0..n_dims).map(|d| corrected[ri][d] - corrected[qi][d]).collect();
+            let correction: Vec<f64> = (0..n_dims)
+                .map(|d| corrected[ri][d] - corrected[qi][d])
+                .collect();
             pair_corrections.push(correction);
             pair_query_indices.push(qi);
         }
@@ -645,11 +662,9 @@ pub fn integration_metrics(adata: &AnnData, config: &MetricsConfig) -> Result<In
     let n_dims = pca[0].len();
 
     // Get batch labels
-    let batch_col = adata
-        .get_obs(&config.batch_key)
-        .ok_or_else(|| {
-            CyaneaError::InvalidInput(format!("obs['{}'] not found", config.batch_key))
-        })?;
+    let batch_col = adata.get_obs(&config.batch_key).ok_or_else(|| {
+        CyaneaError::InvalidInput(format!("obs['{}'] not found", config.batch_key))
+    })?;
 
     let batch_labels: Vec<usize> = labels_to_indices(batch_col);
     let n_batches = *batch_labels.iter().max().unwrap_or(&0) + 1;
@@ -876,7 +891,9 @@ mod tests {
     fn harmony_missing_pca() {
         let x = MatrixData::Dense(vec![vec![1.0, 2.0]]);
         let mut adata = AnnData::new(x, vec!["c0".into()], vec!["g0".into(), "g1".into()]).unwrap();
-        adata.add_obs_column("batch", ColumnData::Strings(vec!["b0".into()])).unwrap();
+        adata
+            .add_obs_column("batch", ColumnData::Strings(vec!["b0".into()]))
+            .unwrap();
         let result = harmony(&mut adata, &HarmonyConfig::default());
         assert!(result.is_err());
     }
@@ -945,7 +962,9 @@ mod tests {
         let labels: Vec<String> = (0..n)
             .map(|i| if i < 10 { "A".into() } else { "B".into() })
             .collect();
-        adata.add_obs_column("batch", ColumnData::Strings(labels)).unwrap();
+        adata
+            .add_obs_column("batch", ColumnData::Strings(labels))
+            .unwrap();
 
         combat(&mut adata, &CombatConfig::default()).unwrap();
 
@@ -964,9 +983,12 @@ mod tests {
     fn combat_single_batch() {
         let data = vec![vec![1.0, 2.0]; 5];
         let obs_names: Vec<String> = (0..5).map(|i| format!("c{}", i)).collect();
-        let mut adata =
-            AnnData::new(MatrixData::Dense(data), obs_names, vec!["g0".into(), "g1".into()])
-                .unwrap();
+        let mut adata = AnnData::new(
+            MatrixData::Dense(data),
+            obs_names,
+            vec!["g0".into(), "g1".into()],
+        )
+        .unwrap();
         adata
             .add_obs_column("batch", ColumnData::Strings(vec!["A".into(); 5]))
             .unwrap();
@@ -990,13 +1012,18 @@ mod tests {
         }
 
         let obs_names: Vec<String> = (0..n).map(|i| format!("c{}", i)).collect();
-        let mut adata =
-            AnnData::new(MatrixData::Dense(data), obs_names, vec!["g0".into(), "g1".into()])
-                .unwrap();
+        let mut adata = AnnData::new(
+            MatrixData::Dense(data),
+            obs_names,
+            vec!["g0".into(), "g1".into()],
+        )
+        .unwrap();
         let labels: Vec<String> = (0..n)
             .map(|i| if i < 5 { "A".into() } else { "B".into() })
             .collect();
-        adata.add_obs_column("batch", ColumnData::Strings(labels)).unwrap();
+        adata
+            .add_obs_column("batch", ColumnData::Strings(labels))
+            .unwrap();
 
         combat(
             &mut adata,
@@ -1091,7 +1118,9 @@ mod tests {
     fn mnn_missing_pca() {
         let x = MatrixData::Dense(vec![vec![1.0, 2.0]]);
         let mut adata = AnnData::new(x, vec!["c0".into()], vec!["g0".into(), "g1".into()]).unwrap();
-        adata.add_obs_column("batch", ColumnData::Strings(vec!["b0".into()])).unwrap();
+        adata
+            .add_obs_column("batch", ColumnData::Strings(vec!["b0".into()]))
+            .unwrap();
         let result = mnn_correct(&mut adata, &MnnConfig::default());
         assert!(result.is_err());
     }
@@ -1113,7 +1142,9 @@ mod tests {
         let labels: Vec<String> = (0..n)
             .map(|i| if i % 2 == 0 { "A".into() } else { "B".into() })
             .collect();
-        adata.add_obs_column("batch", ColumnData::Strings(labels)).unwrap();
+        adata
+            .add_obs_column("batch", ColumnData::Strings(labels))
+            .unwrap();
 
         let metrics = integration_metrics(
             &adata,
@@ -1156,7 +1187,9 @@ mod tests {
         let labels: Vec<String> = (0..n)
             .map(|i| if i < 10 { "A".into() } else { "B".into() })
             .collect();
-        adata.add_obs_column("batch", ColumnData::Strings(labels)).unwrap();
+        adata
+            .add_obs_column("batch", ColumnData::Strings(labels))
+            .unwrap();
 
         let metrics = integration_metrics(
             &adata,
@@ -1185,10 +1218,18 @@ mod tests {
         let pca: Vec<Vec<f64>> = (0..n).map(|i| vec![i as f64 * 0.1, 0.0]).collect();
         adata.add_obsm("X_pca", pca).unwrap();
 
-        let batch_labels: Vec<String> = (0..n).map(|i| if i % 2 == 0 { "A".into() } else { "B".into() }).collect();
-        let type_labels: Vec<String> = (0..n).map(|i| if i < 10 { "T".into() } else { "B".into() }).collect();
-        adata.add_obs_column("batch", ColumnData::Strings(batch_labels)).unwrap();
-        adata.add_obs_column("cell_type", ColumnData::Strings(type_labels)).unwrap();
+        let batch_labels: Vec<String> = (0..n)
+            .map(|i| if i % 2 == 0 { "A".into() } else { "B".into() })
+            .collect();
+        let type_labels: Vec<String> = (0..n)
+            .map(|i| if i < 10 { "T".into() } else { "B".into() })
+            .collect();
+        adata
+            .add_obs_column("batch", ColumnData::Strings(batch_labels))
+            .unwrap();
+        adata
+            .add_obs_column("cell_type", ColumnData::Strings(type_labels))
+            .unwrap();
 
         let metrics = integration_metrics(
             &adata,
@@ -1239,7 +1280,11 @@ mod tests {
         let labels = vec![0, 0, 1, 1];
         let lisi = compute_lisi(&neighbors, &labels, 2);
         // Equal proportions → Simpson = 0.5 → inverse = 2.0
-        assert!((lisi - 2.0).abs() < 1e-10, "equal two-label LISI = {}", lisi);
+        assert!(
+            (lisi - 2.0).abs() < 1e-10,
+            "equal two-label LISI = {}",
+            lisi
+        );
     }
 
     #[test]
@@ -1291,20 +1336,22 @@ mod tests {
         let labels: Vec<String> = (0..n)
             .map(|i| if i < 10 { "A".into() } else { "B".into() })
             .collect();
-        adata.add_obs_column("batch", ColumnData::Strings(labels)).unwrap();
+        adata
+            .add_obs_column("batch", ColumnData::Strings(labels))
+            .unwrap();
 
         // Add PCA embedding
-        let pca: Vec<Vec<f64>> = (0..n).map(|i| {
-            vec![adata.x().get(i, 0), adata.x().get(i, 1)]
-        }).collect();
+        let pca: Vec<Vec<f64>> = (0..n)
+            .map(|i| vec![adata.x().get(i, 0), adata.x().get(i, 1)])
+            .collect();
         adata.add_obsm("X_pca", pca).unwrap();
 
         combat(&mut adata, &CombatConfig::default()).unwrap();
 
         // Update PCA after combat
-        let pca: Vec<Vec<f64>> = (0..n).map(|i| {
-            vec![adata.x().get(i, 0), adata.x().get(i, 1)]
-        }).collect();
+        let pca: Vec<Vec<f64>> = (0..n)
+            .map(|i| vec![adata.x().get(i, 0), adata.x().get(i, 1)])
+            .collect();
         adata.add_obsm("X_pca", pca).unwrap();
 
         let metrics = integration_metrics(

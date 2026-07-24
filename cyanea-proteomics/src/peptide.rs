@@ -104,9 +104,10 @@ impl Peptide {
     pub fn new(sequence: &[u8]) -> Result<Self> {
         for &aa in sequence {
             if amino_acid_mass(aa).is_none() {
-                return Err(ProteomicsError::Peptide(
-                    format!("unknown amino acid: {}", aa as char),
-                ));
+                return Err(ProteomicsError::Peptide(format!(
+                    "unknown amino acid: {}",
+                    aa as char
+                )));
             }
         }
         Ok(Self {
@@ -119,18 +120,27 @@ impl Peptide {
     /// Add a modification at a specific position.
     pub fn add_modification(&mut self, position: usize, modification: Modification) -> Result<()> {
         if position >= self.sequence.len() {
-            return Err(ProteomicsError::Peptide("modification position out of range".into()));
+            return Err(ProteomicsError::Peptide(
+                "modification position out of range".into(),
+            ));
         }
-        self.modifications.push(ModifiedResidue { position, modification });
+        self.modifications.push(ModifiedResidue {
+            position,
+            modification,
+        });
         Ok(())
     }
 
     /// Calculate the monoisotopic molecular weight (neutral mass).
     pub fn molecular_weight(&self) -> f64 {
-        let base: f64 = self.sequence.iter()
+        let base: f64 = self
+            .sequence
+            .iter()
             .map(|&aa| amino_acid_mass(aa).unwrap_or(0.0))
             .sum();
-        let mods: f64 = self.modifications.iter()
+        let mods: f64 = self
+            .modifications
+            .iter()
             .map(|m| m.modification.mass_shift())
             .sum();
         base + mods + WATER_MASS
@@ -354,9 +364,10 @@ pub fn digest(protein: &[u8], config: &DigestConfig) -> Result<Vec<Peptide>> {
     // Validate sequence
     for &aa in protein {
         if amino_acid_mass(aa).is_none() {
-            return Err(ProteomicsError::Peptide(
-                format!("unknown amino acid in protein: {}", aa as char),
-            ));
+            return Err(ProteomicsError::Peptide(format!(
+                "unknown amino acid in protein: {}",
+                aa as char
+            )));
         }
     }
 
@@ -419,7 +430,14 @@ mod tests {
     fn test_peptide_molecular_weight() {
         let pep = Peptide::new(b"PEPTIDE").unwrap();
         // P(97.05) + E(129.04) + P(97.05) + T(101.05) + I(113.08) + D(115.03) + E(129.04) + H2O
-        let expected = 97.05276 + 129.04259 + 97.05276 + 101.04768 + 113.08406 + 115.02694 + 129.04259 + WATER_MASS;
+        let expected = 97.05276
+            + 129.04259
+            + 97.05276
+            + 101.04768
+            + 113.08406
+            + 115.02694
+            + 129.04259
+            + WATER_MASS;
         assert!((pep.molecular_weight() - expected).abs() < 0.01);
     }
 
@@ -435,7 +453,8 @@ mod tests {
     fn test_modification() {
         let mut pep = Peptide::new(b"PEPTCIDE").unwrap();
         let mw_before = pep.molecular_weight();
-        pep.add_modification(4, Modification::Carbamidomethyl).unwrap();
+        pep.add_modification(4, Modification::Carbamidomethyl)
+            .unwrap();
         let mw_after = pep.molecular_weight();
         assert!((mw_after - mw_before - 57.02146).abs() < 1e-4);
     }
@@ -460,7 +479,10 @@ mod tests {
         let pep = Peptide::new(b"PEPTIDE").unwrap();
         let ions = fragment_ions(&pep, 1);
         // b1 ion should be mass of P + proton
-        let b1: Vec<&FragmentIon> = ions.iter().filter(|i| i.ion_type == IonType::B && i.number == 1 && i.neutral_loss.is_none()).collect();
+        let b1: Vec<&FragmentIon> = ions
+            .iter()
+            .filter(|i| i.ion_type == IonType::B && i.number == 1 && i.neutral_loss.is_none())
+            .collect();
         assert_eq!(b1.len(), 1);
         let expected_b1 = (amino_acid_mass(b'P').unwrap() + PROTON_MASS) / 1.0;
         assert!((b1[0].mz - expected_b1).abs() < 0.01);

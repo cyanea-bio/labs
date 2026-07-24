@@ -60,11 +60,9 @@ impl Distribution for Beta {
         if x <= 0.0 || x >= 1.0 {
             return 0.0;
         }
-        let ln_beta_fn = ln_gamma(self.alpha) + ln_gamma(self.beta)
-            - ln_gamma(self.alpha + self.beta);
-        let ln_pdf = (self.alpha - 1.0) * x.ln()
-            + (self.beta - 1.0) * (1.0 - x).ln()
-            - ln_beta_fn;
+        let ln_beta_fn =
+            ln_gamma(self.alpha) + ln_gamma(self.beta) - ln_gamma(self.alpha + self.beta);
+        let ln_pdf = (self.alpha - 1.0) * x.ln() + (self.beta - 1.0) * (1.0 - x).ln() - ln_beta_fn;
         ln_pdf.exp()
     }
 

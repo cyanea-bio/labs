@@ -101,10 +101,8 @@ pub fn progressive_msa(sequences: &[&[u8]], scoring: &ScoringScheme) -> Result<M
     let merge_order = upgma_guide_tree(&dist);
 
     // Step 3: progressive alignment
-    let mut profiles: Vec<Option<Vec<Vec<u8>>>> = sequences
-        .iter()
-        .map(|s| Some(vec![s.to_vec()]))
-        .collect();
+    let mut profiles: Vec<Option<Vec<Vec<u8>>>> =
+        sequences.iter().map(|s| Some(vec![s.to_vec()])).collect();
 
     for (i, j) in merge_order {
         let prof_i = profiles[i].take().unwrap();
@@ -195,11 +193,7 @@ fn upgma_guide_tree(dist: &[Vec<f64>]) -> Vec<(usize, usize)> {
 }
 
 /// Align two profiles using profile-profile Needleman-Wunsch.
-fn align_profiles(
-    prof_a: &[Vec<u8>],
-    prof_b: &[Vec<u8>],
-    scoring: &ScoringScheme,
-) -> Vec<Vec<u8>> {
+fn align_profiles(prof_a: &[Vec<u8>], prof_b: &[Vec<u8>], scoring: &ScoringScheme) -> Vec<Vec<u8>> {
     let m = prof_a[0].len();
     let n = prof_b[0].len();
 

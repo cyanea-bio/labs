@@ -111,12 +111,10 @@ pub fn marginal_reconstruct(
         .map(|id| tree.get_node(id).map_or(false, |n| n.is_leaf()))
         .collect();
 
-    let mut all_posteriors: Vec<Vec<MarginalPosterior>> = (0..n_nodes)
-        .map(|_| Vec::with_capacity(seq_len))
-        .collect();
-    let mut all_map_states: Vec<Vec<u8>> = (0..n_nodes)
-        .map(|_| Vec::with_capacity(seq_len))
-        .collect();
+    let mut all_posteriors: Vec<Vec<MarginalPosterior>> =
+        (0..n_nodes).map(|_| Vec::with_capacity(seq_len)).collect();
+    let mut all_map_states: Vec<Vec<u8>> =
+        (0..n_nodes).map(|_| Vec::with_capacity(seq_len)).collect();
 
     // Process each site.
     let mut l_down = vec![[0.0f64; NUM_STATES]; n_nodes];
@@ -276,8 +274,7 @@ mod tests {
 
     #[test]
     fn marginal_posteriors_sum_to_one() {
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
         let seqs: Vec<Vec<u8>> = vec![
             b"ACGTACGT".to_vec(),
             b"ACGTACGT".to_vec(),
@@ -329,8 +326,7 @@ mod tests {
 
     #[test]
     fn marginal_correct_dimensions() {
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
         let seqs: Vec<Vec<u8>> = vec![
             b"ACGT".to_vec(),
             b"ACGT".to_vec(),

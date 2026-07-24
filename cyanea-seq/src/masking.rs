@@ -316,10 +316,7 @@ pub fn seg(seq: &[u8], params: &SegParams) -> Result<Vec<MaskedRegion>> {
 /// # Errors
 ///
 /// Returns an error if the sequence is empty.
-pub fn find_tandem_repeats(
-    seq: &[u8],
-    params: &TandemRepeatParams,
-) -> Result<Vec<MaskedRegion>> {
+pub fn find_tandem_repeats(seq: &[u8], params: &TandemRepeatParams) -> Result<Vec<MaskedRegion>> {
     if seq.is_empty() {
         return Err(CyaneaError::InvalidInput("sequence is empty".into()));
     }
@@ -343,8 +340,7 @@ pub fn find_tandem_repeats(
                 let run_start = i - p;
                 let mut run_end = i + 1;
                 while run_end < seq.len()
-                    && seq[run_end].to_ascii_uppercase()
-                        == seq[run_end - p].to_ascii_uppercase()
+                    && seq[run_end].to_ascii_uppercase() == seq[run_end - p].to_ascii_uppercase()
                 {
                     run_end += 1;
                 }
@@ -507,7 +503,10 @@ mod tests {
             ..Default::default()
         };
         let regions = dust(seq, &params).unwrap();
-        assert!(!regions.is_empty(), "dinucleotide repeat should be masked at threshold 10");
+        assert!(
+            !regions.is_empty(),
+            "dinucleotide repeat should be masked at threshold 10"
+        );
     }
 
     #[test]
@@ -596,7 +595,10 @@ mod tests {
             .iter()
             .filter(|r| (r.end - r.start) >= 8) // need at least 4 copies of period 2
             .collect();
-        assert!(p2_regions.is_empty(), "3 copies should not meet min_copies=4 for period 2");
+        assert!(
+            p2_regions.is_empty(),
+            "3 copies should not meet min_copies=4 for period 2"
+        );
     }
 
     #[test]
@@ -662,7 +664,8 @@ mod tests {
 
     #[test]
     fn mask_preserves_length() {
-        let seq = b"ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT";
+        let seq =
+            b"ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT";
         let result = mask_dust(seq, &DustParams::default(), MaskMode::Soft).unwrap();
         assert_eq!(result.sequence.len(), seq.len());
     }

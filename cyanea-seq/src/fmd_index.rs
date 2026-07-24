@@ -89,7 +89,11 @@ fn build_fm(text: &[u8]) -> (Vec<u8>, Vec<usize>, Vec<[usize; 4]>, [usize; 4]) {
 /// Count occurrences of character `c` in `bwt[0..pos]`.
 #[inline]
 fn occ_count(occ: &[[usize; 4]], pos: usize, c: usize) -> usize {
-    if pos == 0 { 0 } else { occ[pos - 1][c] }
+    if pos == 0 {
+        0
+    } else {
+        occ[pos - 1][c]
+    }
 }
 
 /// Perform a single backward-search step on an FM-index.
@@ -206,7 +210,13 @@ impl FmdIndex {
     pub fn init_interval(&self, c: u8) -> BiInterval {
         let ci = match base_to_idx(c) {
             Some(idx) => idx,
-            None => return BiInterval { lower: 0, size: 0, lower_rev: 0 },
+            None => {
+                return BiInterval {
+                    lower: 0,
+                    size: 0,
+                    lower_rev: 0,
+                }
+            }
         };
 
         let n = self.bwt.len();
@@ -217,7 +227,11 @@ impl FmdIndex {
         let size = hi - lo;
 
         if size == 0 {
-            return BiInterval { lower: 0, size: 0, lower_rev: 0 };
+            return BiInterval {
+                lower: 0,
+                size: 0,
+                lower_rev: 0,
+            };
         }
 
         // Reverse interval for the same character.
@@ -240,20 +254,28 @@ impl FmdIndex {
         }
         let ci = match base_to_idx(c) {
             Some(idx) => idx,
-            None => return BiInterval { lower: 0, size: 0, lower_rev: 0 },
+            None => {
+                return BiInterval {
+                    lower: 0,
+                    size: 0,
+                    lower_rev: 0,
+                }
+            }
         };
 
         let lo = interval.lower;
         let hi = lo + interval.size;
 
         // Backward step on forward index.
-        let (new_lo, new_hi) = lf_step(
-            &self.c_table, &self.occ, lo, hi, ci,
-        );
+        let (new_lo, new_hi) = lf_step(&self.c_table, &self.occ, lo, hi, ci);
         let new_size = if new_hi > new_lo { new_hi - new_lo } else { 0 };
 
         if new_size == 0 {
-            return BiInterval { lower: 0, size: 0, lower_rev: 0 };
+            return BiInterval {
+                lower: 0,
+                size: 0,
+                lower_rev: 0,
+            };
         }
 
         // Update reverse interval: count occurrences of characters ranked below ci
@@ -282,16 +304,21 @@ impl FmdIndex {
         }
         let ci = match base_to_idx(c) {
             Some(idx) => idx,
-            None => return BiInterval { lower: 0, size: 0, lower_rev: 0 },
+            None => {
+                return BiInterval {
+                    lower: 0,
+                    size: 0,
+                    lower_rev: 0,
+                }
+            }
         };
 
         let lo_rev = interval.lower_rev;
         let hi_rev = lo_rev + interval.size;
 
         // Backward step on reverse index.
-        let (new_lo_rev, new_hi_rev) = lf_step(
-            &self.c_table_rev, &self.occ_rev, lo_rev, hi_rev, ci,
-        );
+        let (new_lo_rev, new_hi_rev) =
+            lf_step(&self.c_table_rev, &self.occ_rev, lo_rev, hi_rev, ci);
         let new_size = if new_hi_rev > new_lo_rev {
             new_hi_rev - new_lo_rev
         } else {
@@ -299,7 +326,11 @@ impl FmdIndex {
         };
 
         if new_size == 0 {
-            return BiInterval { lower: 0, size: 0, lower_rev: 0 };
+            return BiInterval {
+                lower: 0,
+                size: 0,
+                lower_rev: 0,
+            };
         }
 
         // Update forward interval: count occurrences of characters ranked below ci
@@ -342,7 +373,11 @@ impl FmdIndex {
     /// the final bi-interval. The interval may be empty if the pattern is not found.
     pub fn backward_search(&self, pattern: &[u8]) -> BiInterval {
         if pattern.is_empty() {
-            return BiInterval { lower: 0, size: 0, lower_rev: 0 };
+            return BiInterval {
+                lower: 0,
+                size: 0,
+                lower_rev: 0,
+            };
         }
 
         let mut interval = self.init_interval(pattern[pattern.len() - 1]);
@@ -374,11 +409,7 @@ impl FmdIndex {
     /// For each starting position in the query, extend backward as far as possible,
     /// recording the maximal intervals. Then filter to retain only super-maximal
     /// matches — those not properly contained in another match.
-    pub fn smems(
-        &self,
-        query: &[u8],
-        min_len: usize,
-    ) -> Vec<(usize, usize, BiInterval)> {
+    pub fn smems(&self, query: &[u8], min_len: usize) -> Vec<(usize, usize, BiInterval)> {
         if query.is_empty() || min_len == 0 {
             return vec![];
         }
@@ -508,7 +539,11 @@ mod tests {
         let fmd = FmdIndex::new(b"ACGTACGT");
         for &base in &[b'A', b'C', b'G', b'T'] {
             let iv = fmd.init_interval(base);
-            assert!(!iv.is_empty(), "init_interval for {} should be non-empty", base as char);
+            assert!(
+                !iv.is_empty(),
+                "init_interval for {} should be non-empty",
+                base as char
+            );
             // Each base appears at least twice in the original + twice in rev comp.
             assert!(iv.size >= 4);
         }
@@ -695,8 +730,14 @@ mod tests {
                 let (si, ei, _) = smems[i];
                 let (sj, ej, _) = smems[j];
                 // No SMEM should be properly contained in another.
-                assert!(!(si >= sj && ei <= ej && (si, ei) != (sj, ej)),
-                    "SMEM ({}, {}) is contained in ({}, {})", si, ei, sj, ej);
+                assert!(
+                    !(si >= sj && ei <= ej && (si, ei) != (sj, ej)),
+                    "SMEM ({}, {}) is contained in ({}, {})",
+                    si,
+                    ei,
+                    sj,
+                    ej
+                );
             }
         }
     }
@@ -724,9 +765,17 @@ mod tests {
 
     #[test]
     fn bi_interval_empty() {
-        let iv = BiInterval { lower: 0, size: 0, lower_rev: 0 };
+        let iv = BiInterval {
+            lower: 0,
+            size: 0,
+            lower_rev: 0,
+        };
         assert!(iv.is_empty());
-        let iv2 = BiInterval { lower: 5, size: 3, lower_rev: 2 };
+        let iv2 = BiInterval {
+            lower: 5,
+            size: 3,
+            lower_rev: 2,
+        };
         assert!(!iv2.is_empty());
     }
 }

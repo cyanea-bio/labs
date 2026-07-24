@@ -42,9 +42,7 @@ pub fn canonical_smiles(mol: &Molecule) -> String {
 
     loop {
         // Find the unvisited atom with the lowest rank
-        let start = (0..n)
-            .filter(|&i| !visited[i])
-            .min_by_key(|&i| ranks[i]);
+        let start = (0..n).filter(|&i| !visited[i]).min_by_key(|&i| ranks[i]);
 
         match start {
             Some(start_idx) => {

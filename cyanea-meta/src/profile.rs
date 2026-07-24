@@ -8,8 +8,8 @@
 //! - [`normalize_profile`] — relative abundance normalization
 //! - [`merge_profiles`] — combine multiple profiles
 
-use std::collections::HashMap;
 use crate::error::{MetaError, Result};
+use std::collections::HashMap;
 
 /// Taxonomic profile: taxid → abundance and read count.
 #[derive(Debug, Clone)]
@@ -86,9 +86,7 @@ impl Default for TaxonomicProfile {
 /// Returns an error if the classifications vector is empty.
 pub fn profile_from_classifications(classifications: &[u32]) -> Result<TaxonomicProfile> {
     if classifications.is_empty() {
-        return Err(MetaError::Profile(
-            "classifications vector is empty".into(),
-        ));
+        return Err(MetaError::Profile("classifications vector is empty".into()));
     }
 
     let mut counts: HashMap<u32, u64> = HashMap::new();
@@ -120,7 +118,10 @@ pub fn profile_from_classifications(classifications: &[u32]) -> Result<Taxonomic
 /// # Errors
 ///
 /// Returns an error if the profile is empty or invalid.
-pub fn reestimate_abundance(profile: &TaxonomicProfile, _target_rank: u32) -> Result<TaxonomicProfile> {
+pub fn reestimate_abundance(
+    profile: &TaxonomicProfile,
+    _target_rank: u32,
+) -> Result<TaxonomicProfile> {
     if profile.is_empty() {
         return Err(MetaError::Profile(
             "cannot re-estimate abundance from empty profile".into(),
@@ -243,11 +244,7 @@ mod tests {
         let classifications = vec![1, 2, 2, 3, 3, 3];
         let profile = profile_from_classifications(&classifications).unwrap();
         let normalized = normalize_profile(&profile).unwrap();
-        let sum: f64 = normalized
-            .abundances
-            .values()
-            .map(|(_, a)| a)
-            .sum();
+        let sum: f64 = normalized.abundances.values().map(|(_, a)| a).sum();
         assert!((sum - 1.0).abs() < 1e-10);
     }
 

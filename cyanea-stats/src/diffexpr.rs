@@ -340,25 +340,36 @@ mod tests {
     #[test]
     fn nb_detects_upregulated() {
         let (counts, ng, ns, cond) = test_counts();
-        let res = differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
+        let res =
+            differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
         let gene0 = res.genes.iter().find(|g| g.gene_index == 0).unwrap();
-        assert!(gene0.log2_fold_change > 2.0, "log2fc={}", gene0.log2_fold_change);
+        assert!(
+            gene0.log2_fold_change > 2.0,
+            "log2fc={}",
+            gene0.log2_fold_change
+        );
         assert!(gene0.p_adjusted < 0.05, "padj={}", gene0.p_adjusted);
     }
 
     #[test]
     fn nb_detects_downregulated() {
         let (counts, ng, ns, cond) = test_counts();
-        let res = differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
+        let res =
+            differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
         let gene1 = res.genes.iter().find(|g| g.gene_index == 1).unwrap();
-        assert!(gene1.log2_fold_change < -2.0, "log2fc={}", gene1.log2_fold_change);
+        assert!(
+            gene1.log2_fold_change < -2.0,
+            "log2fc={}",
+            gene1.log2_fold_change
+        );
         assert!(gene1.p_adjusted < 0.05, "padj={}", gene1.p_adjusted);
     }
 
     #[test]
     fn nb_unchanged_genes_high_p() {
         let (counts, ng, ns, cond) = test_counts();
-        let res = differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
+        let res =
+            differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
         for idx in [2, 3, 4] {
             let gene = res.genes.iter().find(|g| g.gene_index == idx).unwrap();
             assert!(
@@ -372,7 +383,8 @@ mod tests {
     #[test]
     fn nb_log2fc_direction() {
         let (counts, ng, ns, cond) = test_counts();
-        let res = differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
+        let res =
+            differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
         let gene0 = res.genes.iter().find(|g| g.gene_index == 0).unwrap();
         let gene1 = res.genes.iter().find(|g| g.gene_index == 1).unwrap();
         assert!(gene0.log2_fold_change > 0.0);
@@ -382,7 +394,8 @@ mod tests {
     #[test]
     fn nb_padj_ge_pvalue() {
         let (counts, ng, ns, cond) = test_counts();
-        let res = differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
+        let res =
+            differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
         for g in &res.genes {
             assert!(
                 g.p_adjusted >= g.p_value - 1e-15,
@@ -397,7 +410,8 @@ mod tests {
     #[test]
     fn nb_results_sorted() {
         let (counts, ng, ns, cond) = test_counts();
-        let res = differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
+        let res =
+            differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
         for w in res.genes.windows(2) {
             assert!(
                 w[0].p_value <= w[1].p_value + 1e-15,
@@ -449,11 +463,10 @@ mod tests {
     #[test]
     fn dispersion_poisson_like() {
         // When data follows Poisson (variance ≈ mean), dispersion should be small
-        let counts = vec![
-            100.0, 101.0, 99.0, 100.0, 102.0, 98.0,
-        ];
+        let counts = vec![100.0, 101.0, 99.0, 100.0, 102.0, 98.0];
         let cond = vec![false, false, false, true, true, true];
-        let res = differential_expression(&counts, 1, 6, &cond, DeMethod::NegativeBinomial).unwrap();
+        let res =
+            differential_expression(&counts, 1, 6, &cond, DeMethod::NegativeBinomial).unwrap();
         // With nearly identical groups, p should be large
         assert!(res.genes[0].p_value > 0.5, "p={}", res.genes[0].p_value);
     }
@@ -473,12 +486,17 @@ mod tests {
     #[test]
     fn volcano_thresholds() {
         let (counts, ng, ns, cond) = test_counts();
-        let res = differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
+        let res =
+            differential_expression(&counts, ng, ns, &cond, DeMethod::NegativeBinomial).unwrap();
         let points = volcano_plot(&res, 0.05, 1.0);
 
         assert_eq!(points.len(), ng);
         // Gene 0 and 1 should be significant (large FC, low padj)
-        let sig_genes: Vec<usize> = points.iter().filter(|p| p.significant).map(|p| p.gene_index).collect();
+        let sig_genes: Vec<usize> = points
+            .iter()
+            .filter(|p| p.significant)
+            .map(|p| p.gene_index)
+            .collect();
         assert!(sig_genes.contains(&0), "gene 0 should be significant");
         assert!(sig_genes.contains(&1), "gene 1 should be significant");
 
@@ -497,7 +515,9 @@ mod tests {
     #[test]
     fn error_dimension_mismatch() {
         let cond = vec![false, true, false, true];
-        assert!(differential_expression(&[1.0, 2.0], 2, 4, &cond, DeMethod::NegativeBinomial).is_err());
+        assert!(
+            differential_expression(&[1.0, 2.0], 2, 4, &cond, DeMethod::NegativeBinomial).is_err()
+        );
     }
 
     #[test]

@@ -43,10 +43,7 @@ pub fn kabsch(atoms1: &[&Atom], atoms2: &[&Atom]) -> Result<SuperpositionResult>
 }
 
 /// Kabsch superposition on point coordinates.
-pub fn kabsch_points(
-    points1: &[Point3D],
-    points2: &[Point3D],
-) -> Result<SuperpositionResult> {
+pub fn kabsch_points(points1: &[Point3D], points2: &[Point3D]) -> Result<SuperpositionResult> {
     if points1.len() != points2.len() {
         return Err(CyaneaError::InvalidInput(format!(
             "point set sizes differ: {} vs {}",
@@ -125,12 +122,17 @@ pub fn kabsch_points(
 }
 
 /// Align two structures using only alpha-carbon atoms.
-pub fn align_structures_by_ca(
-    atoms1: &[&Atom],
-    atoms2: &[&Atom],
-) -> Result<SuperpositionResult> {
-    let ca1: Vec<&Atom> = atoms1.iter().copied().filter(|a| a.is_alpha_carbon()).collect();
-    let ca2: Vec<&Atom> = atoms2.iter().copied().filter(|a| a.is_alpha_carbon()).collect();
+pub fn align_structures_by_ca(atoms1: &[&Atom], atoms2: &[&Atom]) -> Result<SuperpositionResult> {
+    let ca1: Vec<&Atom> = atoms1
+        .iter()
+        .copied()
+        .filter(|a| a.is_alpha_carbon())
+        .collect();
+    let ca2: Vec<&Atom> = atoms2
+        .iter()
+        .copied()
+        .filter(|a| a.is_alpha_carbon())
+        .collect();
 
     if ca1.len() != ca2.len() {
         return Err(CyaneaError::InvalidInput(format!(
@@ -146,8 +148,8 @@ pub fn align_structures_by_ca(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::vec;
     use crate::types::Atom;
+    use alloc::vec;
 
     fn make_atom(name: &str, x: f64, y: f64, z: f64) -> Atom {
         Atom {
@@ -183,9 +185,16 @@ mod tests {
             Point3D::new(0.0, 1.0, 0.0),
             Point3D::new(0.0, 0.0, 1.0),
         ];
-        let p2: Vec<Point3D> = p1.iter().map(|p: &Point3D| p.add(&Point3D::new(10.0, 20.0, 30.0))).collect();
+        let p2: Vec<Point3D> = p1
+            .iter()
+            .map(|p: &Point3D| p.add(&Point3D::new(10.0, 20.0, 30.0)))
+            .collect();
         let result = kabsch_points(&p1, &p2).unwrap();
-        assert!(result.rmsd < 1e-6, "RMSD should be ~0 for translated set, got {}", result.rmsd);
+        assert!(
+            result.rmsd < 1e-6,
+            "RMSD should be ~0 for translated set, got {}",
+            result.rmsd
+        );
     }
 
     #[test]
@@ -204,7 +213,11 @@ mod tests {
             Point3D::new(1.0, 0.0, 0.0),
         ];
         let result = kabsch_points(&p1, &p2).unwrap();
-        assert!(result.rmsd < 1e-6, "RMSD should be ~0 for rotated set, got {}", result.rmsd);
+        assert!(
+            result.rmsd < 1e-6,
+            "RMSD should be ~0 for rotated set, got {}",
+            result.rmsd
+        );
     }
 
     #[test]

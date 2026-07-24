@@ -356,10 +356,8 @@ impl CscMatrix {
                 *col_entries.entry(other.indices[idx]).or_insert(0.0) += other.data[idx];
             }
 
-            let mut sorted_entries: Vec<(usize, f64)> = col_entries
-                .into_iter()
-                .filter(|&(_, v)| v != 0.0)
-                .collect();
+            let mut sorted_entries: Vec<(usize, f64)> =
+                col_entries.into_iter().filter(|&(_, v)| v != 0.0).collect();
             sorted_entries.sort_by_key(|&(r, _)| r);
 
             for (row, val) in sorted_entries {
@@ -439,9 +437,9 @@ pub fn read_mtx(content: &str) -> Result<CscMatrix> {
     let mut lines = content.lines().peekable();
 
     // Parse header
-    let header = lines.next().ok_or_else(|| {
-        CyaneaError::Parse("empty MTX file".into())
-    })?;
+    let header = lines
+        .next()
+        .ok_or_else(|| CyaneaError::Parse("empty MTX file".into()))?;
 
     if !header.starts_with("%%MatrixMarket") {
         return Err(CyaneaError::Parse(
@@ -463,9 +461,9 @@ pub fn read_mtx(content: &str) -> Result<CscMatrix> {
     }
 
     // Parse dimensions
-    let dim_line = lines.next().ok_or_else(|| {
-        CyaneaError::Parse("missing dimension line in MTX file".into())
-    })?;
+    let dim_line = lines
+        .next()
+        .ok_or_else(|| CyaneaError::Parse("missing dimension line in MTX file".into()))?;
     let dims: Vec<&str> = dim_line.split_whitespace().collect();
     if dims.len() < 3 {
         return Err(CyaneaError::Parse(format!(
@@ -473,15 +471,15 @@ pub fn read_mtx(content: &str) -> Result<CscMatrix> {
             dim_line
         )));
     }
-    let n_rows: usize = dims[0].parse().map_err(|_| {
-        CyaneaError::Parse(format!("invalid n_rows: '{}'", dims[0]))
-    })?;
-    let n_cols: usize = dims[1].parse().map_err(|_| {
-        CyaneaError::Parse(format!("invalid n_cols: '{}'", dims[1]))
-    })?;
-    let _nnz: usize = dims[2].parse().map_err(|_| {
-        CyaneaError::Parse(format!("invalid nnz: '{}'", dims[2]))
-    })?;
+    let n_rows: usize = dims[0]
+        .parse()
+        .map_err(|_| CyaneaError::Parse(format!("invalid n_rows: '{}'", dims[0])))?;
+    let n_cols: usize = dims[1]
+        .parse()
+        .map_err(|_| CyaneaError::Parse(format!("invalid n_cols: '{}'", dims[1])))?;
+    let _nnz: usize = dims[2]
+        .parse()
+        .map_err(|_| CyaneaError::Parse(format!("invalid nnz: '{}'", dims[2])))?;
 
     // Parse triplets (1-based → 0-based)
     let mut coo_rows = Vec::new();
@@ -498,30 +496,30 @@ pub fn read_mtx(content: &str) -> Result<CscMatrix> {
             continue;
         }
 
-        let row: usize = parts[0].parse().map_err(|_| {
-            CyaneaError::Parse(format!("invalid row index: '{}'", parts[0]))
-        })?;
-        let col: usize = parts[1].parse().map_err(|_| {
-            CyaneaError::Parse(format!("invalid col index: '{}'", parts[1]))
-        })?;
+        let row: usize = parts[0]
+            .parse()
+            .map_err(|_| CyaneaError::Parse(format!("invalid row index: '{}'", parts[0])))?;
+        let col: usize = parts[1]
+            .parse()
+            .map_err(|_| CyaneaError::Parse(format!("invalid col index: '{}'", parts[1])))?;
 
         let val = if is_pattern {
             1.0
         } else if parts.len() >= 3 {
-            parts[2].parse::<f64>().map_err(|_| {
-                CyaneaError::Parse(format!("invalid value: '{}'", parts[2]))
-            })?
+            parts[2]
+                .parse::<f64>()
+                .map_err(|_| CyaneaError::Parse(format!("invalid value: '{}'", parts[2])))?
         } else {
             1.0
         };
 
         // Convert to 0-based
-        let r = row.checked_sub(1).ok_or_else(|| {
-            CyaneaError::Parse("MTX row index must be >= 1".into())
-        })?;
-        let c = col.checked_sub(1).ok_or_else(|| {
-            CyaneaError::Parse("MTX col index must be >= 1".into())
-        })?;
+        let r = row
+            .checked_sub(1)
+            .ok_or_else(|| CyaneaError::Parse("MTX row index must be >= 1".into()))?;
+        let c = col
+            .checked_sub(1)
+            .ok_or_else(|| CyaneaError::Parse("MTX col index must be >= 1".into()))?;
 
         coo_rows.push(r);
         coo_cols.push(c);
@@ -570,7 +568,12 @@ pub fn read_mtx(content: &str) -> Result<CscMatrix> {
 pub fn write_mtx(matrix: &CscMatrix) -> String {
     let mut out = String::new();
     out.push_str("%%MatrixMarket matrix coordinate real general\n");
-    out.push_str(&format!("{} {} {}\n", matrix.n_rows, matrix.n_cols, matrix.nnz()));
+    out.push_str(&format!(
+        "{} {} {}\n",
+        matrix.n_rows,
+        matrix.n_cols,
+        matrix.nnz()
+    ));
 
     for col in 0..matrix.n_cols {
         let start = matrix.indptr[col];
@@ -777,7 +780,11 @@ fn subset_cols(matrix: &CscMatrix, cols: &[usize]) -> CscMatrix {
 /// Subset a CSC matrix to keep only the specified rows.
 fn subset_rows(matrix: &CscMatrix, rows: &[usize]) -> CscMatrix {
     let new_n_rows = rows.len();
-    let row_map: HashMap<usize, usize> = rows.iter().enumerate().map(|(new, &old)| (old, new)).collect();
+    let row_map: HashMap<usize, usize> = rows
+        .iter()
+        .enumerate()
+        .map(|(new, &old)| (old, new))
+        .collect();
 
     let mut indptr = vec![0usize; matrix.n_cols + 1];
     let mut indices = Vec::new();
@@ -851,10 +858,7 @@ mod tests {
 
     #[test]
     fn row_col_sums() {
-        let dense = vec![
-            vec![1.0, 0.0, 2.0],
-            vec![0.0, 3.0, 0.0],
-        ];
+        let dense = vec![vec![1.0, 0.0, 2.0], vec![0.0, 3.0, 0.0]];
         let csc = CscMatrix::from_dense(&dense);
         assert_eq!(csc.row_sums(), vec![3.0, 3.0]);
         assert_eq!(csc.col_sums(), vec![1.0, 3.0, 2.0]);
@@ -878,10 +882,7 @@ mod tests {
 
     #[test]
     fn write_mtx_roundtrip() {
-        let dense = vec![
-            vec![1.0, 0.0, 2.0],
-            vec![0.0, 3.0, 0.0],
-        ];
+        let dense = vec![vec![1.0, 0.0, 2.0], vec![0.0, 3.0, 0.0]];
         let csc = CscMatrix::from_dense(&dense);
         let written = write_mtx(&csc);
         let parsed = read_mtx(&written).unwrap();
@@ -923,10 +924,7 @@ mod tests {
 
     #[test]
     fn density_calculation() {
-        let dense = vec![
-            vec![1.0, 0.0],
-            vec![0.0, 2.0],
-        ];
+        let dense = vec![vec![1.0, 0.0], vec![0.0, 2.0]];
         let csc = CscMatrix::from_dense(&dense);
         assert!((csc.density() - 0.5).abs() < 1e-10);
     }

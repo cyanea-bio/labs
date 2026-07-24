@@ -228,8 +228,8 @@ impl HmmModel {
         // Initialization: alpha[0][i] = log(pi[i]) + log(B[i][o_0])
         let o0 = observations[0];
         for i in 0..n {
-            alpha[0][i] =
-                (self.initial[i] + EPSILON).ln() + (self.emission[i * self.n_symbols + o0] + EPSILON).ln();
+            alpha[0][i] = (self.initial[i] + EPSILON).ln()
+                + (self.emission[i * self.n_symbols + o0] + EPSILON).ln();
         }
 
         // Induction
@@ -326,8 +326,8 @@ impl HmmModel {
         // Initialization
         let o0 = observations[0];
         for i in 0..n {
-            delta[0][i] =
-                (self.initial[i] + EPSILON).ln() + (self.emission[i * self.n_symbols + o0] + EPSILON).ln();
+            delta[0][i] = (self.initial[i] + EPSILON).ln()
+                + (self.emission[i * self.n_symbols + o0] + EPSILON).ln();
         }
 
         // Recursion
@@ -451,11 +451,15 @@ impl HmmModel {
 
             // Transition probabilities
             for i in 0..n {
-                let gamma_sum: f64 =
-                    (0..t_len.saturating_sub(1)).map(|t| gamma[t][i]).sum::<f64>() + EPSILON;
+                let gamma_sum: f64 = (0..t_len.saturating_sub(1))
+                    .map(|t| gamma[t][i])
+                    .sum::<f64>()
+                    + EPSILON;
                 for j in 0..n {
-                    let xi_sum: f64 =
-                        (0..t_len.saturating_sub(1)).map(|t| xi[t][i * n + j]).sum::<f64>() + EPSILON;
+                    let xi_sum: f64 = (0..t_len.saturating_sub(1))
+                        .map(|t| xi[t][i * n + j])
+                        .sum::<f64>()
+                        + EPSILON;
                     self.transition[i * n + j] = xi_sum / gamma_sum;
                 }
                 // Normalize row

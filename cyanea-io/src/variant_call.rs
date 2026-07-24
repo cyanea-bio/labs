@@ -202,7 +202,10 @@ fn p_rr_for_base(base: u8, allele: u8, e: f64) -> f64 {
 /// Given log-likelihoods and priors, compute QUAL, GQ, genotype, and PL.
 ///
 /// Returns `(qual, gq, genotype, pl)`.
-fn call_genotype(likelihoods: [f64; 3], config: &VariantCallConfig) -> (f64, f64, Genotype, [u32; 3]) {
+fn call_genotype(
+    likelihoods: [f64; 3],
+    config: &VariantCallConfig,
+) -> (f64, f64, Genotype, [u32; 3]) {
     let prior_rr = (1.0 - config.prior_het - config.prior_hom_alt).ln();
     let prior_ra = config.prior_het.ln();
     let prior_aa = config.prior_hom_alt.ln();
@@ -399,7 +402,12 @@ fn call_snp_at_position(col: &PileupColumn, config: &VariantCallConfig) -> Optio
 
     // Strand-specific counts
     let (ref_fwd, ref_rev, alt_fwd, alt_rev) = count_stranded_alleles(col, ref_base, alt_base);
-    let sb_p = strand_bias(ref_fwd as usize, ref_rev as usize, alt_fwd as usize, alt_rev as usize);
+    let sb_p = strand_bias(
+        ref_fwd as usize,
+        ref_rev as usize,
+        alt_fwd as usize,
+        alt_rev as usize,
+    );
 
     let filter = compute_filters(qual, gq, col.depth, sb_p, config);
 
@@ -613,7 +621,7 @@ fn call_insertions(pileup: &Pileup, config: &VariantCallConfig) -> Vec<CalledVar
             let key: Vec<u8> = ev.bases.iter().map(|b| b.to_ascii_uppercase()).collect();
             let entry = ins_groups.entry(key).or_insert((0, 0, 0));
             entry.0 += 1; // total count
-            // Check strand from first base case
+                          // Check strand from first base case
             if !ev.bases.is_empty() && ev.bases[0].is_ascii_uppercase() {
                 entry.1 += 1; // fwd
             } else {
@@ -638,11 +646,7 @@ fn call_insertions(pileup: &Pileup, config: &VariantCallConfig) -> Vec<CalledVar
 
             // Simple genotype likelihood for insertion
             let avg_qual = if !col.insertions.is_empty() {
-                let sum: u32 = col
-                    .insertions
-                    .iter()
-                    .map(|e| e.mean_quality as u32)
-                    .sum();
+                let sum: u32 = col.insertions.iter().map(|e| e.mean_quality as u32).sum();
                 (sum / col.insertions.len() as u32).max(1) as f64
             } else {
                 30.0
@@ -681,12 +685,9 @@ fn call_insertions(pileup: &Pileup, config: &VariantCallConfig) -> Vec<CalledVar
             );
             let filter = compute_filters(qual, gq, col.depth, sb_p, config);
 
-            if let Ok(mut variant) = Variant::new(
-                &col.rname,
-                col.pos + 1,
-                vec![anchor_base],
-                vec![alt_allele],
-            ) {
+            if let Ok(mut variant) =
+                Variant::new(&col.rname, col.pos + 1, vec![anchor_base], vec![alt_allele])
+            {
                 variant.quality = Some(qual);
                 variant.filter = filter;
 
@@ -900,9 +901,9 @@ mod tests {
         let mut records: Vec<SamRecord> = (0..10)
             .map(|i| make_record(&format!("rA{i}"), 0, "chr1", 1, 60, "1M", "A", "I"))
             .collect();
-        records.extend((0..10).map(|i| {
-            make_record(&format!("rT{i}"), 0, "chr1", 1, 60, "1M", "T", "I")
-        }));
+        records.extend(
+            (0..10).map(|i| make_record(&format!("rT{i}"), 0, "chr1", 1, 60, "1M", "T", "I")),
+        );
 
         let pileups = pileup(&records, Some(&reference)).unwrap();
         let config = lenient_config();
@@ -962,9 +963,9 @@ mod tests {
         let mut records: Vec<SamRecord> = (0..10)
             .map(|i| make_record(&format!("rF{i}"), 0, "chr1", 1, 60, "1M", "T", "I"))
             .collect();
-        records.extend((0..10).map(|i| {
-            make_record(&format!("rR{i}"), 16, "chr1", 1, 60, "1M", "A", "I")
-        }));
+        records.extend(
+            (0..10).map(|i| make_record(&format!("rR{i}"), 16, "chr1", 1, 60, "1M", "A", "I")),
+        );
 
         let pileups = pileup(&records, Some(&reference)).unwrap();
         let mut config = lenient_config();
@@ -987,10 +988,46 @@ mod tests {
         // Mix of forward and reverse for both ref and alt
         let mut records: Vec<SamRecord> = Vec::new();
         for i in 0..5 {
-            records.push(make_record(&format!("rAf{i}"), 0, "chr1", 1, 60, "1M", "A", "I"));
-            records.push(make_record(&format!("rAr{i}"), 16, "chr1", 1, 60, "1M", "A", "I"));
-            records.push(make_record(&format!("rTf{i}"), 0, "chr1", 1, 60, "1M", "T", "I"));
-            records.push(make_record(&format!("rTr{i}"), 16, "chr1", 1, 60, "1M", "T", "I"));
+            records.push(make_record(
+                &format!("rAf{i}"),
+                0,
+                "chr1",
+                1,
+                60,
+                "1M",
+                "A",
+                "I",
+            ));
+            records.push(make_record(
+                &format!("rAr{i}"),
+                16,
+                "chr1",
+                1,
+                60,
+                "1M",
+                "A",
+                "I",
+            ));
+            records.push(make_record(
+                &format!("rTf{i}"),
+                0,
+                "chr1",
+                1,
+                60,
+                "1M",
+                "T",
+                "I",
+            ));
+            records.push(make_record(
+                &format!("rTr{i}"),
+                16,
+                "chr1",
+                1,
+                60,
+                "1M",
+                "T",
+                "I",
+            ));
         }
 
         let pileups = pileup(&records, Some(&reference)).unwrap();
@@ -1039,18 +1076,7 @@ mod tests {
 
         // Multiple reads with a deletion: 2M2D2M
         let records: Vec<SamRecord> = (0..10)
-            .map(|i| {
-                make_record(
-                    &format!("r{i}"),
-                    0,
-                    "chr1",
-                    1,
-                    60,
-                    "2M2D2M",
-                    "ACGT",
-                    "IIII",
-                )
-            })
+            .map(|i| make_record(&format!("r{i}"), 0, "chr1", 1, 60, "2M2D2M", "ACGT", "IIII"))
             .collect();
 
         let pileups = pileup(&records, Some(&reference)).unwrap();
@@ -1178,9 +1204,9 @@ mod tests {
             .map(|i| make_record(&format!("r{i}"), 0, "chr1", 1, 60, "1M", "G", "I"))
             .collect();
         // Transversion: C→A at pos 3
-        records.extend((0..20).map(|i| {
-            make_record(&format!("s{i}"), 0, "chr1", 3, 60, "1M", "A", "I")
-        }));
+        records.extend(
+            (0..20).map(|i| make_record(&format!("s{i}"), 0, "chr1", 3, 60, "1M", "A", "I")),
+        );
 
         let pileups = pileup(&records, Some(&reference)).unwrap();
         let config = lenient_config();
@@ -1200,9 +1226,9 @@ mod tests {
         let mut records: Vec<SamRecord> = (0..10)
             .map(|i| make_record(&format!("rA{i}"), 0, "chr1", 1, 60, "1M", "A", "I"))
             .collect();
-        records.extend((0..10).map(|i| {
-            make_record(&format!("rT{i}"), 0, "chr1", 1, 60, "1M", "T", "I")
-        }));
+        records.extend(
+            (0..10).map(|i| make_record(&format!("rT{i}"), 0, "chr1", 1, 60, "1M", "T", "I")),
+        );
 
         let pileups = pileup(&records, Some(&reference)).unwrap();
         let config = lenient_config();
@@ -1270,9 +1296,9 @@ mod tests {
         let mut records: Vec<SamRecord> = (0..15)
             .map(|i| make_record(&format!("rT{i}"), 0, "chr1", 1, 60, "1M", "T", "I"))
             .collect();
-        records.extend((0..5).map(|i| {
-            make_record(&format!("rG{i}"), 0, "chr1", 1, 60, "1M", "G", "I")
-        }));
+        records.extend(
+            (0..5).map(|i| make_record(&format!("rG{i}"), 0, "chr1", 1, 60, "1M", "G", "I")),
+        );
 
         let pileups = pileup(&records, Some(&reference)).unwrap();
         let config = lenient_config();

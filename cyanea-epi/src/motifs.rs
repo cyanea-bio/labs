@@ -205,10 +205,7 @@ pub fn scan_sequence(seq: &[u8], motif: &Motif, threshold: f64) -> Vec<MotifMatc
 /// 2. Compare to shuffled background
 /// 3. Build PWM from enriched k-mers
 /// 4. Extend and align to refine
-pub fn discover_motifs(
-    peak_seqs: &[&[u8]],
-    params: &DiscoveryParams,
-) -> Result<Vec<Motif>> {
+pub fn discover_motifs(peak_seqs: &[&[u8]], params: &DiscoveryParams) -> Result<Vec<Motif>> {
     if peak_seqs.is_empty() {
         return Ok(Vec::new());
     }
@@ -235,8 +232,8 @@ pub fn discover_motifs(
 
     for (idx, (kmer, _count)) in scored_kmers.iter().take(params.n_motifs).enumerate() {
         let pwm = kmer_to_pwm(kmer);
-        let motif = Motif::new(format!("motif_{}", idx), pwm)
-            .with_background(params.background_freq);
+        let motif =
+            Motif::new(format!("motif_{}", idx), pwm).with_background(params.background_freq);
         motifs.push(motif);
     }
 
@@ -284,7 +281,11 @@ pub fn parse_meme(content: &str) -> Result<Vec<Motif>> {
             }
 
             in_motif = true;
-            current_name = line.split_whitespace().nth(1).unwrap_or("unknown").to_string();
+            current_name = line
+                .split_whitespace()
+                .nth(1)
+                .unwrap_or("unknown")
+                .to_string();
         } else if in_motif && line.starts_with("letter-probability matrix:") {
             // Next lines are PWM positions
             continue;
@@ -318,7 +319,10 @@ pub fn write_meme(motifs: &[Motif]) -> String {
 
     for motif in motifs {
         output.push_str(&format!("MOTIF {} {}\n", motif.name, motif.consensus));
-        output.push_str(&format!("letter-probability matrix: alength= 4 w= {}\n", motif.width()));
+        output.push_str(&format!(
+            "letter-probability matrix: alength= 4 w= {}\n",
+            motif.width()
+        ));
 
         for pos in &motif.pwm {
             output.push_str(&format!(
@@ -386,7 +390,8 @@ pub fn motif_enrichment(
     let fold_enrichment = peak_rate / bg_rate.max(1e-10);
 
     // Approximate Fisher p-value
-    let chi_sq = (peaks_with_match as f64 - peak_total * peak_rate).powi(2) / (peak_total * peak_rate + 1.0);
+    let chi_sq =
+        (peaks_with_match as f64 - peak_total * peak_rate).powi(2) / (peak_total * peak_rate + 1.0);
     let p_value = (-chi_sq / 2.0).exp();
 
     Ok((fold_enrichment, p_value))
@@ -412,10 +417,7 @@ mod tests {
 
     #[test]
     fn test_score_match() {
-        let pwm = vec![
-            [0.9, 0.05, 0.03, 0.02],
-            [0.05, 0.9, 0.03, 0.02],
-        ];
+        let pwm = vec![[0.9, 0.05, 0.03, 0.02], [0.05, 0.9, 0.03, 0.02]];
 
         let motif = Motif::new("test", pwm);
         let seq = b"ACGT";
@@ -463,10 +465,7 @@ mod tests {
 
     #[test]
     fn test_meme_roundtrip() {
-        let pwm = vec![
-            [0.9, 0.05, 0.03, 0.02],
-            [0.05, 0.9, 0.03, 0.02],
-        ];
+        let pwm = vec![[0.9, 0.05, 0.03, 0.02], [0.05, 0.9, 0.03, 0.02]];
 
         let motif = Motif::new("test_motif", pwm);
         let meme_str = write_meme(&[motif]);

@@ -32,9 +32,7 @@ pub struct AlphaDiversity {
 /// Returns an error if counts is empty or all counts are zero.
 pub fn alpha_diversity(counts: &[u64]) -> Result<AlphaDiversity> {
     if counts.is_empty() {
-        return Err(MetaError::Profile(
-            "counts must be non-empty".into(),
-        ));
+        return Err(MetaError::Profile("counts must be non-empty".into()));
     }
 
     let n: u64 = counts.iter().sum();
@@ -113,10 +111,7 @@ fn compute_ace(counts: &[u64]) -> Result<f64> {
         return Ok(n_obs);
     }
 
-    let c_rare = counts
-        .iter()
-        .filter(|&&c| c > 0 && c <= 10)
-        .sum::<u64>() as f64;
+    let c_rare = counts.iter().filter(|&&c| c > 0 && c <= 10).sum::<u64>() as f64;
     let gamma = (n_rare / (c_rare)) * ((f1_count(counts) as f64).powi(2)) / 2.0 - 1.0;
     let gamma = gamma.max(0.0); // gamma ≥ 0
 
@@ -192,9 +187,7 @@ fn bray_curtis_dissimilarity(a: &[u64], b: &[u64]) -> Result<f64> {
     let sum_a: u64 = a.iter().sum();
     let sum_b: u64 = b.iter().sum();
     if sum_a == 0 && sum_b == 0 {
-        return Err(MetaError::Profile(
-            "both samples have zero total".into(),
-        ));
+        return Err(MetaError::Profile("both samples have zero total".into()));
     }
 
     let sum_min: u64 = a.iter().zip(b.iter()).map(|(&ai, &bi)| ai.min(bi)).sum();
@@ -208,15 +201,11 @@ fn bray_curtis_dissimilarity(a: &[u64], b: &[u64]) -> Result<f64> {
 /// Returns an error if counts is empty, steps is empty, or any step exceeds total.
 pub fn rarefaction_curve(counts: &[u64], steps: &[usize]) -> Result<Vec<(usize, f64)>> {
     if counts.is_empty() {
-        return Err(MetaError::Profile(
-            "counts must be non-empty".into(),
-        ));
+        return Err(MetaError::Profile("counts must be non-empty".into()));
     }
 
     if steps.is_empty() {
-        return Err(MetaError::Profile(
-            "steps must be non-empty".into(),
-        ));
+        return Err(MetaError::Profile("steps must be non-empty".into()));
     }
 
     let total: usize = counts.iter().map(|&c| c as usize).sum();

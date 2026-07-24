@@ -720,9 +720,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
 
     #[test]
     fn test_sam_invalid_flag() {
-        let file = write_sam(
-            "read1\tNOTANUMBER\tchr1\t100\t60\t50M\t*\t0\t0\tACGT\t*\n",
-        );
+        let file = write_sam("read1\tNOTANUMBER\tchr1\t100\t60\t50M\t*\t0\t0\tACGT\t*\n");
         let result = parse_sam(file.path());
         assert!(result.is_err());
         let err_msg = format!("{}", result.unwrap_err());
@@ -731,9 +729,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
 
     #[test]
     fn test_sam_invalid_pos() {
-        let file = write_sam(
-            "read1\t0\tchr1\tXYZ\t60\t50M\t*\t0\t0\tACGT\t*\n",
-        );
+        let file = write_sam("read1\t0\tchr1\tXYZ\t60\t50M\t*\t0\t0\tACGT\t*\n");
         let result = parse_sam(file.path());
         assert!(result.is_err());
         let err_msg = format!("{}", result.unwrap_err());
@@ -742,9 +738,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
 
     #[test]
     fn test_sam_invalid_mapq() {
-        let file = write_sam(
-            "read1\t0\tchr1\t100\t999\t50M\t*\t0\t0\tACGT\t*\n",
-        );
+        let file = write_sam("read1\t0\tchr1\t100\t999\t50M\t*\t0\t0\tACGT\t*\n");
         let result = parse_sam(file.path());
         assert!(result.is_err());
         let err_msg = format!("{}", result.unwrap_err());
@@ -790,9 +784,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
     #[test]
     fn test_sam_seq_len_star() {
         // When SEQ is "*", seq_len should return 0
-        let file = write_sam(
-            "read1\t4\t*\t0\t0\t*\t*\t0\t0\t*\t*\n",
-        );
+        let file = write_sam("read1\t4\t*\t0\t0\t*\t*\t0\t0\t*\t*\n");
         let records = parse_sam(file.path()).unwrap();
         assert_eq!(records.len(), 1);
         assert_eq!(records[0].seq_len(), 0);
@@ -802,9 +794,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
     #[test]
     fn test_sam_mapq_255() {
         // MAPQ 255 means unavailable
-        let file = write_sam(
-            "read1\t0\tchr1\t100\t255\t50M\t*\t0\t0\tACGT\t*\n",
-        );
+        let file = write_sam("read1\t0\tchr1\t100\t255\t50M\t*\t0\t0\tACGT\t*\n");
         let records = parse_sam(file.path()).unwrap();
         assert_eq!(records[0].mapq, 255);
     }
@@ -826,9 +816,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
 
     #[test]
     fn test_sam_quality_string() {
-        let file = write_sam(
-            "read1\t0\tchr1\t100\t60\t4M\t*\t0\t0\tACGT\tIIII\n",
-        );
+        let file = write_sam("read1\t0\tchr1\t100\t60\t4M\t*\t0\t0\tACGT\tIIII\n");
         let records = parse_sam(file.path()).unwrap();
         assert_eq!(records[0].quality, "IIII");
     }
@@ -877,9 +865,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
 
     #[test]
     fn test_rnext_different_chrom() {
-        let file = write_sam(
-            "read1\t99\tchr1\t100\t60\t10M\tchr2\t500\t0\tACGTACGTAC\t*\n",
-        );
+        let file = write_sam("read1\t99\tchr1\t100\t60\t10M\tchr2\t500\t0\tACGTACGTAC\t*\n");
         let records = parse_sam(file.path()).unwrap();
         assert_eq!(records[0].rnext, "chr2");
         assert_eq!(records[0].pnext, 500);
@@ -888,9 +874,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
 
     #[test]
     fn test_rnext_star_unmapped_mate() {
-        let file = write_sam(
-            "read1\t0\tchr1\t100\t60\t10M\t*\t0\t0\tACGTACGTAC\t*\n",
-        );
+        let file = write_sam("read1\t0\tchr1\t100\t60\t10M\t*\t0\t0\tACGTACGTAC\t*\n");
         let records = parse_sam(file.path()).unwrap();
         assert_eq!(records[0].rnext, "*");
         assert_eq!(records[0].pnext, 0);
@@ -902,9 +886,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
     #[test]
     fn test_flag_helpers() {
         // FLAG 99 = 0x63 = paired(0x1) + proper_pair(0x2) + mate_reverse(0x20) + first_in_pair(0x40)
-        let file = write_sam(
-            "read1\t99\tchr1\t100\t60\t10M\t=\t200\t150\tACGTACGTAC\t*\n",
-        );
+        let file = write_sam("read1\t99\tchr1\t100\t60\t10M\t=\t200\t150\tACGTACGTAC\t*\n");
         let records = parse_sam(file.path()).unwrap();
         let r = &records[0];
         assert!(r.is_paired());
@@ -922,9 +904,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
     #[test]
     fn test_flag_second_in_pair() {
         // FLAG 147 = 0x93 = paired(0x1) + proper_pair(0x2) + reverse(0x10) + second_in_pair(0x80)
-        let file = write_sam(
-            "read1\t147\tchr1\t200\t60\t10M\t=\t100\t-150\tACGTACGTAC\t*\n",
-        );
+        let file = write_sam("read1\t147\tchr1\t200\t60\t10M\t=\t100\t-150\tACGTACGTAC\t*\n");
         let records = parse_sam(file.path()).unwrap();
         let r = &records[0];
         assert!(r.is_paired());
@@ -970,9 +950,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
     #[test]
     fn test_pair_sam_records_singletons() {
         // Only R1 present, no R2 — no pairs formed
-        let file = write_sam(
-            "read1\t99\tchr1\t100\t60\t10M\t=\t200\t150\tACGTACGTAC\t*\n",
-        );
+        let file = write_sam("read1\t99\tchr1\t100\t60\t10M\t=\t200\t150\tACGTACGTAC\t*\n");
         let records = parse_sam(file.path()).unwrap();
         let pairs = pair_sam_records(&records);
         assert!(pairs.is_empty());
@@ -1032,9 +1010,7 @@ read3\t4\t*\t0\t0\t*\t*\t0\t0\tACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA
         // FLAG 9 = paired(0x1) + mate_unmapped(0x8)
         // Also set first_in_pair for a mapped singleton
         // FLAG = 0x1 + 0x8 + 0x40 = 73
-        let file = write_sam(
-            "read1\t73\tchr1\t100\t60\t10M\t*\t0\t0\tACGTACGTAC\t*\n",
-        );
+        let file = write_sam("read1\t73\tchr1\t100\t60\t10M\t*\t0\t0\tACGTACGTAC\t*\n");
         let records = parse_sam(file.path()).unwrap();
         let stats = paired_sam_stats(&records);
 

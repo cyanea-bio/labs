@@ -83,7 +83,11 @@ pub fn minimizers(seq: &[u8], k: usize, w: usize) -> Result<Vec<Minimizer>> {
         ));
     }
 
-    let mask: u64 = if k == 32 { u64::MAX } else { (1u64 << (2 * k)) - 1 };
+    let mask: u64 = if k == 32 {
+        u64::MAX
+    } else {
+        (1u64 << (2 * k)) - 1
+    };
 
     // Phase 1: compute all k-mer hashes via a rolling 2-bit shift register.
     let num_kmers = seq.len() - k + 1;
@@ -234,7 +238,11 @@ mod tests {
         // (consecutive deduplication collapses all windows into one).
         let seq = b"AAAAAAAAAA"; // 10 A's
         let mins = minimizers(seq, 3, 2).unwrap();
-        assert_eq!(mins.len(), 1, "homopolymer should produce a single minimizer");
+        assert_eq!(
+            mins.len(),
+            1,
+            "homopolymer should produce a single minimizer"
+        );
     }
 
     #[test]
@@ -273,7 +281,10 @@ mod tests {
         let seq = b"AAAAAACGT";
         let mins = minimizers(seq, 3, 2).unwrap();
         // The AAA minimizer should appear only once despite spanning many windows.
-        let aaa_count = mins.iter().filter(|m| m.position == 0 || seq[m.position..m.position + 3] == *b"AAA").count();
+        let aaa_count = mins
+            .iter()
+            .filter(|m| m.position == 0 || seq[m.position..m.position + 3] == *b"AAA")
+            .count();
         // We only care that there's no *consecutive* duplicate position.
         for pair in mins.windows(2) {
             assert_ne!(pair[0].position, pair[1].position);
@@ -363,7 +374,7 @@ mod tests {
     #[test]
     fn seed_matching_related_sequences() {
         // Introduce a single mutation; most minimizers should still match.
-        let query  = b"ACGTACGTACGT";
+        let query = b"ACGTACGTACGT";
         let target = b"ACGTACCTACGT"; // G->C at position 6
         let q_mins = minimizers(query, 3, 2).unwrap();
         let t_mins = minimizers(target, 3, 2).unwrap();
@@ -373,7 +384,7 @@ mod tests {
 
     #[test]
     fn seed_matching_unrelated_sequences() {
-        let query  = b"AAAAAAAAAA";
+        let query = b"AAAAAAAAAA";
         let target = b"CCCCCCCCCC";
         let q_mins = minimizers(query, 3, 2).unwrap();
         let t_mins = minimizers(target, 3, 2).unwrap();
@@ -383,7 +394,7 @@ mod tests {
 
     #[test]
     fn seed_matches_are_sorted() {
-        let query  = b"ACGTACGTACGT";
+        let query = b"ACGTACGTACGT";
         let target = b"TACGTACGTACG";
         let q_mins = minimizers(query, 3, 2).unwrap();
         let t_mins = minimizers(target, 3, 2).unwrap();

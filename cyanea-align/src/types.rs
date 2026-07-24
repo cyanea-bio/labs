@@ -192,14 +192,16 @@ impl AlignmentResult {
     pub fn length(&self) -> usize {
         self.cigar
             .iter()
-            .filter(|op| matches!(
-                op,
-                CigarOp::Match(_)
-                    | CigarOp::Mismatch(_)
-                    | CigarOp::Insertion(_)
-                    | CigarOp::Deletion(_)
-                    | CigarOp::AlnMatch(_)
-            ))
+            .filter(|op| {
+                matches!(
+                    op,
+                    CigarOp::Match(_)
+                        | CigarOp::Mismatch(_)
+                        | CigarOp::Insertion(_)
+                        | CigarOp::Deletion(_)
+                        | CigarOp::AlnMatch(_)
+                )
+            })
             .map(|op| op.len())
             .sum()
     }

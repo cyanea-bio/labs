@@ -402,8 +402,14 @@ mod tests {
     fn test_hla_compatibility_perfect() {
         let typing = HlaTypingResult {
             genotypes: vec![
-                ("A".into(), (HlaAllele::new("A", "02:01"), HlaAllele::new("A", "03:01"))),
-                ("B".into(), (HlaAllele::new("B", "07:02"), HlaAllele::new("B", "44:02"))),
+                (
+                    "A".into(),
+                    (HlaAllele::new("A", "02:01"), HlaAllele::new("A", "03:01")),
+                ),
+                (
+                    "B".into(),
+                    (HlaAllele::new("B", "07:02"), HlaAllele::new("B", "44:02")),
+                ),
             ]
             .into_iter()
             .collect(),

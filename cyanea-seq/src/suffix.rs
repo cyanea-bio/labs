@@ -117,12 +117,7 @@ fn place_lms(
 }
 
 /// Induce L-type suffixes from left to right.
-fn induce_l(
-    sa: &mut [usize],
-    text: &[usize],
-    types: &[SuffixType],
-    bucket_sizes: &[usize],
-) {
+fn induce_l(sa: &mut [usize], text: &[usize], types: &[SuffixType], bucket_sizes: &[usize]) {
     let n = sa.len();
     let sentinel = n;
     let mut heads = get_bucket_starts(bucket_sizes);
@@ -141,12 +136,7 @@ fn induce_l(
 }
 
 /// Induce S-type suffixes from right to left.
-fn induce_s(
-    sa: &mut [usize],
-    text: &[usize],
-    types: &[SuffixType],
-    bucket_sizes: &[usize],
-) {
+fn induce_s(sa: &mut [usize], text: &[usize], types: &[SuffixType], bucket_sizes: &[usize]) {
     let n = sa.len();
     let sentinel = n;
     let mut tails = get_bucket_ends(bucket_sizes);
@@ -165,12 +155,7 @@ fn induce_s(
 }
 
 /// Check if two LMS substrings are equal.
-fn lms_substrings_equal(
-    text: &[usize],
-    types: &[SuffixType],
-    pos1: usize,
-    pos2: usize,
-) -> bool {
+fn lms_substrings_equal(text: &[usize], types: &[SuffixType], pos1: usize, pos2: usize) -> bool {
     let n = text.len();
 
     // Both must be valid positions
@@ -240,7 +225,11 @@ fn sais(text: &[usize], alphabet_size: usize) -> Vec<usize> {
     // Step 5: Compact sorted LMS suffixes and assign names
     let sentinel = n;
     // Collect the sorted LMS suffixes from sa
-    let sorted_lms: Vec<usize> = sa.iter().copied().filter(|&x| x != sentinel && is_lms(&types, x)).collect();
+    let sorted_lms: Vec<usize> = sa
+        .iter()
+        .copied()
+        .filter(|&x| x != sentinel && is_lms(&types, x))
+        .collect();
 
     // Assign names (ranks) to LMS substrings
     let mut names = vec![sentinel; n];

@@ -158,16 +158,12 @@ pub fn embed_molecule(mol: &Molecule, config: &EmbedConfig) -> Result<Conformer>
             method: MinimizeMethod::SteepestDescent,
         };
         match config.force_field {
-            ForceFieldType::Uff => {
-                forcefield::uff_minimize(mol, &conf, &min_config)
-                    .map(|r| r.conformer)
-                    .unwrap_or(conf)
-            }
-            ForceFieldType::Mmff94 => {
-                forcefield::mmff94_minimize(mol, &conf, &min_config)
-                    .map(|r| r.conformer)
-                    .unwrap_or(conf)
-            }
+            ForceFieldType::Uff => forcefield::uff_minimize(mol, &conf, &min_config)
+                .map(|r| r.conformer)
+                .unwrap_or(conf),
+            ForceFieldType::Mmff94 => forcefield::mmff94_minimize(mol, &conf, &min_config)
+                .map(|r| r.conformer)
+                .unwrap_or(conf),
             ForceFieldType::None => conf,
         }
     } else {
@@ -202,9 +198,10 @@ pub fn embed_multiple(mol: &Molecule, config: &EmbedConfig) -> Result<ConformerS
         };
 
         // RMSD pruning: check against existing conformers
-        let is_unique = cset.conformers.iter().all(|existing| {
-            existing.rmsd(&conf).unwrap_or(f64::INFINITY) > config.rmsd_threshold
-        });
+        let is_unique = cset
+            .conformers
+            .iter()
+            .all(|existing| existing.rmsd(&conf).unwrap_or(f64::INFINITY) > config.rmsd_threshold);
 
         if !is_unique {
             continue;
@@ -212,12 +209,8 @@ pub fn embed_multiple(mol: &Molecule, config: &EmbedConfig) -> Result<ConformerS
 
         // Compute energy
         let energy = match config.force_field {
-            ForceFieldType::Uff => {
-                forcefield::uff_energy(mol, &conf).ok().map(|e| e.total)
-            }
-            ForceFieldType::Mmff94 => {
-                forcefield::mmff94_energy(mol, &conf).ok().map(|e| e.total)
-            }
+            ForceFieldType::Uff => forcefield::uff_energy(mol, &conf).ok().map(|e| e.total),
+            ForceFieldType::Mmff94 => forcefield::mmff94_energy(mol, &conf).ok().map(|e| e.total),
             ForceFieldType::None => None,
         };
 
@@ -271,12 +264,21 @@ fn build_bounds_matrix(mol: &Molecule) -> (Vec<Vec<f64>>, Vec<Vec<f64>>) {
             1 => std::f64::consts::PI, // linear
             2 => {
                 let has_double = mol.adjacency[j].iter().any(|&(_, bi)| {
-                    mol.bonds[bi].order == BondOrder::Double || mol.bonds[bi].order == BondOrder::Triple
+                    mol.bonds[bi].order == BondOrder::Double
+                        || mol.bonds[bi].order == BondOrder::Triple
                 });
-                if has_double { std::f64::consts::PI } else { 120.0_f64.to_radians() }
+                if has_double {
+                    std::f64::consts::PI
+                } else {
+                    120.0_f64.to_radians()
+                }
             }
             3 => {
-                if is_sp2_atom(mol, j) { 120.0_f64.to_radians() } else { 109.5_f64.to_radians() }
+                if is_sp2_atom(mol, j) {
+                    120.0_f64.to_radians()
+                } else {
+                    109.5_f64.to_radians()
+                }
             }
             _ => 109.5_f64.to_radians(),
         };
@@ -315,8 +317,8 @@ fn build_bounds_matrix(mol: &Molecule) -> (Vec<Vec<f64>>, Vec<Vec<f64>>) {
     for i in 0..n {
         for j in (i + 1)..n {
             if lower[i][j] < 0.01 {
-                let vdw_sum = vdw_radius(mol.atoms[i].atomic_number) +
-                    vdw_radius(mol.atoms[j].atomic_number);
+                let vdw_sum =
+                    vdw_radius(mol.atoms[i].atomic_number) + vdw_radius(mol.atoms[j].atomic_number);
                 lower[i][j] = vdw_sum * 0.7;
                 lower[j][i] = lower[i][j];
             }
@@ -402,8 +404,8 @@ fn embed_from_bounds(
     let mut g = vec![vec![0.0_f64; n]; n];
     for i in 0..n {
         for j in 0..n {
-            g[i][j] = 0.5 * (dist[0][i] * dist[0][i] + dist[0][j] * dist[0][j]
-                - dist[i][j] * dist[i][j]);
+            g[i][j] =
+                0.5 * (dist[0][i] * dist[0][i] + dist[0][j] * dist[0][j] - dist[i][j] * dist[i][j]);
         }
     }
 
@@ -447,7 +449,11 @@ fn extract_3d_coords(g: &[Vec<f64>], n: usize) -> Result<Vec<[f64; 3]>> {
         }
 
         // Use sqrt of eigenvalue as coordinate scale
-        let scale = if eigenvalue > 0.0 { eigenvalue.sqrt() } else { 0.0 };
+        let scale = if eigenvalue > 0.0 {
+            eigenvalue.sqrt()
+        } else {
+            0.0
+        };
         for i in 0..n {
             coords[i][dim] = v[i] * scale;
         }
@@ -466,7 +472,8 @@ fn extract_3d_coords(g: &[Vec<f64>], n: usize) -> Result<Vec<[f64; 3]>> {
 /// Apply ETKDG torsion angle preferences to rotatable bonds.
 fn apply_torsion_preferences(mol: &Molecule, conf: &mut Conformer) {
     let rings = ring::find_sssr(mol);
-    let ring_atoms: std::collections::HashSet<usize> = rings.iter().flat_map(|r| r.iter().copied()).collect();
+    let ring_atoms: std::collections::HashSet<usize> =
+        rings.iter().flat_map(|r| r.iter().copied()).collect();
 
     for bond in &mol.bonds {
         // Only rotatable single bonds
@@ -504,8 +511,14 @@ fn apply_torsion_preferences(mol: &Molecule, conf: &mut Conformer) {
         }
 
         // Find reference atoms for computing current dihedral
-        let i = mol.adjacency[j].iter().find(|&&(n, _)| n != k).map(|&(n, _)| n);
-        let l = mol.adjacency[k].iter().find(|&&(n, _)| n != j).map(|&(n, _)| n);
+        let i = mol.adjacency[j]
+            .iter()
+            .find(|&&(n, _)| n != k)
+            .map(|&(n, _)| n);
+        let l = mol.adjacency[k]
+            .iter()
+            .find(|&&(n, _)| n != j)
+            .map(|&(n, _)| n);
 
         if let (Some(i_idx), Some(l_idx)) = (i, l) {
             let current = conf.dihedral(i_idx, j, k, l_idx);

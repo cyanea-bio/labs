@@ -24,9 +24,7 @@ pub(crate) enum TreeNode {
         right: usize, // index into arena
     },
     /// Terminal leaf node.
-    Leaf {
-        class: usize,
-    },
+    Leaf { class: usize },
 }
 
 // ---------------------------------------------------------------------------
@@ -401,12 +399,7 @@ mod tests {
     fn fit_linearly_separable() {
         // 2D data: class 0 = low x, class 1 = high x
         let data = vec![
-            0.0, 0.0,
-            1.0, 0.0,
-            2.0, 0.0,
-            10.0, 0.0,
-            11.0, 0.0,
-            12.0, 0.0,
+            0.0, 0.0, 1.0, 0.0, 2.0, 0.0, 10.0, 0.0, 11.0, 0.0, 12.0, 0.0,
         ];
         let labels = vec![0, 0, 0, 1, 1, 1];
         let tree = DecisionTree::fit(&data, 2, &labels, 10).unwrap();
@@ -420,10 +413,7 @@ mod tests {
 
     #[test]
     fn predict_batch_works() {
-        let data = vec![
-            0.0, 1.0,
-            10.0, 1.0,
-        ];
+        let data = vec![0.0, 1.0, 10.0, 1.0];
         let labels = vec![0, 1];
         let tree = DecisionTree::fit(&data, 2, &labels, 5).unwrap();
 

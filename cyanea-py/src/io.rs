@@ -456,17 +456,22 @@ pub struct PyBlastXmlHit {
 #[pyfunction]
 fn parse_blast_xml(text: &str) -> PyResult<PyBlastXmlResult> {
     let result = cyanea_io::parse_blast_xml_str(text).into_pyresult()?;
-    let hits = result.iterations.into_iter().flat_map(|it| it.hits).map(|h| {
-        let best_hsp = h.hsps.first();
-        PyBlastXmlHit {
-            hit_id: h.hit_id,
-            hit_def: h.hit_def,
-            hit_accession: h.hit_accession,
-            hit_len: h.hit_len,
-            bit_score: best_hsp.map_or(0.0, |hsp| hsp.bit_score),
-            evalue: best_hsp.map_or(1.0, |hsp| hsp.evalue),
-        }
-    }).collect();
+    let hits = result
+        .iterations
+        .into_iter()
+        .flat_map(|it| it.hits)
+        .map(|h| {
+            let best_hsp = h.hsps.first();
+            PyBlastXmlHit {
+                hit_id: h.hit_id,
+                hit_def: h.hit_def,
+                hit_accession: h.hit_accession,
+                hit_len: h.hit_len,
+                bit_score: best_hsp.map_or(0.0, |hsp| hsp.bit_score),
+                evalue: best_hsp.map_or(1.0, |hsp| hsp.evalue),
+            }
+        })
+        .collect();
     Ok(PyBlastXmlResult {
         program: result.program,
         query_id: result.query_id,
@@ -492,12 +497,15 @@ pub struct PyBedGraphRecord {
 #[pyfunction]
 fn parse_bedgraph(text: &str) -> PyResult<Vec<PyBedGraphRecord>> {
     let records = cyanea_io::parse_bedgraph_str(text).into_pyresult()?;
-    Ok(records.into_iter().map(|r| PyBedGraphRecord {
-        chrom: r.chrom,
-        start: r.start,
-        end: r.end,
-        value: r.value,
-    }).collect())
+    Ok(records
+        .into_iter()
+        .map(|r| PyBedGraphRecord {
+            chrom: r.chrom,
+            start: r.start,
+            end: r.end,
+            value: r.value,
+        })
+        .collect())
 }
 
 // ---------------------------------------------------------------------------

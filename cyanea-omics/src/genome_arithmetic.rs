@@ -224,9 +224,7 @@ pub fn intersect_report_a(
             None => continue,
         };
         let has_overlap = b_ivs.iter().any(|b_iv| {
-            strands_match(a_iv, b_iv, strand_mode)
-                && a_iv.start < b_iv.end
-                && b_iv.start < a_iv.end
+            strands_match(a_iv, b_iv, strand_mode) && a_iv.start < b_iv.end && b_iv.start < a_iv.end
         });
         if has_overlap {
             result.push(a_iv.clone());
@@ -414,11 +412,7 @@ pub fn closest(
         let mut best: Option<(&GenomicInterval, u64)> = None;
 
         // Check candidates around the insertion point
-        for &candidate_idx in &[
-            idx.wrapping_sub(1),
-            idx,
-            idx + 1,
-        ] {
+        for &candidate_idx in &[idx.wrapping_sub(1), idx, idx + 1] {
             if candidate_idx >= matching.len() {
                 continue;
             }
@@ -460,9 +454,7 @@ pub fn closest(
 /// Generate non-overlapping tiling windows across a genome.
 pub fn make_windows(genome: &GenomeInfo, window_size: u64) -> Result<Vec<GenomicInterval>> {
     if window_size == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "window size must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("window size must be > 0".into()));
     }
 
     let mut result = Vec::new();
@@ -490,9 +482,7 @@ pub fn make_sliding_windows(
     step: u64,
 ) -> Result<Vec<GenomicInterval>> {
     if window_size == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "window size must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("window size must be > 0".into()));
     }
     if step == 0 {
         return Err(CyaneaError::InvalidInput("step must be > 0".into()));
@@ -523,9 +513,7 @@ pub fn windows_around(
     genome: &GenomeInfo,
 ) -> Result<Vec<GenomicInterval>> {
     if window_size == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "window size must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("window size must be > 0".into()));
     }
 
     let half = window_size / 2;

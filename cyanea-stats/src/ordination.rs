@@ -175,9 +175,7 @@ pub fn nmds(distances: &[Vec<f64>], config: &NmdsConfig) -> Result<NmdsResult> {
         }
     }
     if config.n_dims == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "nmds: n_dims must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("nmds: n_dims must be > 0".into()));
     }
 
     let d = config.n_dims;
@@ -501,8 +499,12 @@ pub fn cca(
 
     let sample_scores = project_matrix(&q_hat, n_sites, n_species, &eigenvectors);
     let species_scores = eigenvectors.iter().map(|v| v.clone()).collect();
-    let biplot_scores =
-        compute_biplot_scores(&center_matrix(environment, n_sites, n_env), n_sites, n_env, &sample_scores);
+    let biplot_scores = compute_biplot_scores(
+        &center_matrix(environment, n_sites, n_env),
+        n_sites,
+        n_env,
+        &sample_scores,
+    );
 
     Ok(ConstrainedOrdinationResult {
         sample_scores,
@@ -570,7 +572,9 @@ pub fn procrustes(reference: &[Vec<f64>], target: &[Vec<f64>]) -> Result<Procrus
         if row.len() != p {
             return Err(CyaneaError::InvalidInput(format!(
                 "procrustes: reference row {} has {} dims, expected {}",
-                i, row.len(), p
+                i,
+                row.len(),
+                p
             )));
         }
     }
@@ -578,7 +582,9 @@ pub fn procrustes(reference: &[Vec<f64>], target: &[Vec<f64>]) -> Result<Procrus
         if row.len() != p {
             return Err(CyaneaError::InvalidInput(format!(
                 "procrustes: target row {} has {} dims, expected {}",
-                i, row.len(), p
+                i,
+                row.len(),
+                p
             )));
         }
     }
@@ -602,13 +608,19 @@ pub fn procrustes(reference: &[Vec<f64>], target: &[Vec<f64>]) -> Result<Procrus
 
     let ref_scaled: Vec<Vec<f64>> = if ss_ref > 0.0 {
         let s = ss_ref.sqrt();
-        ref_c.iter().map(|r| r.iter().map(|x| x / s).collect()).collect()
+        ref_c
+            .iter()
+            .map(|r| r.iter().map(|x| x / s).collect())
+            .collect()
     } else {
         ref_c.clone()
     };
     let tgt_scaled: Vec<Vec<f64>> = if ss_tgt > 0.0 {
         let s = ss_tgt.sqrt();
-        tgt_c.iter().map(|r| r.iter().map(|x| x / s).collect()).collect()
+        tgt_c
+            .iter()
+            .map(|r| r.iter().map(|x| x / s).collect())
+            .collect()
     } else {
         tgt_c.clone()
     };
@@ -654,7 +666,8 @@ pub fn procrustes(reference: &[Vec<f64>], target: &[Vec<f64>]) -> Result<Procrus
             for j in 0..p {
                 val += tgt_c[k][j] * rotation[i][j]; // (tgt_c * R^T)[k][i]
             }
-            transformed[k][i] = val * scale / ss_tgt.sqrt().max(1e-15) * ss_ref.sqrt().max(1e-15) + ref_mean[i];
+            transformed[k][i] =
+                val * scale / ss_tgt.sqrt().max(1e-15) * ss_ref.sqrt().max(1e-15) + ref_mean[i];
         }
     }
 
@@ -1058,9 +1071,7 @@ fn validate_constrained_inputs(
         )));
     }
     if n_axes == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "n_axes must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_axes must be > 0".into()));
     }
     Ok(())
 }
@@ -1403,21 +1414,11 @@ mod tests {
         // Row means and column means should be ~0
         for i in 0..3 {
             let row_mean: f64 = (0..3).map(|j| m[i * 3 + j]).sum::<f64>() / 3.0;
-            assert!(
-                row_mean.abs() < 1e-10,
-                "row {} mean = {}",
-                i,
-                row_mean
-            );
+            assert!(row_mean.abs() < 1e-10, "row {} mean = {}", i, row_mean);
         }
         for j in 0..3 {
             let col_mean: f64 = (0..3).map(|i| m[i * 3 + j]).sum::<f64>() / 3.0;
-            assert!(
-                col_mean.abs() < 1e-10,
-                "col {} mean = {}",
-                j,
-                col_mean
-            );
+            assert!(col_mean.abs() < 1e-10, "col {} mean = {}", j, col_mean);
         }
     }
 }

@@ -1,8 +1,8 @@
 //! Integration tests for motif discovery and scanning.
 
 use cyanea_epi::motifs::{
-    Motif, DiscoveryParams, scan_sequence, discover_motifs, parse_meme, write_meme,
-    compare_motifs, motif_enrichment,
+    compare_motifs, discover_motifs, motif_enrichment, parse_meme, scan_sequence, write_meme,
+    DiscoveryParams, Motif,
 };
 
 #[test]
@@ -183,10 +183,7 @@ fn test_motif_enrichment_in_peaks() {
 
 #[test]
 fn test_motif_width_handling() {
-    let pwm = vec![
-        [0.9, 0.05, 0.03, 0.02],
-        [0.05, 0.9, 0.03, 0.02],
-    ];
+    let pwm = vec![[0.9, 0.05, 0.03, 0.02], [0.05, 0.9, 0.03, 0.02]];
 
     let motif = Motif::new("short", pwm);
     assert_eq!(motif.width(), 2);

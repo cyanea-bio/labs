@@ -94,15 +94,11 @@ pub fn pca(data: &[f64], n_features: usize, config: &PcaConfig) -> Result<PcaRes
     }
     let n_samples = data.len() / n_features;
     if n_samples < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "need at least 2 samples".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("need at least 2 samples".into()));
     }
     let n_components = config.n_components.min(n_features).min(n_samples);
     if n_components == 0 {
-        return Err(CyaneaError::InvalidInput(
-            "n_components must be > 0".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("n_components must be > 0".into()));
     }
 
     // When the blas feature is enabled, use ndarray for matrix operations
@@ -210,12 +206,7 @@ pub fn pca(data: &[f64], n_features: usize, config: &PcaConfig) -> Result<PcaRes
 }
 
 /// Power iteration: find the dominant eigenvector of a symmetric matrix.
-fn power_iteration(
-    matrix: &[f64],
-    n: usize,
-    max_iter: usize,
-    tol: f64,
-) -> (f64, Vec<f64>) {
+fn power_iteration(matrix: &[f64], n: usize, max_iter: usize, tol: f64) -> (f64, Vec<f64>) {
     // Initialize with [1, 0, 0, ...] then normalize
     let mut v = vec![0.0; n];
     // Use a deterministic non-zero init
@@ -349,9 +340,7 @@ pub fn tsne(data: &[f64], n_features: usize, config: &TsneConfig) -> Result<Tsne
     }
     let n = data.len() / n_features;
     if n < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "need at least 2 samples".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("need at least 2 samples".into()));
     }
     if config.perplexity >= n as f64 {
         return Err(CyaneaError::InvalidInput(format!(
@@ -607,12 +596,7 @@ mod tests {
     #[test]
     fn pca_basic_2d() {
         // 4 points in 2D, main variance along x
-        let data = vec![
-            0.0, 0.0,
-            1.0, 0.1,
-            2.0, 0.2,
-            3.0, 0.3,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 0.1, 2.0, 0.2, 3.0, 0.3];
         let config = PcaConfig {
             n_components: 2,
             ..Default::default()
@@ -626,12 +610,7 @@ mod tests {
 
     #[test]
     fn pca_one_component() {
-        let data = vec![
-            0.0, 0.0,
-            1.0, 1.0,
-            2.0, 2.0,
-            3.0, 3.0,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 1.0, 2.0, 2.0, 3.0, 3.0];
         let config = PcaConfig {
             n_components: 1,
             ..Default::default()
@@ -643,12 +622,7 @@ mod tests {
 
     #[test]
     fn pca_mean_centering() {
-        let data = vec![
-            100.0, 200.0,
-            101.0, 201.0,
-            102.0, 202.0,
-            103.0, 203.0,
-        ];
+        let data = vec![100.0, 200.0, 101.0, 201.0, 102.0, 202.0, 103.0, 203.0];
         let config = PcaConfig::default();
         let result = pca(&data, 2, &config).unwrap();
         assert!((result.mean[0] - 101.5).abs() < 1e-10);
@@ -680,12 +654,7 @@ mod tests {
 
     #[test]
     fn pca_variance_ratio_sums_leq_one() {
-        let data = vec![
-            0.0, 0.0, 0.0,
-            1.0, 0.1, 0.0,
-            2.0, 0.2, 0.1,
-            3.0, 0.3, 0.1,
-        ];
+        let data = vec![0.0, 0.0, 0.0, 1.0, 0.1, 0.0, 2.0, 0.2, 0.1, 3.0, 0.3, 0.1];
         let config = PcaConfig {
             n_components: 3,
             ..Default::default()
@@ -722,14 +691,7 @@ mod tests {
 
     #[test]
     fn tsne_3d_output() {
-        let data = vec![
-            0.0, 0.0,
-            1.0, 0.0,
-            0.0, 1.0,
-            1.0, 1.0,
-            5.0, 5.0,
-            6.0, 5.0,
-        ];
+        let data = vec![0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 5.0, 5.0, 6.0, 5.0];
         let config = TsneConfig {
             n_components: 3,
             perplexity: 2.0,

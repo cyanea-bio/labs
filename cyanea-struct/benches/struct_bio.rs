@@ -56,9 +56,7 @@ fn bench_pdb_parse(c: &mut Criterion) {
     // ~10k atoms = 2500 residues × 4 atoms
     let pdb_10k = synthetic_pdb(2500);
 
-    group.bench_function("10k_atoms", |b| {
-        b.iter(|| parse_pdb(black_box(&pdb_10k)))
-    });
+    group.bench_function("10k_atoms", |b| b.iter(|| parse_pdb(black_box(&pdb_10k))));
 
     group.finish();
 }

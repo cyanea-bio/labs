@@ -370,7 +370,10 @@ END
         for a in assignments {
             let structure = a["structure"].as_str().unwrap();
             assert!(
-                structure == "Coil" || structure == "Turn" || structure == "Helix" || structure == "Sheet",
+                structure == "Coil"
+                    || structure == "Turn"
+                    || structure == "Helix"
+                    || structure == "Sheet",
                 "unexpected structure: {structure}"
             );
         }
@@ -463,7 +466,14 @@ END
         let json = ramachandran_analysis(MINI_PDB);
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let entries = v["ok"].as_array().unwrap();
-        let valid_regions = ["favored", "allowed", "outlier", "glycine", "proline", "pre-proline"];
+        let valid_regions = [
+            "favored",
+            "allowed",
+            "outlier",
+            "glycine",
+            "proline",
+            "pre-proline",
+        ];
         for entry in entries {
             let region = entry["region"].as_str().unwrap();
             assert!(

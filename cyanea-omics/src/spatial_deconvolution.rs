@@ -86,9 +86,7 @@ pub fn nnls_deconvolve(
     }
     let n_genes = gene_names.len();
     if expression[0].len() != n_genes {
-        return Err(CyaneaError::InvalidInput(
-            "gene count mismatch".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("gene count mismatch".into()));
     }
     if signatures.is_empty() {
         return Err(CyaneaError::InvalidInput(
@@ -123,7 +121,9 @@ pub fn nnls_deconvolve(
     // Use any gene found in at least one signature
     let mut used_genes: Vec<usize> = Vec::new();
     for (gi, _) in gene_names.iter().enumerate() {
-        let in_any = signatures.iter().any(|sig| sig.genes.iter().any(|g| g == &gene_names[gi]));
+        let in_any = signatures
+            .iter()
+            .any(|sig| sig.genes.iter().any(|g| g == &gene_names[gi]));
         if in_any {
             used_genes.push(gi);
         }
@@ -212,9 +212,7 @@ pub fn nnls_deconvolve(
         // Compute residual
         let mut residual = 0.0;
         for g in 0..n_used {
-            let predicted: f64 = (0..n_types)
-                .map(|t| proportions[t] * reference[t][g])
-                .sum();
+            let predicted: f64 = (0..n_types).map(|t| proportions[t] * reference[t][g]).sum();
             residual += (observed[g] - predicted).powi(2);
         }
         let residual = (residual / n_used as f64).sqrt();
@@ -266,7 +264,11 @@ pub fn score_enrichment(
     let mut z_expr: Vec<Vec<f64>> = expression.to_vec();
     for g in 0..n_genes {
         let mean = expression.iter().map(|r| r[g]).sum::<f64>() / n_spots as f64;
-        let var = expression.iter().map(|r| (r[g] - mean).powi(2)).sum::<f64>() / n_spots as f64;
+        let var = expression
+            .iter()
+            .map(|r| (r[g] - mean).powi(2))
+            .sum::<f64>()
+            / n_spots as f64;
         let std = var.sqrt().max(1e-10);
         for s in 0..n_spots {
             z_expr[s][g] = (expression[s][g] - mean) / std;
@@ -308,7 +310,8 @@ pub fn score_enrichment(
 
         for si in 0..n_spots {
             // Score = mean z-score of signature genes
-            let score: f64 = sig_indices.iter().map(|&gi| z_expr[si][gi]).sum::<f64>() / n_sig as f64;
+            let score: f64 =
+                sig_indices.iter().map(|&gi| z_expr[si][gi]).sum::<f64>() / n_sig as f64;
 
             // Permutation: sample random gene sets of same size
             let mut perm_ge = 0usize;
@@ -392,7 +395,11 @@ mod tests {
 
         let props = &result.spots[0].proportions;
         // T cell proportion should dominate
-        assert!(props[0] > 0.8, "T cell proportion should be high: {}", props[0]);
+        assert!(
+            props[0] > 0.8,
+            "T cell proportion should be high: {}",
+            props[0]
+        );
     }
 
     #[test]
@@ -431,8 +438,8 @@ mod tests {
         ];
         let expression = vec![
             vec![10.0, 8.0, 6.0, 0.0, 0.0, 0.0], // T cell
-            vec![0.0, 0.0, 0.0, 9.0, 7.0, 5.0],   // Macrophage
-            vec![5.0, 4.0, 3.0, 4.5, 3.5, 2.5],   // Mixed
+            vec![0.0, 0.0, 0.0, 9.0, 7.0, 5.0],  // Macrophage
+            vec![5.0, 4.0, 3.0, 4.5, 3.5, 2.5],  // Mixed
         ];
         let signatures = make_signatures();
 

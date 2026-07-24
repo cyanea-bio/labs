@@ -49,16 +49,18 @@ pub use distance::{jukes_cantor, kimura_2p, p_distance};
 pub use drawing::{tree_layout, Edge, LayoutStyle, NodeCoord, TreeLayout};
 pub use likelihood::{nni_search, tree_likelihood, tree_likelihood_gtr};
 pub use marginal::{marginal_reconstruct, MarginalPosterior, MarginalReconstruction};
-pub use models::{gtr_probability, hky85_params, jc69_probability, nucleotide_index, GammaRates, GtrParams};
+pub use models::{
+    gtr_probability, hky85_params, jc69_probability, nucleotide_index, GammaRates, GtrParams,
+};
 pub use newick::{parse as parse_newick, write as write_newick};
 pub use tree::{Node, NodeId, PhyloTree};
 pub use unifrac::{
-    faiths_pd, generalized_unifrac, unweighted_unifrac, weighted_unifrac, unifrac_matrix,
+    faiths_pd, generalized_unifrac, unifrac_matrix, unweighted_unifrac, weighted_unifrac,
     UnifracMethod, UnifracResult,
 };
 
 // Re-export substitution model trait and wrappers
-pub use subst_model::{SubstitutionModel, Jc69Model, Hky85Model, GtrModel};
+pub use subst_model::{GtrModel, Hky85Model, Jc69Model, SubstitutionModel};
 
 // Re-export protein models
 pub use protein_models::{
@@ -76,7 +78,9 @@ pub use tree_search::{
 };
 
 // Re-export model selection
-pub use model_selection::{aic, aicc, bic, lrt, model_finder, LrtResult, ModelResult, ModelSelectionResult};
+pub use model_selection::{
+    aic, aicc, bic, lrt, model_finder, LrtResult, ModelResult, ModelSelectionResult,
+};
 
 // Re-export MCMC
 pub use mcmc::{
@@ -85,12 +89,13 @@ pub use mcmc::{
 };
 
 // Re-export simulation
-pub use simulation::{simulate_coalescent, simulate_coalescent_growth, simulate_evolution, SimulatedAlignment};
+pub use simulation::{
+    simulate_coalescent, simulate_coalescent_growth, simulate_evolution, SimulatedAlignment,
+};
 
 // Re-export species tree
 pub use species_tree::{
-    astral_species_tree, concordance_factors, reconcile, ConcordanceFactors,
-    ReconciliationResult,
+    astral_species_tree, concordance_factors, reconcile, ConcordanceFactors, ReconciliationResult,
 };
 
 #[cfg(feature = "ml")]

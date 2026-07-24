@@ -117,8 +117,8 @@ pub fn rmsd_points(points1: &[Point3D], points2: &[Point3D]) -> Result<f64> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::vec;
     use crate::types::Atom;
+    use alloc::vec;
 
     fn make_atom(x: f64, y: f64, z: f64) -> Atom {
         Atom {
@@ -194,10 +194,7 @@ mod tests {
     #[test]
     fn test_rmsd_mismatch_error() {
         let p1 = vec![Point3D::new(0.0, 0.0, 0.0)];
-        let p2 = vec![
-            Point3D::new(0.0, 0.0, 0.0),
-            Point3D::new(1.0, 0.0, 0.0),
-        ];
+        let p2 = vec![Point3D::new(0.0, 0.0, 0.0), Point3D::new(1.0, 0.0, 0.0)];
         assert!(rmsd_points(&p1, &p2).is_err());
     }
 }

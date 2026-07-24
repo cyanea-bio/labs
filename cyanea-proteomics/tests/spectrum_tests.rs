@@ -1,6 +1,6 @@
+use cyanea_proteomics::mgf::{mgf_stats, parse_mgf, write_mgf};
+use cyanea_proteomics::mzml::{mzml_stats, parse_mzml_text};
 use cyanea_proteomics::spectrum::*;
-use cyanea_proteomics::mgf::{parse_mgf, write_mgf, mgf_stats};
-use cyanea_proteomics::mzml::{parse_mzml_text, mzml_stats};
 
 #[test]
 fn test_spectrum_processing_pipeline() {
@@ -121,22 +121,32 @@ fn test_run_stats_comprehensive() {
 
     // Generate 10 MS1 and 20 MS2 spectra
     for i in 0..10 {
-        let peaks = vec![
-            Peak { mz: 100.0 + i as f64, intensity: 1000.0 * (i + 1) as f64 },
-        ];
-        spectra.push(MassSpectrum::new(
-            format!("ms1_{}", i), MsLevel::Ms1, i as f64 * 10.0, peaks,
-        ).unwrap());
+        let peaks = vec![Peak {
+            mz: 100.0 + i as f64,
+            intensity: 1000.0 * (i + 1) as f64,
+        }];
+        spectra.push(
+            MassSpectrum::new(format!("ms1_{}", i), MsLevel::Ms1, i as f64 * 10.0, peaks).unwrap(),
+        );
     }
 
     for i in 0..20 {
         let num_peaks = (i % 5) + 2;
         let peaks: Vec<Peak> = (0..num_peaks)
-            .map(|j| Peak { mz: 100.0 + j as f64 * 50.0, intensity: 500.0 })
+            .map(|j| Peak {
+                mz: 100.0 + j as f64 * 50.0,
+                intensity: 500.0,
+            })
             .collect();
-        spectra.push(MassSpectrum::new(
-            format!("ms2_{}", i), MsLevel::Ms2, 5.0 + i as f64 * 5.0, peaks,
-        ).unwrap());
+        spectra.push(
+            MassSpectrum::new(
+                format!("ms2_{}", i),
+                MsLevel::Ms2,
+                5.0 + i as f64 * 5.0,
+                peaks,
+            )
+            .unwrap(),
+        );
     }
 
     let stats = run_stats(&spectra).unwrap();

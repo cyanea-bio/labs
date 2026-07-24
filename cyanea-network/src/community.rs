@@ -52,7 +52,11 @@ pub fn modularity(graph: &Graph, assignments: &HashMap<String, usize>) -> f64 {
         return 0.0;
     }
 
-    let _id_to_idx: HashMap<&str, usize> = ids.iter().enumerate().map(|(i, s)| (s.as_str(), i)).collect();
+    let _id_to_idx: HashMap<&str, usize> = ids
+        .iter()
+        .enumerate()
+        .map(|(i, s)| (s.as_str(), i))
+        .collect();
 
     // Total edge weight
     let m: f64 = match graph.graph_type {
@@ -96,7 +100,11 @@ pub fn modularity(graph: &Graph, assignments: &HashMap<String, usize>) -> f64 {
 /// * `graph` - The network to partition
 /// * `resolution` - Resolution parameter (1.0 = standard modularity, >1.0 = smaller communities)
 pub fn louvain(graph: &Graph, resolution: f64) -> Result<CommunityResult> {
-    let ids: Vec<String> = graph.node_ids().into_iter().map(|s| s.to_string()).collect();
+    let ids: Vec<String> = graph
+        .node_ids()
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
     let n = ids.len();
 
     if n == 0 {
@@ -123,7 +131,12 @@ pub fn louvain(graph: &Graph, resolution: f64) -> Result<CommunityResult> {
     };
 
     if m == 0.0 {
-        let num_c = community.values().copied().max().map(|m| m + 1).unwrap_or(0);
+        let num_c = community
+            .values()
+            .copied()
+            .max()
+            .map(|m| m + 1)
+            .unwrap_or(0);
         return Ok(CommunityResult {
             modularity: 0.0,
             num_communities: num_c,
@@ -136,7 +149,11 @@ pub fn louvain(graph: &Graph, resolution: f64) -> Result<CommunityResult> {
     // Sorted IDs for consistent indexing
     let mut sorted_ids: Vec<String> = ids.clone();
     sorted_ids.sort();
-    let id_to_idx: HashMap<&str, usize> = sorted_ids.iter().enumerate().map(|(i, s)| (s.as_str(), i)).collect();
+    let id_to_idx: HashMap<&str, usize> = sorted_ids
+        .iter()
+        .enumerate()
+        .map(|(i, s)| (s.as_str(), i))
+        .collect();
 
     // Weighted degree
     let k: Vec<f64> = (0..n).map(|i| matrix[i].iter().sum()).collect();
@@ -232,7 +249,11 @@ pub fn louvain(graph: &Graph, resolution: f64) -> Result<CommunityResult> {
 /// Simple, fast, and doesn't require a resolution parameter.
 /// Non-deterministic due to iteration order.
 pub fn label_propagation(graph: &Graph, max_iter: usize) -> Result<CommunityResult> {
-    let ids: Vec<String> = graph.node_ids().into_iter().map(|s| s.to_string()).collect();
+    let ids: Vec<String> = graph
+        .node_ids()
+        .into_iter()
+        .map(|s| s.to_string())
+        .collect();
     let n = ids.len();
 
     if n == 0 {

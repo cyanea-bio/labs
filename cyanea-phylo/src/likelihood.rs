@@ -231,9 +231,7 @@ pub fn nni_search(
             let nephew_b = child.children[1];
 
             // NNI swap 1: swap sibling with nephew_a
-            if let Ok(swapped) =
-                nni_swap(&best_tree, parent_id, child_id, sibling_id, nephew_a)
-            {
+            if let Ok(swapped) = nni_swap(&best_tree, parent_id, child_id, sibling_id, nephew_a) {
                 if let Ok(ll) = tree_likelihood(&swapped, sequences, model) {
                     if ll > best_ll {
                         best_tree = swapped;
@@ -245,9 +243,7 @@ pub fn nni_search(
             }
 
             // NNI swap 2: swap sibling with nephew_b
-            if let Ok(swapped) =
-                nni_swap(&best_tree, parent_id, child_id, sibling_id, nephew_b)
-            {
+            if let Ok(swapped) = nni_swap(&best_tree, parent_id, child_id, sibling_id, nephew_b) {
                 if let Ok(ll) = tree_likelihood(&swapped, sequences, model) {
                     if ll > best_ll {
                         best_tree = swapped;
@@ -324,7 +320,9 @@ pub fn tree_likelihood_gtr(
     if sequences.len() != n_leaves {
         return Err(CyaneaError::InvalidInput(format!(
             "expected {} sequences for {} leaves, got {}",
-            n_leaves, n_leaves, sequences.len()
+            n_leaves,
+            n_leaves,
+            sequences.len()
         )));
     }
     if sequences.is_empty() {
@@ -339,7 +337,9 @@ pub fn tree_likelihood_gtr(
         if seq.len() != seq_len {
             return Err(CyaneaError::InvalidInput(format!(
                 "sequence {} has length {}, expected {}",
-                i, seq.len(), seq_len
+                i,
+                seq.len(),
+                seq_len
             )));
         }
     }
@@ -475,8 +475,7 @@ mod tests {
     /// return aligned sequences that match the tree topology.
     fn test_tree_and_sequences() -> (PhyloTree, Vec<Vec<u8>>) {
         // Tree: ((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
 
         // Sequences (sorted by leaf name: A, B, C, D).
         // A and B are similar, C and D are similar, but differ from A/B.
@@ -495,20 +494,14 @@ mod tests {
         let (tree, seqs) = test_tree_and_sequences();
         let seq_refs: Vec<&[u8]> = seqs.iter().map(|s| s.as_slice()).collect();
         let ll = tree_likelihood(&tree, &seq_refs, jc69_probability).unwrap();
-        assert!(
-            ll < 0.0,
-            "log-likelihood should be negative, got {}",
-            ll
-        );
+        assert!(ll < 0.0, "log-likelihood should be negative, got {}", ll);
     }
 
     #[test]
     fn likelihood_identical_sequences() {
         // When all sequences are identical, likelihood should be higher
         // (closer to zero) than when sequences differ.
-        let tree =
-            PhyloTree::from_newick("((A:0.01,B:0.01):0.01,(C:0.01,D:0.01):0.01);")
-                .unwrap();
+        let tree = PhyloTree::from_newick("((A:0.01,B:0.01):0.01,(C:0.01,D:0.01):0.01);").unwrap();
 
         let identical: Vec<Vec<u8>> = vec![
             b"ACGTACGT".to_vec(),
@@ -563,8 +556,7 @@ mod tests {
         // Start with a deliberately suboptimal tree topology.
         // Sequences: A and C are similar, B and D are similar.
         // But the tree groups A with B and C with D -- suboptimal.
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
 
         let seqs: Vec<Vec<u8>> = vec![
             b"AAACCCAAACCC".to_vec(), // A
@@ -589,8 +581,7 @@ mod tests {
     #[test]
     fn nni_on_optimal_tree_is_stable() {
         // If the tree already matches the data, NNI should not change it.
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
 
         let seqs: Vec<Vec<u8>> = vec![
             b"ACGTACGTACGT".to_vec(), // A
@@ -614,8 +605,7 @@ mod tests {
 
     #[test]
     fn tree_likelihood_gtr_finite() {
-        let tree =
-            PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
+        let tree = PhyloTree::from_newick("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);").unwrap();
         let seqs: Vec<Vec<u8>> = vec![
             b"ACGTACGTACGT".to_vec(),
             b"ACGTACGTACGT".to_vec(),
@@ -631,16 +621,18 @@ mod tests {
         let gamma = crate::models::GammaRates::new(0.5, 4).unwrap();
 
         let ll = tree_likelihood_gtr(&tree, &refs, &prob_fn, &params.freqs, Some(&gamma)).unwrap();
-        assert!(ll.is_finite(), "log-likelihood should be finite, got {}", ll);
+        assert!(
+            ll.is_finite(),
+            "log-likelihood should be finite, got {}",
+            ll
+        );
         assert!(ll < 0.0, "log-likelihood should be negative, got {}", ll);
     }
 
     #[test]
     fn nni_five_leaves() {
-        let tree = PhyloTree::from_newick(
-            "(((A:0.1,B:0.1):0.1,C:0.1):0.1,(D:0.1,E:0.1):0.1);",
-        )
-        .unwrap();
+        let tree =
+            PhyloTree::from_newick("(((A:0.1,B:0.1):0.1,C:0.1):0.1,(D:0.1,E:0.1):0.1);").unwrap();
 
         let seqs: Vec<Vec<u8>> = vec![
             b"AACCGGTTAACCGGTT".to_vec(), // A

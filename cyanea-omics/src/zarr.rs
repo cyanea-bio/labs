@@ -10,8 +10,8 @@ use std::num::NonZeroU64;
 use std::path::Path;
 use std::sync::Arc;
 
-use zarrs::array::{Array, ArrayBuilder, DataType, FillValue};
 use zarrs::array::chunk_grid::ChunkGrid;
+use zarrs::array::{Array, ArrayBuilder, DataType, FillValue};
 use zarrs::filesystem::FilesystemStore;
 use zarrs::group::GroupBuilder;
 use zarrs::storage::ReadableWritableListableStorage;
@@ -192,17 +192,17 @@ fn write_x(store: &ReadableWritableListableStorage, x: &MatrixData) -> Result<()
             write_f64_array(store, "/X/data", &data, &[data.len() as u64])?;
 
             let indices_i64: Vec<i64> = indices.iter().map(|&v| v as i64).collect();
-            write_i64_array(store, "/X/indices", &indices_i64, &[indices_i64.len() as u64])?;
+            write_i64_array(
+                store,
+                "/X/indices",
+                &indices_i64,
+                &[indices_i64.len() as u64],
+            )?;
 
             let indptr_i64: Vec<i64> = indptr.iter().map(|&v| v as i64).collect();
             write_i64_array(store, "/X/indptr", &indptr_i64, &[indptr_i64.len() as u64])?;
 
-            write_i64_array(
-                store,
-                "/X/_shape",
-                &[n_rows as i64, n_cols as i64],
-                &[2],
-            )?;
+            write_i64_array(store, "/X/_shape", &[n_rows as i64, n_cols as i64], &[2])?;
         }
     }
     Ok(())
@@ -515,11 +515,8 @@ fn read_embeddings(
             let shape = array.shape().to_vec();
             if shape.len() == 2 {
                 let n_cols = shape[1] as usize;
-                if let Ok(flat) =
-                    array.retrieve_array_subset_elements::<f64>(&array.subset_all())
-                {
-                    let rows: Vec<Vec<f64>> =
-                        flat.chunks(n_cols).map(|c| c.to_vec()).collect();
+                if let Ok(flat) = array.retrieve_array_subset_elements::<f64>(&array.subset_all()) {
+                    let rows: Vec<Vec<f64>> = flat.chunks(n_cols).map(|c| c.to_vec()).collect();
                     add_fn(&name, rows);
                 }
             }
@@ -611,11 +608,8 @@ fn read_layers(
             let shape = array.shape().to_vec();
             if shape.len() == 2 {
                 let n_cols = shape[1] as usize;
-                if let Ok(flat) =
-                    array.retrieve_array_subset_elements::<f64>(&array.subset_all())
-                {
-                    let rows: Vec<Vec<f64>> =
-                        flat.chunks(n_cols).map(|c| c.to_vec()).collect();
+                if let Ok(flat) = array.retrieve_array_subset_elements::<f64>(&array.subset_all()) {
+                    let rows: Vec<Vec<f64>> = flat.chunks(n_cols).map(|c| c.to_vec()).collect();
                     add_fn(&name, MatrixData::Dense(rows));
                     continue;
                 }
@@ -624,37 +618,31 @@ fn read_layers(
 
         // Try sparse
         if let Ok(data_arr) = Array::open(store.clone(), &format!("{layer_path}/data")) {
-            if let Ok(data) =
-                data_arr.retrieve_array_subset_elements::<f64>(&data_arr.subset_all())
+            if let Ok(data) = data_arr.retrieve_array_subset_elements::<f64>(&data_arr.subset_all())
             {
-                let indices_arr =
-                    Array::open(store.clone(), &format!("{layer_path}/indices"))
-                        .map_err(zarr_err)?;
+                let indices_arr = Array::open(store.clone(), &format!("{layer_path}/indices"))
+                    .map_err(zarr_err)?;
                 let indices_i64: Vec<i64> = indices_arr
                     .retrieve_array_subset_elements(&indices_arr.subset_all())
                     .map_err(zarr_err)?;
                 let indices: Vec<usize> = indices_i64.iter().map(|&v| v as usize).collect();
 
-                let indptr_arr =
-                    Array::open(store.clone(), &format!("{layer_path}/indptr"))
-                        .map_err(zarr_err)?;
+                let indptr_arr = Array::open(store.clone(), &format!("{layer_path}/indptr"))
+                    .map_err(zarr_err)?;
                 let indptr_i64: Vec<i64> = indptr_arr
                     .retrieve_array_subset_elements(&indptr_arr.subset_all())
                     .map_err(zarr_err)?;
                 let indptr: Vec<usize> = indptr_i64.iter().map(|&v| v as usize).collect();
 
-                let shape_arr =
-                    Array::open(store.clone(), &format!("{layer_path}/_shape"))
-                        .map_err(zarr_err)?;
+                let shape_arr = Array::open(store.clone(), &format!("{layer_path}/_shape"))
+                    .map_err(zarr_err)?;
                 let shape_data: Vec<i64> = shape_arr
                     .retrieve_array_subset_elements(&shape_arr.subset_all())
                     .map_err(zarr_err)?;
                 let n_rows = shape_data[0] as usize;
                 let n_cols = shape_data[1] as usize;
 
-                if let Ok(sm) =
-                    SparseMatrix::from_csr(data, indices, indptr, n_rows, n_cols)
-                {
+                if let Ok(sm) = SparseMatrix::from_csr(data, indices, indptr, n_rows, n_cols) {
                     add_fn(&name, MatrixData::Sparse(sm));
                 }
             }
@@ -675,10 +663,7 @@ mod tests {
     }
 
     fn sample_dense_adata() -> AnnData {
-        let x = MatrixData::Dense(vec![
-            vec![1.0, 2.0, 0.0],
-            vec![0.0, 3.0, 4.0],
-        ]);
+        let x = MatrixData::Dense(vec![vec![1.0, 2.0, 0.0], vec![0.0, 3.0, 4.0]]);
         AnnData::new(
             x,
             vec!["cell_1".into(), "cell_2".into()],
@@ -823,10 +808,7 @@ mod tests {
     fn layers_roundtrip() {
         let (_dir, path) = zarr_dir();
         let mut adata = sample_dense_adata();
-        let raw = MatrixData::Dense(vec![
-            vec![10.0, 20.0, 0.0],
-            vec![0.0, 30.0, 40.0],
-        ]);
+        let raw = MatrixData::Dense(vec![vec![10.0, 20.0, 0.0], vec![0.0, 30.0, 40.0]]);
         adata.add_layer("raw_counts", raw).unwrap();
         write_zarr(&adata, &path).unwrap();
 

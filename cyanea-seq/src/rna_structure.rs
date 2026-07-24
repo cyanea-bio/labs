@@ -63,12 +63,7 @@ const BULGE_INIT: [f64; 31] = [
 fn can_pair(a: u8, b: u8) -> bool {
     matches!(
         (a, b),
-        (b'A', b'U')
-            | (b'U', b'A')
-            | (b'G', b'C')
-            | (b'C', b'G')
-            | (b'G', b'U')
-            | (b'U', b'G')
+        (b'A', b'U') | (b'U', b'A') | (b'G', b'C') | (b'C', b'G') | (b'G', b'U') | (b'U', b'G')
     )
 }
 
@@ -246,7 +241,9 @@ impl RnaSecondaryStructure {
         }
 
         if !stack.is_empty() {
-            return Err(CyaneaError::Parse("unmatched '(' in dot-bracket string".into()));
+            return Err(CyaneaError::Parse(
+                "unmatched '(' in dot-bracket string".into(),
+            ));
         }
 
         Ok(Self { pairs, length: n })
@@ -381,10 +378,7 @@ pub fn nussinov(seq: &[u8], min_loop_size: usize) -> Result<NussinovResult> {
 
     let max_pairs = m[idx(0, n - 1)] as usize;
     Ok(NussinovResult {
-        structure: RnaSecondaryStructure {
-            pairs,
-            length: n,
-        },
+        structure: RnaSecondaryStructure { pairs, length: n },
         max_pairs,
     })
 }
@@ -510,7 +504,11 @@ pub fn zuker_mfe(seq: &[u8]) -> Result<MfeResult> {
                 best_v = best_v.min(hairpin_energy(&seq, i, j));
 
                 // Stacking
-                if i + 1 < j && j > 0 && can_pair(seq[i + 1], seq[j - 1]) && j - 1 - (i + 1) >= MIN_HAIRPIN {
+                if i + 1 < j
+                    && j > 0
+                    && can_pair(seq[i + 1], seq[j - 1])
+                    && j - 1 - (i + 1) >= MIN_HAIRPIN
+                {
                     let stack = stacking_energy(seq[i], seq[j], seq[i + 1], seq[j - 1]);
                     best_v = best_v.min(v[idx(i + 1, j - 1)] + stack);
                 } else if i + 1 < j && j > 0 && can_pair(seq[i + 1], seq[j - 1]) {
@@ -620,10 +618,7 @@ pub fn zuker_mfe(seq: &[u8]) -> Result<MfeResult> {
     zuker_traceback_w(&seq, &v, &w, &wm, n, 0, n - 1, &mut pairs);
 
     Ok(MfeResult {
-        structure: RnaSecondaryStructure {
-            pairs,
-            length: n,
-        },
+        structure: RnaSecondaryStructure { pairs, length: n },
         energy,
     })
 }
@@ -770,14 +765,15 @@ fn zuker_traceback_wm(
     }
 
     // i unpaired
-    if i + 1 <= j && wm[idx(i + 1, j)] < INF / 2.0 && (wm[idx(i + 1, j)] + ML_C - val).abs() < eps
-    {
+    if i + 1 <= j && wm[idx(i + 1, j)] < INF / 2.0 && (wm[idx(i + 1, j)] + ML_C - val).abs() < eps {
         zuker_traceback_wm(seq, v, w, wm, n, i + 1, j, pairs);
         return;
     }
 
     // j unpaired
-    if j > 0 && i <= j - 1 && wm[idx(i, j - 1)] < INF / 2.0
+    if j > 0
+        && i <= j - 1
+        && wm[idx(i, j - 1)] < INF / 2.0
         && (wm[idx(i, j - 1)] + ML_C - val).abs() < eps
     {
         zuker_traceback_wm(seq, v, w, wm, n, i, j - 1, pairs);
@@ -1039,10 +1035,7 @@ pub fn mccaskill(seq: &[u8], temperature: f64) -> Result<PartitionResult> {
 /// let b = RnaSecondaryStructure::from_dot_bracket("(((...)))").unwrap();
 /// assert_eq!(base_pair_distance(&a, &b).unwrap(), 0);
 /// ```
-pub fn base_pair_distance(
-    a: &RnaSecondaryStructure,
-    b: &RnaSecondaryStructure,
-) -> Result<usize> {
+pub fn base_pair_distance(a: &RnaSecondaryStructure, b: &RnaSecondaryStructure) -> Result<usize> {
     if a.length != b.length {
         return Err(CyaneaError::InvalidInput(format!(
             "structure lengths differ: {} vs {}",
@@ -1077,10 +1070,7 @@ pub fn base_pair_distance(
 /// let b = RnaSecondaryStructure::from_dot_bracket("((...))..").unwrap();
 /// assert!(mountain_distance(&a, &b).unwrap() > 0.0);
 /// ```
-pub fn mountain_distance(
-    a: &RnaSecondaryStructure,
-    b: &RnaSecondaryStructure,
-) -> Result<f64> {
+pub fn mountain_distance(a: &RnaSecondaryStructure, b: &RnaSecondaryStructure) -> Result<f64> {
     if a.length != b.length {
         return Err(CyaneaError::InvalidInput(format!(
             "structure lengths differ: {} vs {}",
@@ -1262,8 +1252,14 @@ mod tests {
         for (idx_a, &(i1, j1)) in bps.iter().enumerate() {
             for &(i2, j2) in bps.iter().skip(idx_a + 1) {
                 // Non-crossing: either nested or disjoint
-                assert!(j1 <= i2 || i2 >= i1 && j2 <= j1,
-                    "crossing pairs: ({},{}) and ({},{})", i1, j1, i2, j2);
+                assert!(
+                    j1 <= i2 || i2 >= i1 && j2 <= j1,
+                    "crossing pairs: ({},{}) and ({},{})",
+                    i1,
+                    j1,
+                    i2,
+                    j2
+                );
             }
         }
     }
@@ -1285,7 +1281,11 @@ mod tests {
     fn zuker_simple_hairpin() {
         let r = zuker_mfe(b"GGGAAACCC").unwrap();
         // Should form a stem-loop with negative energy
-        assert!(r.energy < 0.0, "energy should be negative, got {}", r.energy);
+        assert!(
+            r.energy < 0.0,
+            "energy should be negative, got {}",
+            r.energy
+        );
         assert!(r.structure.num_pairs() > 0);
     }
 
@@ -1311,7 +1311,12 @@ mod tests {
 
     #[test]
     fn zuker_energy_nonpositive() {
-        for seq in &[b"GCGCGCGC" as &[u8], b"AUGCAUGC", b"GGGAAACCC", b"CCCCGGGGG"] {
+        for seq in &[
+            b"GCGCGCGC" as &[u8],
+            b"AUGCAUGC",
+            b"GGGAAACCC",
+            b"CCCCGGGGG",
+        ] {
             let r = zuker_mfe(seq).unwrap();
             assert!(
                 r.energy <= 1e-9,
@@ -1328,7 +1333,12 @@ mod tests {
         // All pairs respect min_loop_size
         let bps = r.structure.base_pairs();
         for &(i, j) in &bps {
-            assert!(j - i > MIN_HAIRPIN, "pair ({},{}) violates min loop size", i, j);
+            assert!(
+                j - i > MIN_HAIRPIN,
+                "pair ({},{}) violates min loop size",
+                i,
+                j
+            );
             // Both must pair with each other
             assert_eq!(r.structure.pairs[i], Some(j));
             assert_eq!(r.structure.pairs[j], Some(i));

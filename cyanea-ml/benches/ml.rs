@@ -59,9 +59,7 @@ fn bench_dbscan(c: &mut Criterion) {
         metric: DistanceMetric::Euclidean,
     };
 
-    group.bench_function("5k_pts", |b| {
-        b.iter(|| dbscan(black_box(&refs), &config))
-    });
+    group.bench_function("5k_pts", |b| b.iter(|| dbscan(black_box(&refs), &config)));
 
     group.finish();
 }
@@ -120,5 +118,12 @@ fn bench_pca(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_kmeans, bench_dbscan, bench_tsne, bench_pairwise_distances, bench_pca);
+criterion_group!(
+    benches,
+    bench_kmeans,
+    bench_dbscan,
+    bench_tsne,
+    bench_pairwise_distances,
+    bench_pca
+);
 criterion_main!(benches);

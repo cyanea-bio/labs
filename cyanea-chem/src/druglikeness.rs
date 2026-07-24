@@ -79,10 +79,18 @@ pub fn lipinski(mol: &Molecule) -> LipinskiResult {
     let hba = hba_count(mol);
 
     let mut violations = 0u8;
-    if mw > 500.0 { violations += 1; }
-    if logp > 5.0 { violations += 1; }
-    if hbd > 5 { violations += 1; }
-    if hba > 10 { violations += 1; }
+    if mw > 500.0 {
+        violations += 1;
+    }
+    if logp > 5.0 {
+        violations += 1;
+    }
+    if hbd > 5 {
+        violations += 1;
+    }
+    if hba > 10 {
+        violations += 1;
+    }
 
     LipinskiResult {
         mw,
@@ -279,7 +287,6 @@ pub fn lead_likeness(mol: &Molecule) -> bool {
 /// QED weights from Bickerton 2012, Table 1.
 const QED_WEIGHTS: [f64; 8] = [0.66, 0.46, 0.05, 0.61, 0.06, 0.65, 0.48, 0.95];
 
-
 /// Desirability function using Gaussian with asymmetric tails.
 ///
 /// Models each property's ideal range as a Gaussian-like function.
@@ -295,19 +302,21 @@ fn desirability(x: f64, idx: usize) -> f64 {
     // AromaticRings: peak ~2, good 0-4
     // Alerts: peak ~0, good 0
     let (center, sigma_l, sigma_r): (f64, f64, f64) = match idx {
-        0 => (300.0, 120.0, 200.0),  // MW
-        1 => (2.5, 2.5, 2.5),        // LogP
-        2 => (4.0, 4.0, 6.0),        // HBA
-        3 => (1.0, 1.0, 4.0),        // HBD
-        4 => (60.0, 40.0, 80.0),     // TPSA
-        5 => (3.0, 3.0, 7.0),        // RotBonds
-        6 => (2.0, 2.0, 2.0),        // AromaticRings
-        7 => (0.0, 0.5, 0.5),        // Alerts
+        0 => (300.0, 120.0, 200.0), // MW
+        1 => (2.5, 2.5, 2.5),       // LogP
+        2 => (4.0, 4.0, 6.0),       // HBA
+        3 => (1.0, 1.0, 4.0),       // HBD
+        4 => (60.0, 40.0, 80.0),    // TPSA
+        5 => (3.0, 3.0, 7.0),       // RotBonds
+        6 => (2.0, 2.0, 2.0),       // AromaticRings
+        7 => (0.0, 0.5, 0.5),       // Alerts
         _ => return 0.5,
     };
 
     let sigma = if x <= center { sigma_l } else { sigma_r };
-    if sigma.abs() < 1e-15 { return if (x - center).abs() < 1e-10 { 1.0 } else { 0.0 }; }
+    if sigma.abs() < 1e-15 {
+        return if (x - center).abs() < 1e-10 { 1.0 } else { 0.0 };
+    }
     let z = (x - center) / sigma;
     (-0.5 * z * z).exp()
 }
@@ -333,7 +342,16 @@ pub fn qed(mol: &Molecule) -> QedResult {
     let mut desirabilities = Vec::new();
     let mut property_names = Vec::new();
 
-    let names = ["MW", "LogP", "HBA", "HBD", "TPSA", "RotBonds", "AromaticRings", "Alerts"];
+    let names = [
+        "MW",
+        "LogP",
+        "HBA",
+        "HBD",
+        "TPSA",
+        "RotBonds",
+        "AromaticRings",
+        "Alerts",
+    ];
 
     for (i, &x) in property_values.iter().enumerate() {
         let d_val = desirability(x, i);
@@ -372,9 +390,17 @@ pub fn qed(mol: &Molecule) -> QedResult {
 fn count_alerts(mol: &Molecule) -> usize {
     // Use a small subset of structural alerts for QED scoring
     let alert_smarts = [
-        "C(=O)Cl", "S(=O)(=O)Cl", "C1OC1", "C1NC1",
-        "[SH]", "[CH]=O", "N=C=O", "N=C=S",
-        "C(=O)C(=O)", "OO", "NN",
+        "C(=O)Cl",
+        "S(=O)(=O)Cl",
+        "C1OC1",
+        "C1NC1",
+        "[SH]",
+        "[CH]=O",
+        "N=C=O",
+        "N=C=S",
+        "C(=O)C(=O)",
+        "OO",
+        "NN",
     ];
 
     let mut count = 0;
@@ -479,7 +505,8 @@ mod tests {
         let result = qed(&mol);
         assert!(
             result.score > 0.1 && result.score <= 1.0,
-            "QED={}", result.score
+            "QED={}",
+            result.score
         );
     }
 

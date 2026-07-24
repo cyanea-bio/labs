@@ -32,7 +32,12 @@ pub fn rank(data: &[f64], method: RankMethod) -> Vec<f64> {
     }
 
     // Build (value, original_index) and sort by value.
-    let mut indexed: Vec<(f64, usize)> = data.iter().copied().enumerate().map(|(i, v)| (v, i)).collect();
+    let mut indexed: Vec<(f64, usize)> = data
+        .iter()
+        .copied()
+        .enumerate()
+        .map(|(i, v)| (v, i))
+        .collect();
     indexed.sort_by(|a, b| a.0.total_cmp(&b.0));
 
     let mut ranks = vec![0.0; n];
@@ -120,7 +125,7 @@ mod tests {
         let r = rank(&data, RankMethod::Ordinal);
         assert_eq!(r[1], 1.0); // 1.0 is smallest
         assert_eq!(r[0], 4.0); // 3.0 is largest
-        // The two 2.0s get ranks 2 and 3 (order depends on stable sort).
+                               // The two 2.0s get ranks 2 and 3 (order depends on stable sort).
         assert!(r[2] == 2.0 || r[2] == 3.0);
         assert!(r[3] == 2.0 || r[3] == 3.0);
         assert!((r[2] - r[3]).abs() > 0.5); // they must differ

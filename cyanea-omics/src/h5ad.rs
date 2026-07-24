@@ -39,9 +39,8 @@ macro_rules! write_attr_str {
 
 /// Read an `.h5ad` file into an [`AnnData`] container.
 pub fn read_h5ad<P: AsRef<Path>>(path: P) -> Result<AnnData> {
-    let file = File::open(path.as_ref()).map_err(|e| {
-        CyaneaError::InvalidInput(format!("cannot open h5ad file: {e}"))
-    })?;
+    let file = File::open(path.as_ref())
+        .map_err(|e| CyaneaError::InvalidInput(format!("cannot open h5ad file: {e}")))?;
 
     // Read X
     let x = read_x(&file)?;
@@ -114,9 +113,8 @@ pub fn read_h5ad<P: AsRef<Path>>(path: P) -> Result<AnnData> {
 
 /// Write an [`AnnData`] container to an `.h5ad` file.
 pub fn write_h5ad<P: AsRef<Path>>(adata: &AnnData, path: P) -> Result<()> {
-    let file = File::create(path.as_ref()).map_err(|e| {
-        CyaneaError::InvalidInput(format!("cannot create h5ad file: {e}"))
-    })?;
+    let file = File::create(path.as_ref())
+        .map_err(|e| CyaneaError::InvalidInput(format!("cannot create h5ad file: {e}")))?;
 
     // Write X
     write_x(&file, adata.x())?;
@@ -198,7 +196,9 @@ fn read_x(file: &File) -> Result<MatrixData> {
             ))),
         }
     } else {
-        Err(CyaneaError::InvalidInput("no X dataset or group found".into()))
+        Err(CyaneaError::InvalidInput(
+            "no X dataset or group found".into(),
+        ))
     }
 }
 
@@ -552,10 +552,7 @@ mod tests {
     }
 
     fn sample_dense_adata() -> AnnData {
-        let x = MatrixData::Dense(vec![
-            vec![1.0, 2.0, 0.0],
-            vec![0.0, 3.0, 4.0],
-        ]);
+        let x = MatrixData::Dense(vec![vec![1.0, 2.0, 0.0], vec![0.0, 3.0, 4.0]]);
         AnnData::new(
             x,
             vec!["cell_1".into(), "cell_2".into()],
@@ -640,9 +637,7 @@ mod tests {
     fn obs_var_numeric_columns() {
         let (_tmp, path) = temp_path();
         let mut adata = sample_dense_adata();
-        adata
-            .add_obs_numeric("score", vec![0.5, 0.9])
-            .unwrap();
+        adata.add_obs_numeric("score", vec![0.5, 0.9]).unwrap();
         write_h5ad(&adata, &path).unwrap();
 
         let loaded = read_h5ad(&path).unwrap();
@@ -702,10 +697,7 @@ mod tests {
     fn layers_roundtrip() {
         let (_tmp, path) = temp_path();
         let mut adata = sample_dense_adata();
-        let raw = MatrixData::Dense(vec![
-            vec![10.0, 20.0, 0.0],
-            vec![0.0, 30.0, 40.0],
-        ]);
+        let raw = MatrixData::Dense(vec![vec![10.0, 20.0, 0.0], vec![0.0, 30.0, 40.0]]);
         adata.add_layer("raw_counts", raw).unwrap();
         write_h5ad(&adata, &path).unwrap();
 

@@ -56,11 +56,8 @@ mod tests {
 
     #[test]
     fn batch_multiple_pairs() {
-        let pairs: Vec<(&[u8], &[u8])> = vec![
-            (b"ACGT", b"ACGT"),
-            (b"AAAA", b"TTTT"),
-            (b"ACGT", b"ACT"),
-        ];
+        let pairs: Vec<(&[u8], &[u8])> =
+            vec![(b"ACGT", b"ACGT"), (b"AAAA", b"TTTT"), (b"ACGT", b"ACT")];
         let results = align_batch(&pairs, AlignmentMode::Global, &dna_scheme()).unwrap();
         assert_eq!(results.len(), 3);
         assert_eq!(results[0].score, 8); // perfect match

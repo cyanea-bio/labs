@@ -63,8 +63,9 @@ pub fn parse_bcf(path: impl AsRef<Path>) -> Result<Vec<Variant>> {
     }
 
     // Parse header text for contig names and filter definitions
-    let header_text = std::str::from_utf8(&data[pos..pos + header_len])
-        .map_err(|_| CyaneaError::Parse(format!("{}: invalid UTF-8 in BCF header", path.display())))?;
+    let header_text = std::str::from_utf8(&data[pos..pos + header_len]).map_err(|_| {
+        CyaneaError::Parse(format!("{}: invalid UTF-8 in BCF header", path.display()))
+    })?;
     pos += header_len;
 
     let contigs = parse_header_contigs(header_text);
@@ -290,20 +291,31 @@ fn read_typed_int_vec(data: &[u8], pos: &mut usize) -> Result<Vec<i32>> {
         let count_type = count_type_byte & 0x0F;
         count = match count_type {
             1 => {
-                if *pos >= data.len() { return Ok(Vec::new()); }
+                if *pos >= data.len() {
+                    return Ok(Vec::new());
+                }
                 let v = data[*pos] as usize;
                 *pos += 1;
                 v
             }
             2 => {
-                if *pos + 2 > data.len() { return Ok(Vec::new()); }
+                if *pos + 2 > data.len() {
+                    return Ok(Vec::new());
+                }
                 let v = u16::from_le_bytes([data[*pos], data[*pos + 1]]) as usize;
                 *pos += 2;
                 v
             }
             3 => {
-                if *pos + 4 > data.len() { return Ok(Vec::new()); }
-                let v = u32::from_le_bytes([data[*pos], data[*pos + 1], data[*pos + 2], data[*pos + 3]]) as usize;
+                if *pos + 4 > data.len() {
+                    return Ok(Vec::new());
+                }
+                let v = u32::from_le_bytes([
+                    data[*pos],
+                    data[*pos + 1],
+                    data[*pos + 2],
+                    data[*pos + 3],
+                ]) as usize;
                 *pos += 4;
                 v
             }
@@ -315,19 +327,30 @@ fn read_typed_int_vec(data: &[u8], pos: &mut usize) -> Result<Vec<i32>> {
     for _ in 0..count {
         match type_id {
             1 => {
-                if *pos >= data.len() { break; }
+                if *pos >= data.len() {
+                    break;
+                }
                 values.push(data[*pos] as i8 as i32);
                 *pos += 1;
             }
             2 => {
-                if *pos + 2 > data.len() { break; }
+                if *pos + 2 > data.len() {
+                    break;
+                }
                 let v = i16::from_le_bytes([data[*pos], data[*pos + 1]]);
                 values.push(v as i32);
                 *pos += 2;
             }
             3 => {
-                if *pos + 4 > data.len() { break; }
-                let v = i32::from_le_bytes([data[*pos], data[*pos + 1], data[*pos + 2], data[*pos + 3]]);
+                if *pos + 4 > data.len() {
+                    break;
+                }
+                let v = i32::from_le_bytes([
+                    data[*pos],
+                    data[*pos + 1],
+                    data[*pos + 2],
+                    data[*pos + 3],
+                ]);
                 values.push(v);
                 *pos += 4;
             }
@@ -440,7 +463,11 @@ fn parse_bcf_record(
     };
 
     // BCF position is 0-based; convert to 1-based for consistency with VCF
-    let vcf_position = if position < 0 { 0u64 } else { (position + 1) as u64 };
+    let vcf_position = if position < 0 {
+        0u64
+    } else {
+        (position + 1) as u64
+    };
 
     Ok(Variant {
         chrom,
@@ -567,10 +594,17 @@ mod test_helpers {
         let mut header = String::new();
         header.push_str("##fileformat=VCFv4.3\n");
         for (i, contig) in contigs.iter().enumerate() {
-            header.push_str(&format!("##contig=<ID={},length={}>\n", contig, 1000 * (i + 1)));
+            header.push_str(&format!(
+                "##contig=<ID={},length={}>\n",
+                contig,
+                1000 * (i + 1)
+            ));
         }
         for filter_name in filter_defs {
-            header.push_str(&format!("##FILTER=<ID={},Description=\"{}\">\n", filter_name, filter_name));
+            header.push_str(&format!(
+                "##FILTER=<ID={},Description=\"{}\">\n",
+                filter_name, filter_name
+            ));
         }
         header.push_str("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n");
 
@@ -614,16 +648,12 @@ mod tests {
     #[test]
     fn bcf_parse_simple() {
         let records = vec![
-            build_bcf_record(0, 99, 30.0, "rs123", &["A", "G"], &[0]),     // PASS
-            build_bcf_record(0, 199, f32::NAN, ".", &["AC", "A"], &[]),     // Missing filter
+            build_bcf_record(0, 99, 30.0, "rs123", &["A", "G"], &[0]), // PASS
+            build_bcf_record(0, 199, f32::NAN, ".", &["AC", "A"], &[]), // Missing filter
             build_bcf_record(1, 299, 50.5, ".", &["T", "TA", "TG"], &[1]), // LowQual
         ];
 
-        let file = write_test_bcf(
-            &["chr1", "chr2"],
-            &["PASS", "LowQual"],
-            &records,
-        );
+        let file = write_test_bcf(&["chr1", "chr2"], &["PASS", "LowQual"], &records);
 
         let variants = parse_bcf(file.path()).unwrap();
         assert_eq!(variants.len(), 3);
@@ -647,9 +677,7 @@ mod tests {
     #[test]
     fn bcf_matches_vcf() {
         // Verify BCF and VCF produce compatible Variant records
-        let records = vec![
-            build_bcf_record(0, 99, 30.0, ".", &["A", "G"], &[0]),
-        ];
+        let records = vec![build_bcf_record(0, 99, 30.0, ".", &["A", "G"], &[0])];
         let file = write_test_bcf(&["chr1"], &["PASS"], &records);
         let variants = parse_bcf(file.path()).unwrap();
 
@@ -698,9 +726,14 @@ mod tests {
 
     #[test]
     fn bcf_multiallelic() {
-        let records = vec![
-            build_bcf_record(0, 99, 30.0, ".", &["A", "G", "T", "C"], &[0]),
-        ];
+        let records = vec![build_bcf_record(
+            0,
+            99,
+            30.0,
+            ".",
+            &["A", "G", "T", "C"],
+            &[0],
+        )];
         let file = write_test_bcf(&["chr1"], &["PASS"], &records);
         let variants = parse_bcf(file.path()).unwrap();
 

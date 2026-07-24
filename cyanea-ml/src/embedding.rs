@@ -120,7 +120,10 @@ pub fn composition_vector(seq: &[u8], alphabet: Alphabet) -> Result<SequenceEmbe
 /// # Errors
 ///
 /// Returns an error if any sequence is empty or config is invalid.
-pub fn batch_embed(sequences: &[&[u8]], config: &EmbeddingConfig) -> Result<Vec<SequenceEmbedding>> {
+pub fn batch_embed(
+    sequences: &[&[u8]],
+    config: &EmbeddingConfig,
+) -> Result<Vec<SequenceEmbedding>> {
     if sequences.is_empty() {
         return Err(CyaneaError::InvalidInput("empty sequence list".into()));
     }
@@ -131,9 +134,8 @@ pub fn batch_embed(sequences: &[&[u8]], config: &EmbeddingConfig) -> Result<Vec<
             .par_iter()
             .enumerate()
             .map(|(i, seq)| {
-                kmer_embedding(seq, config).map_err(|e| {
-                    CyaneaError::InvalidInput(format!("sequence {}: {}", i, e))
-                })
+                kmer_embedding(seq, config)
+                    .map_err(|e| CyaneaError::InvalidInput(format!("sequence {}: {}", i, e)))
             })
             .collect()
     }
@@ -142,9 +144,8 @@ pub fn batch_embed(sequences: &[&[u8]], config: &EmbeddingConfig) -> Result<Vec<
         .iter()
         .enumerate()
         .map(|(i, seq)| {
-            kmer_embedding(seq, config).map_err(|e| {
-                CyaneaError::InvalidInput(format!("sequence {}: {}", i, e))
-            })
+            kmer_embedding(seq, config)
+                .map_err(|e| CyaneaError::InvalidInput(format!("sequence {}: {}", i, e)))
         })
         .collect()
 }

@@ -354,29 +354,39 @@ fn fastq_stats(path: &str) -> PyResult<FastqStats> {
 /// Parse paired FASTQ files into a list of paired records.
 #[pyfunction]
 #[pyo3(signature = (r1_path, r2_path, validation="relaxed"))]
-fn parse_paired_fastq(r1_path: &str, r2_path: &str, validation: &str) -> PyResult<Vec<PairedFastqRecord>> {
+fn parse_paired_fastq(
+    r1_path: &str,
+    r2_path: &str,
+    validation: &str,
+) -> PyResult<Vec<PairedFastqRecord>> {
     let v = match validation {
         "strict" => cyanea_seq::MateValidation::Strict,
         "relaxed" => cyanea_seq::MateValidation::Relaxed,
         "none" => cyanea_seq::MateValidation::None,
-        _ => return Err(pyo3::exceptions::PyValueError::new_err(
-            format!("invalid validation mode: '{}' (expected 'strict', 'relaxed', or 'none')", validation)
-        )),
+        _ => {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "invalid validation mode: '{}' (expected 'strict', 'relaxed', or 'none')",
+                validation
+            )))
+        }
     };
     let pairs = cyanea_seq::parse_paired_fastq_files(r1_path, r2_path, v).into_pyresult()?;
-    Ok(pairs.into_iter().map(|p| {
-        let (r1, r2) = p.into_reads();
-        PairedFastqRecord {
-            r1_name: r1.name().to_string(),
-            r1_description: r1.description().unwrap_or("").to_string(),
-            r1_sequence: r1.sequence().as_bytes().to_vec(),
-            r1_quality: r1.quality().as_slice().to_vec(),
-            r2_name: r2.name().to_string(),
-            r2_description: r2.description().unwrap_or("").to_string(),
-            r2_sequence: r2.sequence().as_bytes().to_vec(),
-            r2_quality: r2.quality().as_slice().to_vec(),
-        }
-    }).collect())
+    Ok(pairs
+        .into_iter()
+        .map(|p| {
+            let (r1, r2) = p.into_reads();
+            PairedFastqRecord {
+                r1_name: r1.name().to_string(),
+                r1_description: r1.description().unwrap_or("").to_string(),
+                r1_sequence: r1.sequence().as_bytes().to_vec(),
+                r1_quality: r1.quality().as_slice().to_vec(),
+                r2_name: r2.name().to_string(),
+                r2_description: r2.description().unwrap_or("").to_string(),
+                r2_sequence: r2.sequence().as_bytes().to_vec(),
+                r2_quality: r2.quality().as_slice().to_vec(),
+            }
+        })
+        .collect())
 }
 
 /// Parse an interleaved FASTQ file into paired records.
@@ -387,24 +397,30 @@ fn parse_interleaved_fastq(path: &str, validation: &str) -> PyResult<Vec<PairedF
         "strict" => cyanea_seq::MateValidation::Strict,
         "relaxed" => cyanea_seq::MateValidation::Relaxed,
         "none" => cyanea_seq::MateValidation::None,
-        _ => return Err(pyo3::exceptions::PyValueError::new_err(
-            format!("invalid validation mode: '{}' (expected 'strict', 'relaxed', or 'none')", validation)
-        )),
+        _ => {
+            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                "invalid validation mode: '{}' (expected 'strict', 'relaxed', or 'none')",
+                validation
+            )))
+        }
     };
     let pairs = cyanea_seq::parse_interleaved_fastq(path, v).into_pyresult()?;
-    Ok(pairs.into_iter().map(|p| {
-        let (r1, r2) = p.into_reads();
-        PairedFastqRecord {
-            r1_name: r1.name().to_string(),
-            r1_description: r1.description().unwrap_or("").to_string(),
-            r1_sequence: r1.sequence().as_bytes().to_vec(),
-            r1_quality: r1.quality().as_slice().to_vec(),
-            r2_name: r2.name().to_string(),
-            r2_description: r2.description().unwrap_or("").to_string(),
-            r2_sequence: r2.sequence().as_bytes().to_vec(),
-            r2_quality: r2.quality().as_slice().to_vec(),
-        }
-    }).collect())
+    Ok(pairs
+        .into_iter()
+        .map(|p| {
+            let (r1, r2) = p.into_reads();
+            PairedFastqRecord {
+                r1_name: r1.name().to_string(),
+                r1_description: r1.description().unwrap_or("").to_string(),
+                r1_sequence: r1.sequence().as_bytes().to_vec(),
+                r1_quality: r1.quality().as_slice().to_vec(),
+                r2_name: r2.name().to_string(),
+                r2_description: r2.description().unwrap_or("").to_string(),
+                r2_sequence: r2.sequence().as_bytes().to_vec(),
+                r2_quality: r2.quality().as_slice().to_vec(),
+            }
+        })
+        .collect())
 }
 
 /// Compute statistics for paired FASTQ files.
@@ -453,8 +469,9 @@ fn trim_paired_fastq(
     }
 
     // Parse pairs
-    let pairs = cyanea_seq::parse_paired_fastq_files(r1_path, r2_path, cyanea_seq::MateValidation::None)
-        .into_pyresult()?;
+    let pairs =
+        cyanea_seq::parse_paired_fastq_files(r1_path, r2_path, cyanea_seq::MateValidation::None)
+            .into_pyresult()?;
 
     // Process
     let report = pipeline.process_paired_batch_with_stats(&pairs);
@@ -747,7 +764,13 @@ pub struct PySimulatedRead {
 /// Simulate Illumina-style reads from a reference sequence.
 #[pyfunction]
 #[pyo3(signature = (ref_seq, read_length=150, coverage=30.0, error_rate=0.001, seed=42))]
-fn simulate_reads(ref_seq: &str, read_length: usize, coverage: f64, error_rate: f64, seed: u64) -> PyResult<Vec<PySimulatedRead>> {
+fn simulate_reads(
+    ref_seq: &str,
+    read_length: usize,
+    coverage: f64,
+    error_rate: f64,
+    seed: u64,
+) -> PyResult<Vec<PySimulatedRead>> {
     let config = cyanea_seq::ReadSimConfig {
         read_length,
         coverage,
@@ -756,13 +779,16 @@ fn simulate_reads(ref_seq: &str, read_length: usize, coverage: f64, error_rate: 
         ..Default::default()
     };
     let reads = cyanea_seq::simulate_reads(ref_seq.as_bytes(), "ref", &config);
-    Ok(reads.into_iter().map(|r| PySimulatedRead {
-        name: r.name,
-        sequence: String::from_utf8_lossy(&r.sequence).to_string(),
-        quality: String::from_utf8_lossy(&r.quality).to_string(),
-        position: r.true_position,
-        is_read1: r.is_read1,
-    }).collect())
+    Ok(reads
+        .into_iter()
+        .map(|r| PySimulatedRead {
+            name: r.name,
+            sequence: String::from_utf8_lossy(&r.sequence).to_string(),
+            quality: String::from_utf8_lossy(&r.quality).to_string(),
+            position: r.true_position,
+            is_read1: r.is_read1,
+        })
+        .collect())
 }
 
 // ---------------------------------------------------------------------------

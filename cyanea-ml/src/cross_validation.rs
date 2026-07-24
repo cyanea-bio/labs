@@ -96,9 +96,7 @@ where
     F: FnMut(&[usize], &[usize]) -> Result<f64>,
 {
     if k < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "k must be at least 2".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("k must be at least 2".into()));
     }
     if k > n_samples {
         return Err(CyaneaError::InvalidInput(format!(
@@ -139,9 +137,7 @@ where
 {
     let n_samples = labels.len();
     if k < 2 {
-        return Err(CyaneaError::InvalidInput(
-            "k must be at least 2".into(),
-        ));
+        return Err(CyaneaError::InvalidInput("k must be at least 2".into()));
     }
     if k > n_samples {
         return Err(CyaneaError::InvalidInput(format!(
@@ -412,8 +408,7 @@ mod tests {
                 .flatten()
                 .collect();
             let train_labels: Vec<usize> = train.iter().map(|&i| labels[i]).collect();
-            let tree =
-                DecisionTree::fit(&train_data, n_features, &train_labels, 3)?;
+            let tree = DecisionTree::fit(&train_data, n_features, &train_labels, 3)?;
 
             let mut correct = 0;
             for &i in test {
@@ -436,8 +431,8 @@ mod tests {
         // Simple linearly separable 2-class dataset
         // Class 0: features around [0, 0], Class 1: features around [10, 10]
         let data: Vec<f64> = vec![
-            0.0, 0.1, 0.1, 0.0, 0.2, 0.1, 0.0, 0.2, 0.1, 0.1,
-            10.0, 10.1, 10.1, 10.0, 10.2, 10.1, 10.0, 10.2, 10.1, 10.1,
+            0.0, 0.1, 0.1, 0.0, 0.2, 0.1, 0.0, 0.2, 0.1, 0.1, 10.0, 10.1, 10.1, 10.0, 10.2, 10.1,
+            10.0, 10.2, 10.1, 10.1,
         ];
         let labels: Vec<usize> = vec![0, 0, 0, 0, 0, 1, 1, 1, 1, 1];
         let n_features = 2;
@@ -449,8 +444,7 @@ mod tests {
                 .flat_map(|&i| data[i * n_features..(i + 1) * n_features].iter().copied())
                 .collect();
             let train_labels: Vec<usize> = train.iter().map(|&i| labels[i]).collect();
-            let tree =
-                DecisionTree::fit(&train_data, n_features, &train_labels, 5)?;
+            let tree = DecisionTree::fit(&train_data, n_features, &train_labels, 5)?;
 
             let correct: usize = test
                 .iter()

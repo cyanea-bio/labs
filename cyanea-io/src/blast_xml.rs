@@ -141,14 +141,10 @@ pub fn parse_blast_xml_str(xml: &str) -> Result<BlastXmlResult> {
     let db = extract_tag_content(xml, "BlastOutput_db").unwrap_or_default();
     let query_id = extract_tag_content(xml, "BlastOutput_query-ID").unwrap_or_default();
 
-    let query_len_str = extract_tag_content(xml, "BlastOutput_query-len").ok_or_else(|| {
-        CyaneaError::Parse("missing <BlastOutput_query-len>".to_string())
-    })?;
+    let query_len_str = extract_tag_content(xml, "BlastOutput_query-len")
+        .ok_or_else(|| CyaneaError::Parse("missing <BlastOutput_query-len>".to_string()))?;
     let query_len: u64 = query_len_str.trim().parse().map_err(|_| {
-        CyaneaError::Parse(format!(
-            "invalid query length: '{}'",
-            query_len_str.trim()
-        ))
+        CyaneaError::Parse(format!("invalid query length: '{}'", query_len_str.trim()))
     })?;
 
     // Parse iterations
@@ -156,8 +152,7 @@ pub fn parse_blast_xml_str(xml: &str) -> Result<BlastXmlResult> {
     let mut iterations = Vec::with_capacity(iteration_blocks.len());
 
     for iter_xml in &iteration_blocks {
-        let iter_num_str =
-            extract_tag_content(iter_xml, "Iteration_iter-num").unwrap_or_default();
+        let iter_num_str = extract_tag_content(iter_xml, "Iteration_iter-num").unwrap_or_default();
         let iteration_num: u32 = iter_num_str.trim().parse().map_err(|_| {
             CyaneaError::Parse(format!(
                 "invalid iteration number: '{}'",
@@ -196,12 +191,12 @@ fn parse_hit(hit_xml: &str) -> Result<BlastXmlHit> {
     let hit_def = extract_tag_content(hit_xml, "Hit_def").unwrap_or_default();
     let hit_accession = extract_tag_content(hit_xml, "Hit_accession").unwrap_or_default();
 
-    let hit_len_str = extract_tag_content(hit_xml, "Hit_len").ok_or_else(|| {
-        CyaneaError::Parse("missing <Hit_len>".to_string())
-    })?;
-    let hit_len: u64 = hit_len_str.trim().parse().map_err(|_| {
-        CyaneaError::Parse(format!("invalid hit length: '{}'", hit_len_str.trim()))
-    })?;
+    let hit_len_str = extract_tag_content(hit_xml, "Hit_len")
+        .ok_or_else(|| CyaneaError::Parse("missing <Hit_len>".to_string()))?;
+    let hit_len: u64 = hit_len_str
+        .trim()
+        .parse()
+        .map_err(|_| CyaneaError::Parse(format!("invalid hit length: '{}'", hit_len_str.trim())))?;
 
     let hsp_blocks = extract_all_blocks(hit_xml, "Hsp");
     let mut hsps = Vec::with_capacity(hsp_blocks.len());

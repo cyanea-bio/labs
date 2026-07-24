@@ -274,10 +274,7 @@ mod tests {
 
     fn sample_matrix() -> ExpressionMatrix {
         ExpressionMatrix::new(
-            vec![
-                vec![1.0, 2.0, 3.0],
-                vec![4.0, 5.0, 6.0],
-            ],
+            vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]],
             vec!["gene1".into(), "gene2".into()],
             vec!["s1".into(), "s2".into(), "s3".into()],
         )
@@ -410,17 +407,15 @@ mod tests {
     #[test]
     fn test_summary() {
         let m = sample_matrix();
-        assert_eq!(m.summary(), "ExpressionMatrix: 2 features \u{00d7} 3 samples");
+        assert_eq!(
+            m.summary(),
+            "ExpressionMatrix: 2 features \u{00d7} 3 samples"
+        );
     }
 
     #[test]
     fn test_empty_matrix() {
-        let m = ExpressionMatrix::new(
-            vec![],
-            vec![],
-            vec!["s1".into()],
-        )
-        .unwrap();
+        let m = ExpressionMatrix::new(vec![], vec![], vec!["s1".into()]).unwrap();
         assert_eq!(m.shape(), (0, 1));
     }
 

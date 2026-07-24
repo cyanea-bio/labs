@@ -1,6 +1,5 @@
 /// Integration tests for composition module.
-
-use cyanea_meta::composition::{clr_transform, ilr_transform, differential_abundance, ancom};
+use cyanea_meta::composition::{ancom, clr_transform, differential_abundance, ilr_transform};
 
 #[test]
 fn clr_transform_basic() {
@@ -15,10 +14,7 @@ fn clr_transform_basic() {
 
 #[test]
 fn clr_transform_multiple_samples() {
-    let abundances = vec![
-        vec![100.0, 50.0, 25.0],
-        vec![10.0, 20.0, 30.0],
-    ];
+    let abundances = vec![vec![100.0, 50.0, 25.0], vec![10.0, 20.0, 30.0]];
     let result = clr_transform(&abundances).unwrap();
 
     assert_eq!(result.len(), 2);
@@ -51,10 +47,7 @@ fn ilr_transform_valid() {
 
 #[test]
 fn ilr_transform_multiple_samples() {
-    let abundances = vec![
-        vec![100.0, 50.0, 25.0],
-        vec![10.0, 20.0, 30.0],
-    ];
+    let abundances = vec![vec![100.0, 50.0, 25.0], vec![10.0, 20.0, 30.0]];
     let result = ilr_transform(&abundances).unwrap();
 
     assert_eq!(result.len(), 2);
@@ -64,14 +57,8 @@ fn ilr_transform_multiple_samples() {
 
 #[test]
 fn differential_abundance_basic() {
-    let group1 = vec![
-        vec![100.0, 10.0, 5.0],
-        vec![95.0, 15.0, 10.0],
-    ];
-    let group2 = vec![
-        vec![10.0, 100.0, 50.0],
-        vec![15.0, 95.0, 45.0],
-    ];
+    let group1 = vec![vec![100.0, 10.0, 5.0], vec![95.0, 15.0, 10.0]];
+    let group2 = vec![vec![10.0, 100.0, 50.0], vec![15.0, 95.0, 45.0]];
 
     let results = differential_abundance(&group1, &group2).unwrap();
 
@@ -116,14 +103,8 @@ fn differential_abundance_mismatched_dimensions_error() {
 
 #[test]
 fn ancom_basic() {
-    let group1 = vec![
-        vec![100.0, 10.0],
-        vec![95.0, 15.0],
-    ];
-    let group2 = vec![
-        vec![10.0, 100.0],
-        vec![15.0, 95.0],
-    ];
+    let group1 = vec![vec![100.0, 10.0], vec![95.0, 15.0]];
+    let group2 = vec![vec![10.0, 100.0], vec![15.0, 95.0]];
 
     let results = ancom(&group1, &group2).unwrap();
 
@@ -135,14 +116,8 @@ fn ancom_basic() {
 
 #[test]
 fn ancom_sorted_by_w_statistic() {
-    let group1 = vec![
-        vec![100.0, 10.0, 5.0],
-        vec![95.0, 15.0, 10.0],
-    ];
-    let group2 = vec![
-        vec![10.0, 100.0, 50.0],
-        vec![15.0, 95.0, 45.0],
-    ];
+    let group1 = vec![vec![100.0, 10.0, 5.0], vec![95.0, 15.0, 10.0]];
+    let group2 = vec![vec![10.0, 100.0, 50.0], vec![15.0, 95.0, 45.0]];
 
     let results = ancom(&group1, &group2).unwrap();
 

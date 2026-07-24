@@ -200,8 +200,8 @@ impl Gff3Builder {
         let ft = record.feature_type.as_str();
         match ft {
             "gene" | "pseudogene" => self.add_gene(record),
-            "mRNA" | "transcript" | "lnc_RNA" | "miRNA" | "rRNA" | "tRNA" | "ncRNA"
-            | "snRNA" | "snoRNA" => self.add_transcript(record),
+            "mRNA" | "transcript" | "lnc_RNA" | "miRNA" | "rRNA" | "tRNA" | "ncRNA" | "snRNA"
+            | "snoRNA" => self.add_transcript(record),
             "exon" => self.add_exon(record),
             "CDS" => self.add_cds(record),
             _ => {} // skip other feature types
@@ -209,11 +209,7 @@ impl Gff3Builder {
     }
 
     fn add_gene(&mut self, record: Gff3Record) {
-        let id = record
-            .attributes
-            .get("ID")
-            .cloned()
-            .unwrap_or_default();
+        let id = record.attributes.get("ID").cloned().unwrap_or_default();
         if id.is_empty() {
             return;
         }
@@ -253,16 +249,8 @@ impl Gff3Builder {
     }
 
     fn add_transcript(&mut self, record: Gff3Record) {
-        let id = record
-            .attributes
-            .get("ID")
-            .cloned()
-            .unwrap_or_default();
-        let parent = record
-            .attributes
-            .get("Parent")
-            .cloned()
-            .unwrap_or_default();
+        let id = record.attributes.get("ID").cloned().unwrap_or_default();
+        let parent = record.attributes.get("Parent").cloned().unwrap_or_default();
         if id.is_empty() || parent.is_empty() {
             return;
         }
@@ -284,11 +272,7 @@ impl Gff3Builder {
     }
 
     fn add_exon(&mut self, record: Gff3Record) {
-        let parent = record
-            .attributes
-            .get("Parent")
-            .cloned()
-            .unwrap_or_default();
+        let parent = record.attributes.get("Parent").cloned().unwrap_or_default();
         if parent.is_empty() {
             return;
         }
@@ -310,11 +294,7 @@ impl Gff3Builder {
     }
 
     fn add_cds(&mut self, record: Gff3Record) {
-        let parent = record
-            .attributes
-            .get("Parent")
-            .cloned()
-            .unwrap_or_default();
+        let parent = record.attributes.get("Parent").cloned().unwrap_or_default();
         if parent.is_empty() {
             return;
         }
@@ -489,7 +469,9 @@ fn parse_gene_type(biotype: &str) -> GeneType {
         "miRNA" => GeneType::MiRNA,
         "rRNA" => GeneType::RRNA,
         "tRNA" => GeneType::TRNA,
-        "pseudogene" | "processed_pseudogene" | "unprocessed_pseudogene"
+        "pseudogene"
+        | "processed_pseudogene"
+        | "unprocessed_pseudogene"
         | "transcribed_pseudogene" => GeneType::Pseudogene,
         other => GeneType::Other(other.to_string()),
     }

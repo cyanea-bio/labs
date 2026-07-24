@@ -114,9 +114,7 @@ impl PeakSet {
     /// Merge overlapping peaks.
     pub fn merge(&self) -> Self {
         if self.peaks.is_empty() {
-            return Self {
-                peaks: Vec::new(),
-            };
+            return Self { peaks: Vec::new() };
         }
 
         let mut merged = Vec::new();
@@ -331,7 +329,8 @@ pub fn call_peaks(
     let mut peaks = Vec::new();
 
     for (chrom, cov) in coverage {
-        let mean_lambda = (cov.iter().map(|&c| c as f64).sum::<f64>()) / (cov.len() as f64).max(1.0);
+        let mean_lambda =
+            (cov.iter().map(|&c| c as f64).sum::<f64>()) / (cov.len() as f64).max(1.0);
         let mut significant_regions = Vec::new();
 
         // Find regions with significant enrichment
@@ -408,7 +407,11 @@ pub fn call_peaks(
 
     // BH correction for multiple testing
     if !peaks.is_empty() {
-        peaks.sort_by(|a, b| a.p_value.partial_cmp(&b.p_value).unwrap_or(std::cmp::Ordering::Equal));
+        peaks.sort_by(|a, b| {
+            a.p_value
+                .partial_cmp(&b.p_value)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
 
         let n = peaks.len() as f64;
         for (i, peak) in peaks.iter_mut().enumerate() {
