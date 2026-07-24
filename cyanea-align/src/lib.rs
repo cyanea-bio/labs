@@ -65,9 +65,9 @@ pub use xdrop::{
 
 /// Convenience function: align two sequences using the specified mode and scoring.
 ///
-/// Dispatches to [`smith_waterman`] for [`AlignmentMode::Local`],
-/// [`needleman_wunsch`] for [`AlignmentMode::Global`], or
-/// [`semi_global`] for [`AlignmentMode::SemiGlobal`].
+/// Dispatches to [`smith_waterman()`] for [`AlignmentMode::Local`],
+/// [`needleman_wunsch()`] for [`AlignmentMode::Global`], or
+/// [`semi_global()`] for [`AlignmentMode::SemiGlobal`].
 ///
 /// # Errors
 ///

@@ -157,7 +157,7 @@ pub fn pdb_secondary_structure(pdb_text: &str) -> String {
     wasm_ok(&js)
 }
 
-/// Compute RMSD between two coordinate sets (JSON arrays of [x,y,z]).
+/// Compute RMSD between two coordinate sets (JSON arrays of `[x,y,z]`).
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn rmsd(coords1_json: &str, coords2_json: &str) -> String {
     let coords1: Vec<[f64; 3]> = match serde_json::from_str(coords1_json) {
@@ -258,7 +258,7 @@ pub fn parse_mmcif(text: &str) -> String {
     wasm_ok(&js)
 }
 
-/// Kabsch superposition on two coordinate sets (JSON arrays of [x,y,z]).
+/// Kabsch superposition on two coordinate sets (JSON arrays of `[x,y,z]`).
 ///
 /// Returns RMSD, rotation matrix (9 elements, row-major), and translation vector.
 #[cfg_attr(feature = "wasm", wasm_bindgen)]

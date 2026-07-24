@@ -78,7 +78,7 @@ impl<const N: usize> Pssm<N> {
 
     /// Score a sequence window against this PSSM.
     ///
-    /// `seq` must be exactly [`self.len()`] bytes. The `mapping` function
+    /// `seq` must be exactly `self.len()` bytes. The `mapping` function
     /// converts each byte to an alphabet index in `0..N`.
     ///
     /// # Errors

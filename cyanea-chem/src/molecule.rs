@@ -75,7 +75,7 @@ pub struct Molecule {
     pub name: String,
     pub atoms: Vec<MolAtom>,
     pub bonds: Vec<Bond>,
-    /// adjacency[atom_idx] = Vec<(neighbor_atom_idx, bond_idx)>
+    /// `adjacency[atom_idx] = Vec<(neighbor_atom_idx, bond_idx)>`
     pub adjacency: Vec<Vec<(usize, usize)>>,
 }
 

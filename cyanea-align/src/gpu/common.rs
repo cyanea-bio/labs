@@ -33,9 +33,9 @@ impl Default for GpuAlignConfig {
 }
 
 /// Traceback direction encoding (4 bits per cell):
-/// - Bits [1:0]: H direction (diag=0, up=1, left=2, stop=3)
-/// - Bit [2]: E from H+gap_open (1) vs E+gap_extend (0)
-/// - Bit [3]: F from H+gap_open (1) vs F+gap_extend (0)
+/// - Bits `[1:0]`: H direction (diag=0, up=1, left=2, stop=3)
+/// - Bit `[2]`: E from H+gap_open (1) vs E+gap_extend (0)
+/// - Bit `[3]`: F from H+gap_open (1) vs F+gap_extend (0)
 pub const TB_DIAG: u8 = 0;
 pub const TB_UP: u8 = 1;
 pub const TB_LEFT: u8 = 2;

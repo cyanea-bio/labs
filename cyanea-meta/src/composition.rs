@@ -47,7 +47,7 @@ impl Default for CompositionTransform {
 ///
 /// # Arguments
 ///
-/// * `abundances` — matrix: samples × taxa (as flattened row-major Vec<Vec<f64>>)
+/// * `abundances` — matrix: samples × taxa (as flattened row-major `Vec<Vec<f64>>`)
 ///
 /// # Errors
 ///
@@ -141,7 +141,7 @@ pub struct DifferentialAbundanceResult {
 ///
 /// # Arguments
 ///
-/// * `group1` — samples for first group (Vec<Vec<f64>>: samples × taxa)
+/// * `group1` — samples for first group (`Vec<Vec<f64>>`: samples × taxa)
 /// * `group2` — samples for second group
 ///
 /// # Errors

@@ -138,7 +138,7 @@ pub fn reestimate_abundance(profile: &TaxonomicProfile, _target_rank: u32) -> Re
 ///
 /// # Errors
 ///
-/// Returns an error if threshold is invalid (NaN or outside [0,1]).
+/// Returns an error if threshold is invalid (NaN or outside `[0,1]`).
 pub fn filter_profile(profile: &TaxonomicProfile, min_abundance: f64) -> Result<TaxonomicProfile> {
     if min_abundance.is_nan() || min_abundance < 0.0 || min_abundance > 1.0 {
         return Err(MetaError::Profile(format!(
