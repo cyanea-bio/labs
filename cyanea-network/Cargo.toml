@@ -11,7 +11,7 @@ keywords = ["bioinformatics", "network", "pathway", "graph", "ppi"]
 categories = ["science"]
 
 [dependencies]
-cyanea-core = { path = "../cyanea-core" }
+cyanea-core = { path = "../cyanea-core", version = "0.1.0" }
 thiserror.workspace = true
 serde = { workspace = true, optional = true }
 
