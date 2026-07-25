@@ -816,7 +816,7 @@ checksum = "ef8ae57c4978a2acd8b869ce6b9ca1dfe817bff704c220209fdef2c0b75a01b9"
 
 [[package]]
 name = "cyanea-align"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "criterion",
  "cudarc",
@@ -839,7 +839,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-chem"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "criterion",
  "cyanea-core",
@@ -852,7 +852,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "flate2",
  "hex",
@@ -866,7 +866,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-datasets"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-core",
  "tempfile",
@@ -874,7 +874,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-epi"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-core",
  "cyanea-io",
@@ -888,7 +888,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-gpu"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bytemuck",
  "criterion",
@@ -903,7 +903,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-io"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "arrow",
  "csv",
@@ -929,7 +929,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-meta"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-core",
  "cyanea-io",
@@ -942,7 +942,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-ml"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "criterion",
  "cyanea-core",
@@ -953,7 +953,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-network"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-core",
  "serde",
@@ -963,7 +963,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-omics"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-core",
  "cyanea-ml",
@@ -978,7 +978,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-phylo"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-core",
  "cyanea-ml",
@@ -989,7 +989,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-proteomics"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-core",
  "proptest",
@@ -999,7 +999,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-py"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-align",
  "cyanea-chem",
@@ -1017,7 +1017,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-seq"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "criterion",
  "cyanea-core",
@@ -1029,7 +1029,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-stats"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "criterion",
  "cyanea-core",
@@ -1041,7 +1041,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-struct"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "criterion",
  "cyanea-core",
@@ -1053,7 +1053,7 @@ dependencies = [
 
 [[package]]
 name = "cyanea-wasm"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cyanea-align",
  "cyanea-chem",
