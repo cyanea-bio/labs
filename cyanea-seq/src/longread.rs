@@ -155,7 +155,7 @@ pub fn longread_stats(reads: &[LongRead]) -> Result<LongReadStats> {
     let total_bases: u64 = lengths.iter().map(|&l| l as u64).sum();
     let mean_length = total_bases as f64 / reads.len() as f64;
 
-    let median_length = if lengths.len() % 2 == 0 {
+    let median_length = if lengths.len().is_multiple_of(2) {
         (lengths[lengths.len() / 2 - 1] + lengths[lengths.len() / 2]) as f64 / 2.0
     } else {
         lengths[lengths.len() / 2] as f64
@@ -242,7 +242,7 @@ pub fn self_correct(read: &LongRead, k: usize) -> Result<CorrectedRead> {
             k
         )));
     }
-    if k < 3 || k > 31 {
+    if !(3..=31).contains(&k) {
         return Err(CyaneaError::InvalidInput("k must be 3-31".into()));
     }
 
@@ -258,7 +258,7 @@ pub fn self_correct(read: &LongRead, k: usize) -> Result<CorrectedRead> {
     freqs.sort_unstable();
     let median_freq = if freqs.is_empty() {
         1
-    } else if freqs.len() % 2 == 0 {
+    } else if freqs.len().is_multiple_of(2) {
         (freqs[freqs.len() / 2 - 1] + freqs[freqs.len() / 2]) / 2
     } else {
         freqs[freqs.len() / 2]
@@ -269,7 +269,7 @@ pub fn self_correct(read: &LongRead, k: usize) -> Result<CorrectedRead> {
 
     let mut corrected = read.sequence.clone();
     let mut corrections = 0usize;
-    let bases = [b'A', b'C', b'G', b'T'];
+    let bases = *b"ACGT";
 
     // Scan for positions where all overlapping k-mers are low-frequency
     for pos in 0..corrected.len() {
@@ -468,7 +468,7 @@ pub fn simulate_long_reads(reference: &[u8], config: &LongReadSimConfig) -> Resu
         let mut qual = vec![0u8; read_len];
 
         // Introduce errors
-        let bases = [b'A', b'C', b'G', b'T'];
+        let bases = *b"ACGT";
         let mut _corrections = 0usize;
         for j in 0..seq.len() {
             let rand_val = (lcg_next(&mut rng_state) as f64) / (u64::MAX as f64);
@@ -589,7 +589,7 @@ pub fn trim_adapters(
         }
     }
 
-    let trimmed = LongRead {
+    LongRead {
         id: read.id.clone(),
         sequence: seq,
         quality: qual,
@@ -597,8 +597,7 @@ pub fn trim_adapters(
         num_passes: read.num_passes,
         predicted_accuracy: read.predicted_accuracy,
         read_group: read.read_group.clone(),
-    };
-    trimmed
+    }
 }
 
 #[cfg(test)]

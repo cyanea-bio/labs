@@ -137,7 +137,7 @@ pub fn call_svs(
     // Collect raw SV signals
     let mut raw_svs: Vec<StructuralVariant> = Vec::new();
 
-    for (_read_name, segments) in &by_read {
+    for segments in by_read.values() {
         if segments.len() < 2 {
             continue;
         }
@@ -378,7 +378,7 @@ pub fn sv_summary(svs: &[StructuralVariant]) -> SvSummary {
 
     let median = if lengths.is_empty() {
         0.0
-    } else if lengths.len() % 2 == 0 {
+    } else if lengths.len().is_multiple_of(2) {
         (lengths[lengths.len() / 2 - 1] + lengths[lengths.len() / 2]) as f64 / 2.0
     } else {
         lengths[lengths.len() / 2] as f64

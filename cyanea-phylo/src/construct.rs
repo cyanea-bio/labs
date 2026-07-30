@@ -266,32 +266,32 @@ fn validate_inputs(n: usize, leaf_names: &[String]) -> Result<()> {
 
 fn build_two_leaf_tree(distances: &DistanceMatrix, leaf_names: &[String]) -> Result<PhyloTree> {
     let d = distances.get(0, 1);
-    let mut nodes = Vec::new();
-
-    // Leaf 0
-    nodes.push(Node {
-        id: 0,
-        parent: None,
-        children: Vec::new(),
-        branch_length: Some(d / 2.0),
-        name: Some(leaf_names[0].clone()),
-    });
-    // Leaf 1
-    nodes.push(Node {
-        id: 1,
-        parent: None,
-        children: Vec::new(),
-        branch_length: Some(d / 2.0),
-        name: Some(leaf_names[1].clone()),
-    });
-    // Root
-    nodes.push(Node {
-        id: 2,
-        parent: None,
-        children: vec![0, 1],
-        branch_length: None,
-        name: None,
-    });
+    let mut nodes = vec![
+        // Leaf 0
+        Node {
+            id: 0,
+            parent: None,
+            children: Vec::new(),
+            branch_length: Some(d / 2.0),
+            name: Some(leaf_names[0].clone()),
+        },
+        // Leaf 1
+        Node {
+            id: 1,
+            parent: None,
+            children: Vec::new(),
+            branch_length: Some(d / 2.0),
+            name: Some(leaf_names[1].clone()),
+        },
+        // Root
+        Node {
+            id: 2,
+            parent: None,
+            children: vec![0, 1],
+            branch_length: None,
+            name: None,
+        },
+    ];
     nodes[0].parent = Some(2);
     nodes[1].parent = Some(2);
 

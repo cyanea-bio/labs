@@ -189,7 +189,7 @@ fn bfs_shortest_path(
 
 /// Normalize a ring so it starts with the smallest index and proceeds
 /// in the direction that gives the lexicographically smaller sequence.
-fn normalize_ring(ring: &mut Vec<usize>) {
+fn normalize_ring(ring: &mut [usize]) {
     if ring.is_empty() {
         return;
     }

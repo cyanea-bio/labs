@@ -146,7 +146,7 @@ impl DeBruijnGraph {
     pub fn unitigs(&self) -> Vec<Unitig> {
         // Compute in-degree for each node.
         let mut in_degree: BTreeMap<&Vec<u8>, usize> = BTreeMap::new();
-        for (_, successors) in &self.edges {
+        for successors in self.edges.values() {
             for s in successors {
                 *in_degree.entry(s).or_insert(0) += 1;
             }

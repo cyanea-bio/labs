@@ -801,7 +801,7 @@ fn simulate_reads(
 #[pyfunction]
 fn codon_usage(seq: &str) -> std::collections::HashMap<String, u64> {
     let usage = cyanea_seq::codon::CodonUsage::from_sequence(seq.as_bytes());
-    let nucleotides = [b'A', b'C', b'G', b'T'];
+    let nucleotides = *b"ACGT";
     let mut result = std::collections::HashMap::new();
     for &a in &nucleotides {
         for &b in &nucleotides {

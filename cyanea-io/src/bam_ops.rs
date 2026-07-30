@@ -485,7 +485,7 @@ pub fn alignment_stats(records: &[SamRecord]) -> AlignmentStats {
     } else {
         insert_sizes.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let mid = insert_sizes.len() / 2;
-        if insert_sizes.len() % 2 == 0 {
+        if insert_sizes.len().is_multiple_of(2) {
             (insert_sizes[mid - 1] + insert_sizes[mid]) / 2.0
         } else {
             insert_sizes[mid]

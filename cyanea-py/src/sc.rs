@@ -24,7 +24,7 @@ fn build_adata(data: Vec<f64>, n_features: usize) -> PyResult<AnnData> {
             "data and n_features must be non-empty",
         ));
     }
-    if data.len() % n_features != 0 {
+    if !data.len().is_multiple_of(n_features) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
             "data length ({}) is not divisible by n_features ({})",
             data.len(),

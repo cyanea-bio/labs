@@ -125,9 +125,9 @@ pub fn score_guide_rs2(context_30: &[u8]) -> Result<f64> {
     let gc_frac = gc_count as f64 / 20.0;
 
     // Optimal GC: 40-70%
-    if gc_frac >= 0.4 && gc_frac <= 0.7 {
+    if (0.4..=0.7).contains(&gc_frac) {
         score += 0.10;
-    } else if gc_frac < 0.3 || gc_frac > 0.8 {
+    } else if !(0.3..=0.8).contains(&gc_frac) {
         score -= 0.15;
     }
 

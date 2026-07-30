@@ -30,3 +30,6 @@ tempfile = { workspace = true }
 [[bench]]
 name = "seq"
 harness = false
+
+[lints]
+workspace = true

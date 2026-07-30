@@ -70,7 +70,7 @@ impl TwoBitSequence {
     /// ```
     pub fn encode(seq: &[u8]) -> Result<Self> {
         let len = seq.len();
-        let num_bytes = (len + 3) / 4;
+        let num_bytes = len.div_ceil(4);
         let mut data = vec![0u8; num_bytes];
 
         for (i, &base) in seq.iter().enumerate() {

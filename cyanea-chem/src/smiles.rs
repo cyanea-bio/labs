@@ -413,7 +413,7 @@ impl<'a> SmilesParser<'a> {
     fn add_bond_to_prev(&mut self, atom_idx: usize) -> Result<()> {
         if let Some(prev) = self.prev_atom {
             let both_aromatic = self.atoms[prev].is_aromatic && self.atoms[atom_idx].is_aromatic;
-            let order = self.pending_bond.take().unwrap_or_else(|| {
+            let order = self.pending_bond.take().unwrap_or({
                 if both_aromatic {
                     BondOrder::Aromatic
                 } else {

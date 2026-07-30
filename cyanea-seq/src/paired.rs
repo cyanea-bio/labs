@@ -243,11 +243,8 @@ pub fn parse_interleaved_fastq(
         .map_err(|e| CyaneaError::Parse(e.to_string()))?;
 
     let mut pairs = Vec::new();
-    loop {
-        let r1 = match reader.next() {
-            Some(r1) => r1.map_err(|e| CyaneaError::Parse(e.to_string()))?,
-            None => break,
-        };
+    while let Some(r1) = reader.next() {
+        let r1 = r1.map_err(|e| CyaneaError::Parse(e.to_string()))?;
         let r1_rec = record_from_parts(r1.id(), &r1.seq(), r1.qual())?;
 
         let r2 = reader
@@ -420,11 +417,8 @@ pub fn deinterleave_fastq_file(
     let encoding = PhredEncoding::Phred33;
     let mut count = 0u64;
 
-    loop {
-        let r1 = match reader.next() {
-            Some(r1) => r1.map_err(|e| CyaneaError::Parse(e.to_string()))?,
-            None => break,
-        };
+    while let Some(r1) = reader.next() {
+        let r1 = r1.map_err(|e| CyaneaError::Parse(e.to_string()))?;
         let r1_rec = record_from_parts(r1.id(), &r1.seq(), r1.qual())?;
 
         let r2 = reader

@@ -45,7 +45,7 @@ impl Default for NucleosomeParams {
 pub fn call_nucleosomes(pileup: &TagPileup, params: &NucleosomeParams) -> Vec<NucleosomePosition> {
     let mut nucleosomes = Vec::new();
 
-    for (_chrom, cov) in &pileup.coverage {
+    for cov in pileup.coverage.values() {
         // Gaussian smoothing
         let smoothed = smooth_coverage(cov, params.smooth_bandwidth);
 
@@ -147,7 +147,7 @@ pub fn nfr_score(nuc_pos: &[NucleosomePosition], tss_positions: &[u64]) -> f64 {
 
         for nuc in nuc_pos {
             if nuc.center >= start && nuc.center <= end {
-                let distance = (nuc.center as i64 - tss as i64).abs() as u64;
+                let distance = (nuc.center as i64 - tss as i64).unsigned_abs();
 
                 if distance < nfr_bound {
                     nfr_count += 1;

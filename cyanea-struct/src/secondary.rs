@@ -704,18 +704,16 @@ pub fn backbone_dihedrals(
     let ca_i = curr.get_atom("CA")?.coords;
     let c_i = curr.get_atom("C")?.coords;
 
-    let phi = if let Some(prev_res) = prev {
+    let phi = {
+        let prev_res = prev?;
         let c_prev = prev_res.get_atom("C")?.coords;
         dihedral_points(&c_prev, &n_i, &ca_i, &c_i)
-    } else {
-        return None;
     };
 
-    let psi = if let Some(next_res) = next {
+    let psi = {
+        let next_res = next?;
         let n_next = next_res.get_atom("N")?.coords;
         dihedral_points(&n_i, &ca_i, &c_i, &n_next)
-    } else {
-        return None;
     };
 
     Some((phi, psi))

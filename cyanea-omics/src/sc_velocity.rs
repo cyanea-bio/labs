@@ -118,10 +118,12 @@ pub fn estimate_gamma(matrices: &SpliceMatrices, config: &GammaConfig) -> Result
             let u = matrices.unspliced[i][j];
             total_counts += s + u;
 
-            if config.method == "ols" {
-                sum_us += u * s;
-                sum_ss += s * s;
-            } else if config.method == "huber" && s + u >= config.count_threshold {
+            // OLS uses every cell; Huber restricts to cells above the count
+            // threshold. Both accumulate the same terms, so the conditions are
+            // combined (behaviour is identical to the two-arm form).
+            if config.method == "ols"
+                || (config.method == "huber" && s + u >= config.count_threshold)
+            {
                 sum_us += u * s;
                 sum_ss += s * s;
             }
@@ -138,7 +140,7 @@ pub fn estimate_gamma(matrices: &SpliceMatrices, config: &GammaConfig) -> Result
 // ── Velocity Computation ───────────────────────────────────────────────────
 
 /// Configuration for velocity computation.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct VelocityComputeConfig {
     /// Gamma estimation config.
     pub gamma_config: GammaConfig,
@@ -146,16 +148,6 @@ pub struct VelocityComputeConfig {
     pub log_transform: bool,
     /// Optional smoothing of velocity values (Gaussian sigma).
     pub smooth_sigma: Option<f64>,
-}
-
-impl Default for VelocityComputeConfig {
-    fn default() -> Self {
-        Self {
-            gamma_config: GammaConfig::default(),
-            log_transform: false,
-            smooth_sigma: None,
-        }
-    }
 }
 
 /// Compute RNA velocity matrices.

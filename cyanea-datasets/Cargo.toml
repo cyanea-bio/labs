@@ -19,3 +19,6 @@ tempfile.workspace = true
 [features]
 default = ["std"]
 std = []
+
+[lints]
+workspace = true

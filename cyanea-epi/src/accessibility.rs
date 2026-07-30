@@ -93,7 +93,7 @@ pub fn fragment_size_distribution(fragment_sizes: &[u64], bin_size: u64) -> Vec<
     }
 
     let max_size = *fragment_sizes.iter().max().unwrap_or(&0);
-    let n_bins = ((max_size + bin_size - 1) / bin_size) as usize;
+    let n_bins = max_size.div_ceil(bin_size) as usize;
 
     let mut bins = vec![0u64; n_bins];
 
@@ -133,7 +133,7 @@ pub fn insert_size_metrics(fragment_sizes: &[u64]) -> InsertSizeMetrics {
     let nfr_count = fragment_sizes.iter().filter(|&&s| s < 150).count() as f64;
     let mono_count = fragment_sizes
         .iter()
-        .filter(|&&s| s >= 150 && s <= 300)
+        .filter(|&&s| (150..=300).contains(&s))
         .count() as f64;
 
     let nfr_ratio = if mono_count > 0.0 {

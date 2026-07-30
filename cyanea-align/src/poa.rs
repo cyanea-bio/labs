@@ -99,6 +99,12 @@ const TB_LEFT: u8 = 3; // gap in graph (consume sequence position)
 // Implementation
 // ---------------------------------------------------------------------------
 
+impl Default for PoaGraph {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PoaGraph {
     /// Create an empty POA graph.
     pub fn new() -> Self {
@@ -235,7 +241,7 @@ impl PoaGraph {
                 let seq_base = seq[j - 1];
 
                 // Diagonal: match/mismatch from a predecessor row.
-                let sub = if seq_base.to_ascii_uppercase() == node_base.to_ascii_uppercase() {
+                let sub = if seq_base.eq_ignore_ascii_case(&node_base) {
                     scoring.match_score
                 } else {
                     scoring.mismatch_score
@@ -327,7 +333,7 @@ impl PoaGraph {
                     let seq_base = seq[sp];
                     let node_base = self.nodes[gn].base;
 
-                    if seq_base.to_ascii_uppercase() == node_base.to_ascii_uppercase() {
+                    if seq_base.eq_ignore_ascii_case(&node_base) {
                         // Match: reuse the node, just add/increase edge from prev.
                         if let Some(prev) = prev_node {
                             self.add_edge(prev, gn, 1);

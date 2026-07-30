@@ -68,7 +68,6 @@ pub fn parse_meme(input: &str) -> Result<Vec<Motif>> {
             let name = line
                 .strip_prefix("MOTIF")
                 .unwrap()
-                .trim()
                 .split_whitespace()
                 .next()
                 .unwrap_or("unnamed")
@@ -83,7 +82,7 @@ pub fn parse_meme(input: &str) -> Result<Vec<Motif>> {
                     // Parse "w=" param from the line, e.g. "alength= 4 w= 8"
                     if let Some(w_idx) = mline.find("w=") {
                         let after_w = &mline[w_idx + 2..];
-                        let w_str = after_w.trim().split_whitespace().next().unwrap_or("0");
+                        let w_str = after_w.split_whitespace().next().unwrap_or("0");
                         if let Ok(w) = w_str.parse::<usize>() {
                             width = Some(w);
                         }
@@ -320,8 +319,8 @@ pub fn parse_jaspar(input: &str) -> Result<Vec<Motif>> {
     while i < lines.len() {
         let line = lines[i].trim();
 
-        if line.starts_with('>') {
-            let header = line[1..].trim();
+        if let Some(stripped) = line.strip_prefix('>') {
+            let header = stripped.trim();
             let mut parts = header.splitn(2, char::is_whitespace);
             let id = parts.next().unwrap_or("unnamed").to_string();
             let description = parts.next().unwrap_or("").trim().to_string();

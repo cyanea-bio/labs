@@ -85,11 +85,11 @@ pub fn build_pileup(reads: &[(String, u64, u64)], fragment_size: u64) -> TagPile
 
         // Extend coverage array if needed
         if end as usize >= cov.len() {
-            cov.resize((end as usize) + 1, 0);
+            cov.resize((end as usize) + 1, 0u32);
         }
 
         for i in *start as usize..=((end - 1) as usize).min(cov.len() - 1) {
-            cov[i] = (cov[i] as u32).saturating_add(1);
+            cov[i] = cov[i].saturating_add(1);
         }
     }
 
@@ -101,7 +101,7 @@ pub fn build_pileup(reads: &[(String, u64, u64)], fragment_size: u64) -> TagPile
 /// Normalization methods:
 /// - `"cpm"` — counts per million mapped reads
 /// - `"rpkm"` — reads per kilobase per million mapped reads
-#[allow(clippy::result_large_error_types)]
+#[allow(clippy::result_large_err)]
 pub fn normalize_pileup(pileup: &TagPileup, method: &str) -> Result<TagPileup> {
     let total_reads: u64 = pileup
         .coverage

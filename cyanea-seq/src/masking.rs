@@ -224,7 +224,7 @@ fn aa_entropy(window: &[u8]) -> f64 {
 
     for &b in window {
         let upper = b.to_ascii_uppercase();
-        if upper >= b'A' && upper <= b'Z' {
+        if upper.is_ascii_uppercase() {
             counts[(upper - b'A') as usize] += 1;
             total += 1;
         }
@@ -335,13 +335,11 @@ pub fn find_tandem_repeats(seq: &[u8], params: &TandemRepeatParams) -> Result<Ve
         let mut i = p;
         while i < seq.len() {
             // Check if seq[i] matches seq[i-p]
-            if seq[i].to_ascii_uppercase() == seq[i - p].to_ascii_uppercase() {
+            if seq[i].eq_ignore_ascii_case(&seq[i - p]) {
                 // Found a match — extend the run
                 let run_start = i - p;
                 let mut run_end = i + 1;
-                while run_end < seq.len()
-                    && seq[run_end].to_ascii_uppercase() == seq[run_end - p].to_ascii_uppercase()
-                {
+                while run_end < seq.len() && seq[run_end].eq_ignore_ascii_case(&seq[run_end - p]) {
                     run_end += 1;
                 }
                 let run_len = run_end - run_start;

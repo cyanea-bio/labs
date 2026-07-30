@@ -173,10 +173,7 @@ pub fn search_spectrum(
 
     for peptide in database {
         if let Some(psm) = score_peptide(spectrum, peptide, charge, config)? {
-            if best
-                .as_ref()
-                .map_or(true, |b| psm.hyperscore > b.hyperscore)
-            {
+            if best.as_ref().is_none_or(|b| psm.hyperscore > b.hyperscore) {
                 best = Some(psm);
             }
         }

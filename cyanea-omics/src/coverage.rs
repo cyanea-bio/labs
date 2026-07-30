@@ -149,7 +149,7 @@ impl RleCoverage {
     pub fn to_vec(&self) -> Vec<u32> {
         let mut result = Vec::with_capacity(self.total_length as usize);
         for &(depth, length) in &self.runs {
-            result.extend(std::iter::repeat(depth).take(length as usize));
+            result.extend(std::iter::repeat_n(depth, length as usize));
         }
         result
     }

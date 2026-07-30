@@ -200,7 +200,7 @@ impl Pwm {
 
     /// Consensus sequence (most frequent base at each position).
     pub fn consensus(&self) -> Vec<u8> {
-        let bases = [b'A', b'C', b'G', b'T'];
+        let bases = *b"ACGT";
         self.matrix
             .iter()
             .map(|row| {

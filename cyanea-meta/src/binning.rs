@@ -182,7 +182,7 @@ pub fn bin_contigs(contigs: &[Contig], n_clusters: usize) -> Result<Vec<Bin>> {
     });
 
     let mut bins = Vec::new();
-    let contigs_per_bin = (coverage_sorted.len() + n_clusters - 1) / n_clusters;
+    let contigs_per_bin = coverage_sorted.len().div_ceil(n_clusters);
 
     for (bin_idx, chunk) in coverage_sorted.chunks(contigs_per_bin).enumerate() {
         let contig_ids: Vec<String> = chunk.iter().map(|c| c.id.clone()).collect();
@@ -228,13 +228,13 @@ pub fn filter_bins(
     min_completeness: f64,
     max_contamination: f64,
 ) -> Result<Vec<Bin>> {
-    if min_completeness < 0.0 || min_completeness > 1.0 {
+    if !(0.0..=1.0).contains(&min_completeness) {
         return Err(MetaError::Binning(
             "min_completeness must be in [0, 1]".into(),
         ));
     }
 
-    if max_contamination < 0.0 || max_contamination > 1.0 {
+    if !(0.0..=1.0).contains(&max_contamination) {
         return Err(MetaError::Binning(
             "max_contamination must be in [0, 1]".into(),
         ));

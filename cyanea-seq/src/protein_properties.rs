@@ -354,7 +354,7 @@ pub fn hydrophobicity_profile(
     scale: HydrophobicityScale,
 ) -> Result<Vec<f64>> {
     let norm = normalize_protein(seq)?;
-    if window == 0 || window % 2 == 0 {
+    if window == 0 || window.is_multiple_of(2) {
         return Err(CyaneaError::InvalidInput(
             "window size must be odd and >= 1".to_string(),
         ));
@@ -774,15 +774,11 @@ pub fn gor(seq: &[u8]) -> Result<SecondaryStructurePrediction> {
         let mut c = 0.0;
         let mut weight_sum = 0.0;
 
-        let w_start = if i >= GOR_HALF_WIDTH {
-            i - GOR_HALF_WIDTH
-        } else {
-            0
-        };
+        let w_start = i.saturating_sub(GOR_HALF_WIDTH);
         let w_end = (i + GOR_HALF_WIDTH).min(n - 1);
 
         for j in w_start..=w_end {
-            let dist = if j >= i { j - i } else { i - j };
+            let dist = j.abs_diff(i);
             let weight = 1.0 - (dist as f64 / (GOR_HALF_WIDTH as f64 + 1.0));
             let (ih, ie, ic) = GOR_INFO[indices[j]];
             h += ih * weight;
@@ -872,7 +868,7 @@ pub fn predict_disorder(seq: &[u8], window: usize) -> Result<DisorderPrediction>
     let norm = normalize_protein(seq)?;
     let n = norm.len();
 
-    if window == 0 || window % 2 == 0 {
+    if window == 0 || window.is_multiple_of(2) {
         return Err(CyaneaError::InvalidInput(
             "window size must be odd and >= 1".to_string(),
         ));
@@ -893,7 +889,7 @@ pub fn predict_disorder(seq: &[u8], window: usize) -> Result<DisorderPrediction>
     let mut scores = Vec::with_capacity(n);
 
     for i in 0..n {
-        let w_start = if i >= half { i - half } else { 0 };
+        let w_start = i.saturating_sub(half);
         let w_end = (i + half).min(n - 1);
         let avg: f64 =
             raw_props[w_start..=w_end].iter().sum::<f64>() / (w_end - w_start + 1) as f64;

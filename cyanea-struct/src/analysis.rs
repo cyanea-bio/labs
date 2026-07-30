@@ -145,7 +145,7 @@ pub fn flexibility_score(structure: &Structure) -> Result<Vec<(usize, f64)>> {
 // ---- Internal helper functions ----
 
 /// Compute BFactorStats from a mutable slice (sorted in place for median).
-fn compute_stats(values: &mut Vec<f64>) -> BFactorStats {
+fn compute_stats(values: &mut [f64]) -> BFactorStats {
     let n = values.len();
     debug_assert!(n > 0);
 
@@ -157,7 +157,7 @@ fn compute_stats(values: &mut Vec<f64>) -> BFactorStats {
 
     let min = values[0];
     let max = values[n - 1];
-    let median = if n % 2 == 0 {
+    let median = if n.is_multiple_of(2) {
         (values[n / 2 - 1] + values[n / 2]) / 2.0
     } else {
         values[n / 2]

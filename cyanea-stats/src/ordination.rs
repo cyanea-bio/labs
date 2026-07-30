@@ -371,7 +371,7 @@ pub fn rda(
     let sample_scores = project_matrix(&y_hat, n_sites, n_response, &eigenvectors);
 
     // Species scores: eigenvectors themselves
-    let species_scores = eigenvectors.iter().map(|v| v.clone()).collect();
+    let species_scores = eigenvectors.to_vec();
 
     // Biplot scores: correlation of X columns with sample scores
     let biplot_scores = compute_biplot_scores(&x, n_sites, n_env, &sample_scores);
@@ -498,7 +498,7 @@ pub fn cca(
         .collect();
 
     let sample_scores = project_matrix(&q_hat, n_sites, n_species, &eigenvectors);
-    let species_scores = eigenvectors.iter().map(|v| v.clone()).collect();
+    let species_scores = eigenvectors.to_vec();
     let biplot_scores = compute_biplot_scores(
         &center_matrix(environment, n_sites, n_env),
         n_sites,
@@ -813,9 +813,7 @@ fn isotonic_regression(y: &[f64]) -> Vec<f64> {
             blocks[i].1 += blocks[i + 1].1;
             blocks.remove(i + 1);
             // Check backwards
-            if i > 0 {
-                i -= 1;
-            }
+            i = i.saturating_sub(1);
         } else {
             i += 1;
         }

@@ -113,7 +113,7 @@ impl GtrParams {
                     q[i][j] = s[i][j] * pi[j];
                 }
             }
-            q[i][i] = -q[i].iter().sum::<f64>() + q[i][i]; // fix: -sum(off-diag)
+            q[i][i] += -q[i].iter().sum::<f64>(); // fix: -sum(off-diag)
         }
         // Fix diagonal: sum of off-diagonal in row i
         for i in 0..4 {

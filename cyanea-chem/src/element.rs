@@ -454,7 +454,7 @@ pub fn element_by_symbol(symbol: &str) -> Option<&'static Element> {
 
 /// Look up an element by its atomic number (1-based).
 pub fn element_by_number(n: u8) -> Option<&'static Element> {
-    if n >= 1 && n <= 54 {
+    if (1..=54).contains(&n) {
         Some(&ELEMENTS[(n - 1) as usize])
     } else {
         None

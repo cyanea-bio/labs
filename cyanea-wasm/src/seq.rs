@@ -311,7 +311,7 @@ fn parse_paired_fastq_impl(
                         )));
                     }
                 }
-                "none" | _ => {}
+                _ => {}
             }
             Ok(JsPairedFastqRecord { r1, r2 })
         })
@@ -703,10 +703,7 @@ pub fn minhash_compare(seq_a: &str, seq_b: &str, k: usize, sketch_size: usize) -
         Ok(c) => c,
         Err(e) => return wasm_err(e),
     };
-    let ani = match sketch_a.ani(&sketch_b) {
-        Ok(a) => a,
-        Err(_) => 0.0, // ANI undefined when Jaccard is zero
-    };
+    let ani = sketch_a.ani(&sketch_b).unwrap_or(0.0);
     let js = JsMinHashComparison {
         jaccard,
         containment_a_in_b,
@@ -852,7 +849,7 @@ fn simulate_reads_impl(
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub fn codon_usage(seq: &str) -> String {
     let usage = CodonUsage::from_sequence(seq.as_bytes());
-    let bases: [u8; 4] = [b'A', b'C', b'G', b'T'];
+    let bases: [u8; 4] = *b"ACGT";
     let mut codons = std::collections::HashMap::new();
     let mut total: usize = 0;
 

@@ -846,18 +846,18 @@ fn eval_atom_expr(
     atom_idx: usize,
     ring_membership: &[bool],
     ring_sizes: &[Vec<u8>],
-    rings: &[Vec<usize>],
+    _rings: &[Vec<usize>],
 ) -> bool {
     match expr {
         AtomExpr::Prim(prim) => eval_atom_prim(prim, mol, atom_idx, ring_membership, ring_sizes),
         AtomExpr::And(terms) => terms
             .iter()
-            .all(|t| eval_atom_expr(t, mol, atom_idx, ring_membership, ring_sizes, rings)),
+            .all(|t| eval_atom_expr(t, mol, atom_idx, ring_membership, ring_sizes, _rings)),
         AtomExpr::Or(terms) => terms
             .iter()
-            .any(|t| eval_atom_expr(t, mol, atom_idx, ring_membership, ring_sizes, rings)),
+            .any(|t| eval_atom_expr(t, mol, atom_idx, ring_membership, ring_sizes, _rings)),
         AtomExpr::Not(inner) => {
-            !eval_atom_expr(inner, mol, atom_idx, ring_membership, ring_sizes, rings)
+            !eval_atom_expr(inner, mol, atom_idx, ring_membership, ring_sizes, _rings)
         }
         AtomExpr::Recursive(sub_pattern) => {
             // Check if any match of sub_pattern includes this atom as its first atom

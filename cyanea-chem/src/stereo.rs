@@ -115,7 +115,7 @@ pub fn assign_rs(mol: &Molecule, atom_idx: usize) -> Option<char> {
         inversions += 1;
     }
 
-    let is_even_perm = inversions % 2 == 0;
+    let is_even_perm = inversions.is_multiple_of(2);
 
     // If the lowest-priority neighbor was removed from a non-first position,
     // that introduces additional permutation parity.
@@ -310,9 +310,7 @@ fn cip_priority(mol: &Molecule, center: usize, neighbor: Option<usize>) -> u64 {
                 }
                 level1.push(mol.atoms[n].atomic_number);
             }
-            for _ in 0..atom.implicit_hydrogens {
-                level1.push(1);
-            }
+            level1.resize(level1.len() + atom.implicit_hydrogens as usize, 1);
             level1.sort_unstable_by(|a, b| b.cmp(a));
 
             // Encode level1: up to 4 neighbors, each 7 bits (values 0-127) = 28 bits
@@ -336,9 +334,7 @@ fn cip_priority(mol: &Molecule, center: usize, neighbor: Option<usize>) -> u64 {
                     }
                     level2.push(mol.atoms[nn].atomic_number);
                 }
-                for _ in 0..mol.atoms[n].implicit_hydrogens {
-                    level2.push(1);
-                }
+                level2.resize(level2.len() + mol.atoms[n].implicit_hydrogens as usize, 1);
             }
             level2.sort_unstable_by(|a, b| b.cmp(a));
 

@@ -172,7 +172,7 @@ mod neon {
         scoring: &ScoringScheme,
     ) -> i32 {
         let qlen = query.len();
-        let n_stripes = (qlen + LANES - 1) / LANES;
+        let n_stripes = qlen.div_ceil(LANES);
         let padded_len = n_stripes * LANES;
 
         let gap_open = scoring.gap_open() as i16;
@@ -286,7 +286,7 @@ mod sse41 {
         scoring: &ScoringScheme,
     ) -> i32 {
         let qlen = query.len();
-        let n_stripes = (qlen + LANES - 1) / LANES;
+        let n_stripes = qlen.div_ceil(LANES);
         let padded_len = n_stripes * LANES;
 
         let gap_open = scoring.gap_open() as i16;
@@ -394,7 +394,7 @@ mod avx2 {
         scoring: &ScoringScheme,
     ) -> i32 {
         let qlen = query.len();
-        let n_stripes = (qlen + LANES - 1) / LANES;
+        let n_stripes = qlen.div_ceil(LANES);
         let padded_len = n_stripes * LANES;
 
         let gap_open = scoring.gap_open() as i16;

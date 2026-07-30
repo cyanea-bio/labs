@@ -248,12 +248,11 @@ fn extend_dp(
         match tb[ci][cj] {
             0 => {
                 // diagonal
-                let op =
-                    if query[ci - 1].to_ascii_uppercase() == target[cj - 1].to_ascii_uppercase() {
-                        CigarOp::Match(1)
-                    } else {
-                        CigarOp::Mismatch(1)
-                    };
+                let op = if query[ci - 1].eq_ignore_ascii_case(&target[cj - 1]) {
+                    CigarOp::Match(1)
+                } else {
+                    CigarOp::Mismatch(1)
+                };
                 push_cigar(&mut cigar, op);
                 ci -= 1;
                 cj -= 1;
@@ -498,9 +497,7 @@ fn seed_extend_impl(
     for k in 0..seed_len {
         let s = scoring.score_pair(query[query_pos + k], target[target_pos + k]);
         seed_score += s;
-        let op = if query[query_pos + k].to_ascii_uppercase()
-            == target[target_pos + k].to_ascii_uppercase()
-        {
+        let op = if query[query_pos + k].eq_ignore_ascii_case(&target[target_pos + k]) {
             CigarOp::Match(1)
         } else {
             CigarOp::Mismatch(1)

@@ -76,7 +76,7 @@ impl ScoringMatrix {
 
     /// Score a pair of bases. Case-insensitive.
     pub fn score_pair(&self, a: u8, b: u8) -> i32 {
-        if a.to_ascii_uppercase() == b.to_ascii_uppercase() {
+        if a.eq_ignore_ascii_case(&b) {
             self.match_score
         } else {
             self.mismatch_score

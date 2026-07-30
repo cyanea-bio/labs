@@ -26,11 +26,11 @@ pub fn ln_gamma(x: f64) -> f64 {
     const COEFFS: [f64; 8] = [
         676.5203681218851,
         -1259.1392167224028,
-        771.32342877765313,
-        -176.61502916214059,
+        771.323_428_777_653_1,
+        -176.615_029_162_140_6,
         12.507343278686905,
         -0.13857109526572012,
-        9.9843695780195716e-6,
+        9.984_369_578_019_572e-6,
         1.5056327351493116e-7,
     ];
 
@@ -40,7 +40,7 @@ pub fn ln_gamma(x: f64) -> f64 {
         log_pi_over_sin - ln_gamma(1.0 - x)
     } else {
         let x = x - 1.0;
-        let mut ag = 0.99999999999980993_f64;
+        let mut ag = 0.999_999_999_999_809_9_f64;
         for (i, &c) in COEFFS.iter().enumerate() {
             ag += c / (x + i as f64 + 1.0);
         }
@@ -54,7 +54,7 @@ pub fn ln_gamma(x: f64) -> f64 {
 ///
 /// Used to compute p-values for the t-distribution and other tests.
 pub fn betai(a: f64, b: f64, x: f64) -> Result<f64> {
-    if x < 0.0 || x > 1.0 {
+    if !(0.0..=1.0).contains(&x) {
         return Err(CyaneaError::InvalidInput(
             "betai: x must be in [0, 1]".into(),
         ));

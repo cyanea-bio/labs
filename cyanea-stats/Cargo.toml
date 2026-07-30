@@ -31,3 +31,6 @@ proptest = { workspace = true }
 [[bench]]
 name = "stats"
 harness = false
+
+[lints]
+workspace = true

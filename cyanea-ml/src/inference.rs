@@ -63,7 +63,7 @@ impl KnnModel {
         if n_features == 0 {
             return Err(CyaneaError::InvalidInput("n_features must be > 0".into()));
         }
-        if data.len() % n_features != 0 {
+        if !data.len().is_multiple_of(n_features) {
             return Err(CyaneaError::InvalidInput(format!(
                 "data length {} not divisible by n_features {}",
                 data.len(),
@@ -208,7 +208,7 @@ impl LinearRegression {
         if n_features == 0 {
             return Err(CyaneaError::InvalidInput("n_features must be > 0".into()));
         }
-        if data.len() % n_features != 0 {
+        if !data.len().is_multiple_of(n_features) {
             return Err(CyaneaError::InvalidInput(format!(
                 "data length {} not divisible by n_features {}",
                 data.len(),
@@ -310,7 +310,7 @@ impl LinearRegression {
         if queries.is_empty() {
             return Ok(vec![]);
         }
-        if queries.len() % self.n_features != 0 {
+        if !queries.len().is_multiple_of(self.n_features) {
             return Err(CyaneaError::InvalidInput(format!(
                 "queries length {} not divisible by n_features {}",
                 queries.len(),

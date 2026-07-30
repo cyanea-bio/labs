@@ -120,7 +120,7 @@ pub fn tiled_pairwise_distance(
     }
 
     let mut result = vec![0.0_f64; n * n];
-    let num_tiles = (n + tile_size - 1) / tile_size;
+    let num_tiles = n.div_ceil(tile_size);
 
     for ti in 0..num_tiles {
         let i_start = ti * tile_size;

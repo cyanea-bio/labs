@@ -105,9 +105,7 @@ pub fn needleman_wunsch(
                         // Match or mismatch
                         aligned_query.push(query[i - 1]);
                         aligned_target.push(target[j - 1]);
-                        let op = if query[i - 1].to_ascii_uppercase()
-                            == target[j - 1].to_ascii_uppercase()
-                        {
+                        let op = if query[i - 1].eq_ignore_ascii_case(&target[j - 1]) {
                             CigarOp::Match(1)
                         } else {
                             CigarOp::Mismatch(1)

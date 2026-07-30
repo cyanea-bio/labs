@@ -46,11 +46,7 @@ pub struct TrimRange {
 impl TrimRange {
     /// Length of the range (0 if empty).
     pub fn len(&self) -> usize {
-        if self.end > self.start {
-            self.end - self.start
-        } else {
-            0
-        }
+        self.end.saturating_sub(self.start)
     }
 
     /// Whether this range is empty.
@@ -291,11 +287,11 @@ pub fn trim_adapter(record: &FastqRecord, adapter: &[u8], max_mismatches: usize)
 /// Filter a record by length.
 ///
 /// Returns `None` if the record's length is outside `[min_len, max_len]`.
-pub fn filter_by_length<'a>(
-    record: &'a FastqRecord,
+pub fn filter_by_length(
+    record: &FastqRecord,
     min_len: usize,
     max_len: usize,
-) -> Option<&'a FastqRecord> {
+) -> Option<&FastqRecord> {
     let len = record.sequence().len();
     if len >= min_len && len <= max_len {
         Some(record)
@@ -307,10 +303,7 @@ pub fn filter_by_length<'a>(
 /// Filter a record by low complexity.
 ///
 /// Returns `None` if the Shannon entropy is below `min_entropy`.
-pub fn filter_low_complexity<'a>(
-    record: &'a FastqRecord,
-    min_entropy: f64,
-) -> Option<&'a FastqRecord> {
+pub fn filter_low_complexity(record: &FastqRecord, min_entropy: f64) -> Option<&FastqRecord> {
     if shannon_entropy(record.sequence().as_bytes()) >= min_entropy {
         Some(record)
     } else {
@@ -321,7 +314,7 @@ pub fn filter_low_complexity<'a>(
 /// Filter a record by mean quality score.
 ///
 /// Returns `None` if the mean quality is below `min_quality`.
-pub fn filter_by_quality<'a>(record: &'a FastqRecord, min_quality: f64) -> Option<&'a FastqRecord> {
+pub fn filter_by_quality(record: &FastqRecord, min_quality: f64) -> Option<&FastqRecord> {
     if record.quality().mean() >= min_quality {
         Some(record)
     } else {

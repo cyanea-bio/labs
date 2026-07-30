@@ -124,13 +124,10 @@ fn score_match(seq: &[u8], motif: &Motif, pos: usize) -> Option<f64> {
             _ => None,
         };
 
-        if let Some(idx) = base_idx {
-            let prob = motif.pwm[i][idx];
-            let bg = motif.background_freq[idx];
-            score += (prob / bg.max(1e-10)).log2();
-        } else {
-            return None;
-        }
+        let idx = base_idx?;
+        let prob = motif.pwm[i][idx];
+        let bg = motif.background_freq[idx];
+        score += (prob / bg.max(1e-10)).log2();
     }
 
     Some(score)
@@ -194,7 +191,7 @@ pub fn scan_sequence(seq: &[u8], motif: &Motif, threshold: f64) -> Vec<MotifMatc
         }
     }
 
-    matches.sort_by(|a, b| a.position.cmp(&b.position));
+    matches.sort_by_key(|a| a.position);
     matches
 }
 

@@ -34,3 +34,6 @@ criterion = { workspace = true }
 [[bench]]
 name = "gpu"
 harness = false
+
+[lints]
+workspace = true

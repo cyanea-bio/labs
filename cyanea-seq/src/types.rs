@@ -150,13 +150,13 @@ impl RnaSequence {
     pub fn translate_frames(&self) -> [Result<ProteinSequence>; 3] {
         let bytes: &[u8] = self.as_ref();
         [
-            ProteinSequence::new(&codon::translate_sequence(bytes)),
-            ProteinSequence::new(&codon::translate_sequence(if bytes.len() > 1 {
+            ProteinSequence::new(codon::translate_sequence(bytes)),
+            ProteinSequence::new(codon::translate_sequence(if bytes.len() > 1 {
                 &bytes[1..]
             } else {
                 &[]
             })),
-            ProteinSequence::new(&codon::translate_sequence(if bytes.len() > 2 {
+            ProteinSequence::new(codon::translate_sequence(if bytes.len() > 2 {
                 &bytes[2..]
             } else {
                 &[]

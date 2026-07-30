@@ -66,6 +66,12 @@ pub struct PathwayDatabase {
     pub pathways: HashMap<String, Pathway>,
 }
 
+impl Default for PathwayDatabase {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PathwayDatabase {
     pub fn new() -> Self {
         Self {

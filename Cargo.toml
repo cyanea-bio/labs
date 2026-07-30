@@ -30,6 +30,17 @@ repository = "https://github.com/cyanea-bio/labs"
 homepage = "https://github.com/cyanea-bio/labs"
 rust-version = "1.93"
 
+# Workspace-wide Clippy policy. Members opt in via `[lints] workspace = true`.
+# CI runs `cargo clippy` with `-D warnings`, so every lint left at its default
+# `warn` level gates the build. The three lints allowed below are pedantic in
+# this numerical/scientific codebase — index loops over parallel arrays, math
+# routines with many parameters, and complex numeric return types — where the
+# suggested rewrite usually hurts readability rather than helping.
+[workspace.lints.clippy]
+needless_range_loop = "allow"
+too_many_arguments = "allow"
+type_complexity = "allow"
+
 [workspace.dependencies]
 # Error handling
 thiserror = "2"

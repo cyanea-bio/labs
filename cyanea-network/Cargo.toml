@@ -22,3 +22,6 @@ tempfile.workspace = true
 default = ["std"]
 std = []
 serde = ["dep:serde"]
+
+[lints]
+workspace = true

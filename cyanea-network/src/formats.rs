@@ -170,17 +170,13 @@ pub fn parse_graphml(content: &str) -> Result<Graph> {
 
 /// Write a graph in GraphML format.
 pub fn write_graphml(graph: &Graph) -> String {
-    let mut lines = Vec::new();
-
-    lines.push(r#"<?xml version="1.0" encoding="UTF-8"?>"#.to_string());
-    lines.push(r#"<graphml xmlns="http://graphml.graphstruct.org/graphml">"#.to_string());
-
-    // Key definitions
-    lines
-        .push(r#"  <key id="label" for="node" attr.name="label" attr.type="string"/>"#.to_string());
-    lines.push(
+    let mut lines = vec![
+        r#"<?xml version="1.0" encoding="UTF-8"?>"#.to_string(),
+        r#"<graphml xmlns="http://graphml.graphstruct.org/graphml">"#.to_string(),
+        // Key definitions
+        r#"  <key id="label" for="node" attr.name="label" attr.type="string"/>"#.to_string(),
         r#"  <key id="weight" for="edge" attr.name="weight" attr.type="double"/>"#.to_string(),
-    );
+    ];
 
     // Collect all node attribute keys
     let mut node_attr_keys = std::collections::HashSet::new();

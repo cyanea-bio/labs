@@ -192,13 +192,13 @@ impl<'a> Vf2State<'a> {
 /// Check bond compatibility: pattern bond must match target bond.
 /// Aromatic matches aromatic; otherwise exact match.
 fn bond_compatible(pattern: BondOrder, target: BondOrder) -> bool {
-    match (pattern, target) {
-        (BondOrder::Aromatic, BondOrder::Aromatic) => true,
-        (BondOrder::Single, BondOrder::Single) => true,
-        (BondOrder::Double, BondOrder::Double) => true,
-        (BondOrder::Triple, BondOrder::Triple) => true,
-        _ => false,
-    }
+    matches!(
+        (pattern, target),
+        (BondOrder::Aromatic, BondOrder::Aromatic)
+            | (BondOrder::Single, BondOrder::Single)
+            | (BondOrder::Double, BondOrder::Double)
+            | (BondOrder::Triple, BondOrder::Triple)
+    )
 }
 
 #[cfg(test)]

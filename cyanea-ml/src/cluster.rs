@@ -47,11 +47,11 @@ pub struct KMeansResult {
 
 impl Summarizable for KMeansResult {
     fn summary(&self) -> String {
-        let k = if self.n_features > 0 {
-            self.centroids.len() / self.n_features
-        } else {
-            0
-        };
+        let k = self
+            .centroids
+            .len()
+            .checked_div(self.n_features)
+            .unwrap_or(0);
         format!(
             "KMeans: k={}, inertia={:.4}, iterations={}",
             k, self.inertia, self.n_iter,

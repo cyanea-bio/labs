@@ -36,6 +36,8 @@ pub enum TaxonRank {
 
 impl TaxonRank {
     /// Parse from string (e.g., "species" → Species).
+    // inherent from_str kept for ergonomic API; see also FromStr
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Self {
         match s.to_lowercase().as_str() {
             "domain" | "superkingdom" => TaxonRank::Domain,

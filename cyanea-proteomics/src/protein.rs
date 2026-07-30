@@ -174,7 +174,7 @@ pub fn infer_proteins(psms: &[Psm], proteins: &[ProteinEntry]) -> Result<Vec<Pro
             .filter(|p| {
                 peptide_to_proteins
                     .get(*p)
-                    .map_or(true, |prots| prots.len() == 1)
+                    .is_none_or(|prots| prots.len() == 1)
             })
             .cloned()
             .collect();
@@ -184,7 +184,7 @@ pub fn infer_proteins(psms: &[Psm], proteins: &[ProteinEntry]) -> Result<Vec<Pro
             .filter(|p| {
                 peptide_to_proteins
                     .get(*p)
-                    .map_or(false, |prots| prots.len() > 1)
+                    .is_some_and(|prots| prots.len() > 1)
             })
             .cloned()
             .collect();

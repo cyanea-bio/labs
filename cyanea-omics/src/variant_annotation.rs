@@ -545,7 +545,7 @@ pub fn score_splice_disruption(
 fn sorted_exons<'a>(tx: &'a Transcript, strand: &Strand) -> Vec<&'a crate::annotation::Exon> {
     let mut exons: Vec<&crate::annotation::Exon> = tx.exons.iter().collect();
     if strand.is_reverse() {
-        exons.sort_by(|a, b| b.start.cmp(&a.start));
+        exons.sort_by_key(|b| std::cmp::Reverse(b.start));
     } else {
         exons.sort_by_key(|e| e.start);
     }
@@ -765,7 +765,7 @@ fn annotate_transcript(
     // Handle indels
     if ref_allele.len() != alt_allele.len() {
         let indel_len = (ref_allele.len() as i64 - alt_allele.len() as i64).unsigned_abs() as usize;
-        let consequence = if indel_len % 3 != 0 {
+        let consequence = if !indel_len.is_multiple_of(3) {
             Consequence::Frameshift {
                 codon_pos: codon_pos_1based,
             }
@@ -933,11 +933,7 @@ fn build_codon_from_cds(
         }
 
         // Some bases in this exon are part of our codon
-        let skip = if codon_start_offset > collected {
-            codon_start_offset - collected
-        } else {
-            0
-        };
+        let skip = codon_start_offset.saturating_sub(collected);
         let take =
             (target_end - (collected + skip).max(codon_start_offset)).min(exon_cds_len - skip);
 

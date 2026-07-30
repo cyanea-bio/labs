@@ -169,8 +169,7 @@ pub fn reconstruct_alignment(
         match h_dir {
             TB_STOP => break,
             TB_DIAG if i > 0 && j > 0 => {
-                let op = if query[i - 1].to_ascii_uppercase() == target[j - 1].to_ascii_uppercase()
-                {
+                let op = if query[i - 1].eq_ignore_ascii_case(&target[j - 1]) {
                     CigarOp::Match(1)
                 } else {
                     CigarOp::Mismatch(1)

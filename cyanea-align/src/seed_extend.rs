@@ -251,7 +251,7 @@ pub fn seed_extend_align(
             total_score += scoring.score_pair(qb, tb);
             aligned_query.push(qb);
             aligned_target.push(tb);
-            if qb.to_ascii_uppercase() == tb.to_ascii_uppercase() {
+            if qb.eq_ignore_ascii_case(&tb) {
                 push_cigar(&mut cigar, CigarOp::Match(1));
             } else {
                 push_cigar(&mut cigar, CigarOp::Mismatch(1));

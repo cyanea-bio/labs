@@ -128,10 +128,7 @@ pub fn diffusion_map(adata: &mut AnnData, config: &DiffusionConfig) -> Result<Di
     }
 
     // Sort by eigenvalue magnitude (descending)
-    let mut pairs: Vec<(f64, Vec<f64>)> = eigenvalues
-        .into_iter()
-        .zip(eigenvectors.into_iter())
-        .collect();
+    let mut pairs: Vec<(f64, Vec<f64>)> = eigenvalues.into_iter().zip(eigenvectors).collect();
     pairs.sort_by(|a, b| {
         b.0.abs()
             .partial_cmp(&a.0.abs())
@@ -206,21 +203,12 @@ fn deflate_matrix(matrix: &mut [Vec<f64>], eigenvec: &[f64], eigenvalue: f64, n:
 // ── Diffusion Pseudotime ───────────────────────────────────────────────────
 
 /// Configuration for diffusion pseudotime.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DptConfig {
     /// Index of the root cell.
     pub root_cell: usize,
     /// Number of branchings to detect (0 = no branching analysis).
     pub n_branchings: usize,
-}
-
-impl Default for DptConfig {
-    fn default() -> Self {
-        Self {
-            root_cell: 0,
-            n_branchings: 0,
-        }
-    }
 }
 
 /// Compute diffusion pseudotime from a root cell.

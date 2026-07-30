@@ -97,20 +97,17 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
-    # Clippy runs for visibility but does not gate CI: the workspace currently
-    # has a large backlog of clippy lints (~476, mostly needless_range_loop).
-    # Override the global RUSTFLAGS: -Dwarnings so those lints surface as
-    # warnings instead of failing the build. Re-add `-- -D warnings` (and drop
-    # this override) once the backlog is cleared.
-    env:
-      RUSTFLAGS: ""
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --workspace
+      # Gates CI. The workspace-wide allow-list (needless_range_loop,
+      # too_many_arguments, type_complexity — pedantic in numerical code) lives
+      # in the root Cargo.toml under [workspace.lints.clippy]; everything else
+      # must be clean.
+      - run: cargo clippy --workspace -- -D warnings
 
   fmt:
     name: Format

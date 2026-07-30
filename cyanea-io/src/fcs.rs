@@ -217,14 +217,15 @@ pub fn write_fcs(fcs: &FcsFile) -> Result<Vec<u8>> {
     let n_events = fcs.events.len();
 
     // Build TEXT segment
-    let mut text_pairs: Vec<(String, String)> = Vec::new();
-    text_pairs.push(("$BEGINANALYSIS".into(), "0".into()));
-    text_pairs.push(("$ENDANALYSIS".into(), "0".into()));
-    text_pairs.push(("$DATATYPE".into(), "F".into()));
-    text_pairs.push(("$MODE".into(), "L".into()));
-    text_pairs.push(("$BYTEORD".into(), "1,2,3,4".into()));
-    text_pairs.push(("$PAR".into(), n_params.to_string()));
-    text_pairs.push(("$TOT".into(), n_events.to_string()));
+    let mut text_pairs: Vec<(String, String)> = vec![
+        ("$BEGINANALYSIS".into(), "0".into()),
+        ("$ENDANALYSIS".into(), "0".into()),
+        ("$DATATYPE".into(), "F".into()),
+        ("$MODE".into(), "L".into()),
+        ("$BYTEORD".into(), "1,2,3,4".into()),
+        ("$PAR".into(), n_params.to_string()),
+        ("$TOT".into(), n_events.to_string()),
+    ];
 
     for (i, p) in fcs.parameters.iter().enumerate() {
         let idx = i + 1;

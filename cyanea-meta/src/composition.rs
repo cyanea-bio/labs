@@ -303,7 +303,7 @@ pub fn ancom(group1: &[Vec<f64>], group2: &[Vec<f64>]) -> Result<Vec<AncemResult
         });
     }
 
-    results.sort_by(|a, b| b.w_statistic.cmp(&a.w_statistic));
+    results.sort_by_key(|b| std::cmp::Reverse(b.w_statistic));
     Ok(results)
 }
 
