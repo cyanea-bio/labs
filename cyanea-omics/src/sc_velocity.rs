@@ -709,7 +709,7 @@ mod tests {
         assert_eq!(times.len(), 4);
         // Root cell should have highest pseudotime after diffusion
         assert!(times[0] >= times[3]);
-        assert!(times.iter().all(|&t| t >= 0.0 && t <= 1.0));
+        assert!(times.iter().all(|&t| (0.0..=1.0).contains(&t)));
     }
 
     #[test]

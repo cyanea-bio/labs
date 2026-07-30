@@ -755,7 +755,7 @@ mod tests {
         let reads = simulate_long_reads(&reference, &config).unwrap();
         assert!(!reads.is_empty());
         for r in &reads {
-            assert!(r.len() > 0);
+            assert!(!r.is_empty());
             assert_eq!(r.platform, LongReadPlatform::PacBioHiFi);
             assert!(r.num_passes.is_some());
         }

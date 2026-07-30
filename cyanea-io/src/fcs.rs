@@ -679,7 +679,7 @@ mod tests {
 
     #[test]
     fn test_fcs_stats() {
-        let data = make_test_fcs(5, 4, &vec![0.0; 20]);
+        let data = make_test_fcs(5, 4, &[0.0; 20]);
         let fcs = parse_fcs(&data).unwrap();
         let stats = fcs.stats();
 

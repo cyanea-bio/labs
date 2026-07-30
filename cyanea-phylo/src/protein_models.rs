@@ -12,10 +12,7 @@ pub const AA_STATES: usize = 20;
 /// Amino acid ordering: A R N D C Q E G H I L K M F P S T W Y V
 /// (alphabetical by one-letter code in the standard phylogenetics convention).
 #[cfg(test)]
-const AA_ORDER: [u8; 20] = [
-    b'A', b'R', b'N', b'D', b'C', b'Q', b'E', b'G', b'H', b'I', b'L', b'K', b'M', b'F', b'P', b'S',
-    b'T', b'W', b'Y', b'V',
-];
+const AA_ORDER: [u8; 20] = *b"ARNDCQEGHILKMFPSTWYV";
 
 /// Map an amino acid byte to its index (0-19).
 ///

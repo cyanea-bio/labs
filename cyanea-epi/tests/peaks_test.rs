@@ -173,7 +173,7 @@ fn test_multiple_chromosomes() {
 
     // Should have peaks from different chromosomes
     let chroms: std::collections::HashSet<_> = peaks.iter().map(|p| p.chrom.clone()).collect();
-    assert!(chroms.len() >= 1);
+    assert!(!chroms.is_empty());
 }
 
 #[test]

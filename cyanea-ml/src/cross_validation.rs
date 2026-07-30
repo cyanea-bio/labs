@@ -396,16 +396,15 @@ mod tests {
     fn loo_trivially_separable() {
         // Two distinct classes, well separated — predict by nearest neighbor logic
         // Data: class 0 at x=0, class 1 at x=100
-        let data = vec![0.0, 0.0, 100.0, 100.0];
-        let labels = vec![0, 0, 1, 1];
+        let data = [0.0, 0.0, 100.0, 100.0];
+        let labels = [0, 0, 1, 1];
         let n_features = 1;
 
         let result = cross_validate_loo(4, |train, test| {
             use crate::tree::DecisionTree;
             let train_data: Vec<f64> = train
                 .iter()
-                .map(|&i| data[i * n_features..(i + 1) * n_features].to_vec())
-                .flatten()
+                .flat_map(|&i| data[i * n_features..(i + 1) * n_features].to_vec())
                 .collect();
             let train_labels: Vec<usize> = train.iter().map(|&i| labels[i]).collect();
             let tree = DecisionTree::fit(&train_data, n_features, &train_labels, 3)?;

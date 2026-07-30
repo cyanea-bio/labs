@@ -890,7 +890,7 @@ mod tests {
             let x = (4 - i) as f64 * 3.5;
             residues.push(Residue {
                 name: "ALA".into(),
-                seq_num: (i + 11) as i32,
+                seq_num: (i + 11),
                 i_code: None,
                 atoms: vec![
                     make_atom("N", x + 2.0, 2.5, 0.0), // Close to O of strand 1
@@ -1088,7 +1088,7 @@ mod tests {
         // Angle at CA(2): CA(0)->CA(2)->CA(4)
         // Vector CA(0)->CA(2) = (7.6,0,0), Vector CA(4)->CA(2) = (0,-7.6,0) => 90 degrees > 70
         let mut residues = Vec::new();
-        let positions = vec![
+        let positions = [
             (0.0, 0.0, 0.0),
             (3.8, 0.0, 0.0),
             (7.6, 0.0, 0.0),

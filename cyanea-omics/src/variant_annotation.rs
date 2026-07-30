@@ -1092,7 +1092,11 @@ mod tests {
 
     /// Helper: Annotate a variant against a single gene and return effects.
     fn annotate_one(variant: &Variant, gene: &Gene) -> Vec<VariantEffect> {
-        annotate_variant(variant, &[gene.clone()], &AnnotationConfig::default())
+        annotate_variant(
+            variant,
+            std::slice::from_ref(gene),
+            &AnnotationConfig::default(),
+        )
     }
 
     // For coding tests, we need the codon to be properly determined.
@@ -1128,7 +1132,7 @@ mod tests {
     fn test_missense_snv() {
         // Create a variant at CDS position where we know the full codon.
         // We'll test the consequence classification directly.
-        let ref_codon = [b'G', b'T', b'G']; // Val
+        let ref_codon = *b"GTG"; // Val
         let mut alt_codon = ref_codon;
         alt_codon[0] = b'G'; // same
         alt_codon[1] = b'A'; // change T>A at offset 1
@@ -1164,8 +1168,8 @@ mod tests {
     #[test]
     fn test_synonymous_snv() {
         // Direct codon test: CTA -> CTG both encode Leu
-        let ref_codon = [b'C', b'T', b'A'];
-        let alt_codon = [b'C', b'T', b'G'];
+        let ref_codon = *b"CTA";
+        let alt_codon = *b"CTG";
         let ref_aa = translate_codon(&ref_codon);
         let alt_aa = translate_codon(&alt_codon);
         assert_eq!(ref_aa, b'L');
@@ -1198,8 +1202,8 @@ mod tests {
     #[test]
     fn test_nonsense_stop_gain() {
         // CAG (Gln) -> TAG (Stop)
-        let ref_codon = [b'C', b'A', b'G'];
-        let alt_codon = [b'T', b'A', b'G'];
+        let ref_codon = *b"CAG";
+        let alt_codon = *b"TAG";
         let ref_aa = translate_codon(&ref_codon);
         let alt_aa = translate_codon(&alt_codon);
         assert_eq!(ref_aa, b'Q');

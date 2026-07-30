@@ -677,7 +677,7 @@ mod tests {
             ..EmbedConfig::default()
         };
         let cset = embed_multiple(&mol, &config).unwrap();
-        assert!(cset.len() >= 1, "got {} conformers", cset.len());
+        assert!(!cset.is_empty(), "got {} conformers", cset.len());
     }
 
     #[test]

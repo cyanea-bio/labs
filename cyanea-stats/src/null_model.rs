@@ -336,7 +336,11 @@ mod tests {
         assert_eq!(null.len(), 300);
         // Bootstrap means must be within the range of the data.
         for &v in &null {
-            assert!(v >= 2.0 && v <= 10.0, "bootstrap mean {} out of range", v);
+            assert!(
+                (2.0..=10.0).contains(&v),
+                "bootstrap mean {} out of range",
+                v
+            );
         }
     }
 }

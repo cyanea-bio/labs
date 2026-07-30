@@ -826,7 +826,7 @@ mod tests {
         let total_undirected_edges: usize =
             graph.neighbors.iter().map(|nb| nb.len()).sum::<usize>() / 2;
         assert!(
-            total_undirected_edges >= 4 && total_undirected_edges <= 6,
+            (4..=6).contains(&total_undirected_edges),
             "expected 4-6 undirected edges, got {}",
             total_undirected_edges
         );

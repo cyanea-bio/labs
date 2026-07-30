@@ -531,14 +531,14 @@ mod tests {
         // Loaded die: heavily biased toward 6 (symbol index 5)
         let mut emission = vec![0.0; 2 * 6];
         for k in 0..6 {
-            emission[0 * 6 + k] = 1.0 / 6.0; // fair
+            emission[k] = 1.0 / 6.0; // fair
         }
-        emission[1 * 6 + 0] = 0.1;
-        emission[1 * 6 + 1] = 0.1;
-        emission[1 * 6 + 2] = 0.1;
-        emission[1 * 6 + 3] = 0.1;
-        emission[1 * 6 + 4] = 0.1;
-        emission[1 * 6 + 5] = 0.5; // loaded favors 6
+        emission[6] = 0.1;
+        emission[6 + 1] = 0.1;
+        emission[6 + 2] = 0.1;
+        emission[6 + 3] = 0.1;
+        emission[6 + 4] = 0.1;
+        emission[6 + 5] = 0.5; // loaded favors 6
         HmmModel::new(2, 6, initial, transition, emission).unwrap()
     }
 

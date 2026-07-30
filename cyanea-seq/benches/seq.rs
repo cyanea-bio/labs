@@ -3,7 +3,7 @@ use cyanea_seq::{DnaSequence, KmerIter};
 use std::io::Write;
 
 fn random_dna(len: usize) -> Vec<u8> {
-    let bases = [b'A', b'C', b'G', b'T'];
+    let bases = *b"ACGT";
     let mut seq = Vec::with_capacity(len);
     let mut state: u64 = 42;
     for _ in 0..len {
@@ -15,7 +15,7 @@ fn random_dna(len: usize) -> Vec<u8> {
 
 fn make_fasta(n_seqs: usize, seq_len: usize) -> tempfile::NamedTempFile {
     let mut f = tempfile::NamedTempFile::new().unwrap();
-    let bases = [b'A', b'C', b'G', b'T'];
+    let bases = *b"ACGT";
     let mut state: u64 = 42;
     for i in 0..n_seqs {
         writeln!(f, ">seq_{}", i).unwrap();
@@ -31,7 +31,7 @@ fn make_fasta(n_seqs: usize, seq_len: usize) -> tempfile::NamedTempFile {
 
 fn make_fastq(n_seqs: usize, seq_len: usize) -> tempfile::NamedTempFile {
     let mut f = tempfile::NamedTempFile::new().unwrap();
-    let bases = [b'A', b'C', b'G', b'T'];
+    let bases = *b"ACGT";
     let mut state: u64 = 42;
     for i in 0..n_seqs {
         writeln!(f, "@seq_{}", i).unwrap();
@@ -82,7 +82,7 @@ fn bench_fastq_parse(c: &mut Criterion) {
 fn bench_gc_content(c: &mut Criterion) {
     let mut group = c.benchmark_group("gc_content");
 
-    let seq_10k = DnaSequence::new(&random_dna(10_000)).unwrap();
+    let seq_10k = DnaSequence::new(random_dna(10_000)).unwrap();
     group.bench_function("10kb", |b| b.iter(|| black_box(&seq_10k).gc_content()));
 
     group.finish();

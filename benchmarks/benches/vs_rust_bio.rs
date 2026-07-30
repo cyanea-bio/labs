@@ -22,7 +22,7 @@ use bio::data_structures::suffix_array::suffix_array;
 // =========================================================================
 
 fn random_dna(len: usize, seed: u64) -> Vec<u8> {
-    let bases = [b'A', b'C', b'G', b'T'];
+    let bases = *b"ACGT";
     let mut seq = Vec::with_capacity(len);
     let mut state = seed;
     for _ in 0..len {
@@ -33,7 +33,7 @@ fn random_dna(len: usize, seed: u64) -> Vec<u8> {
 }
 
 fn mutate_dna(seq: &[u8], rate: f64, seed: u64) -> Vec<u8> {
-    let bases = [b'A', b'C', b'G', b'T'];
+    let bases = *b"ACGT";
     let mut out = seq.to_vec();
     let mut state = seed;
     for b in out.iter_mut() {

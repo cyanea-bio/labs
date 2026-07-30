@@ -103,11 +103,11 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
-      # Gates CI. The workspace-wide allow-list (needless_range_loop,
-      # too_many_arguments, type_complexity — pedantic in numerical code) lives
-      # in the root Cargo.toml under [workspace.lints.clippy]; everything else
-      # must be clean.
-      - run: cargo clippy --workspace -- -D warnings
+      # Gates CI, including test and bench code (--all-targets). The
+      # workspace-wide allow-list (needless_range_loop, too_many_arguments,
+      # type_complexity — pedantic in numerical code) lives in the root
+      # Cargo.toml under [workspace.lints.clippy]; everything else must be clean.
+      - run: cargo clippy --workspace --all-targets -- -D warnings
 
   fmt:
     name: Format

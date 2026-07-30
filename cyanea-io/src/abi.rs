@@ -412,7 +412,7 @@ mod tests {
         for ch in 0..4u16 {
             let ch_offset = data9_offset + (ch as usize) * trace_bytes;
             for i in 0..trace_len {
-                let value = ((ch as i16 + 1) * 100 + i as i16) as i16;
+                let value = (ch as i16 + 1) * 100 + i as i16;
                 let byte_offset = ch_offset + i * 2;
                 buf[byte_offset..byte_offset + 2].copy_from_slice(&value.to_be_bytes());
             }

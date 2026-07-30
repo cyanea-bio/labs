@@ -1124,7 +1124,7 @@ mod tests {
         let a = vec![iv("chr1", 100, 300)];
         let b = vec![iv("chr1", 200, 500)];
         let j = jaccard(&a, &b);
-        assert!(j >= 0.0 && j <= 1.0);
+        assert!((0.0..=1.0).contains(&j));
     }
 
     #[test]

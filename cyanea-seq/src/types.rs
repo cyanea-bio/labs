@@ -334,7 +334,7 @@ mod proptests {
         fn gc_content_in_unit_interval(seq in dna_string(500)) {
             let dna = DnaSequence::new(&seq).unwrap();
             let gc = dna.gc_content();
-            prop_assert!(gc >= 0.0 && gc <= 1.0, "gc_content={} out of [0,1]", gc);
+            prop_assert!((0.0..=1.0).contains(&gc), "gc_content={} out of [0,1]", gc);
         }
 
         #[test]

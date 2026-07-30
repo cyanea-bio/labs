@@ -752,7 +752,7 @@ mod tests {
         // Should have n_generations + 1 entries (gen 0..=10)
         assert_eq!(freqs.len(), 11);
         let final_freq = result["final_freq"].as_f64().unwrap();
-        assert!(final_freq >= 0.0 && final_freq <= 1.0);
+        assert!((0.0..=1.0).contains(&final_freq));
     }
 
     #[test]
@@ -774,7 +774,11 @@ mod tests {
         assert_eq!(dist.len(), 200);
         for val in dist {
             let x = val.as_f64().unwrap();
-            assert!(x >= 1.0 && x <= 5.0, "bootstrap mean {} out of range", x);
+            assert!(
+                (1.0..=5.0).contains(&x),
+                "bootstrap mean {} out of range",
+                x
+            );
         }
     }
 

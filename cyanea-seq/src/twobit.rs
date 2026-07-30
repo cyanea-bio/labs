@@ -316,11 +316,11 @@ mod tests {
     #[test]
     fn kmer_max_k32() {
         // 32 A's should give 0 (all 00 bits)
-        let seq = TwoBitSequence::encode(&vec![b'A'; 32]).unwrap();
+        let seq = TwoBitSequence::encode(&[b'A'; 32]).unwrap();
         assert_eq!(seq.kmer(0, 32), Some(0u64));
 
         // 32 T's should give all 1s in 64 bits
-        let seq = TwoBitSequence::encode(&vec![b'T'; 32]).unwrap();
+        let seq = TwoBitSequence::encode(&[b'T'; 32]).unwrap();
         assert_eq!(seq.kmer(0, 32), Some(u64::MAX));
     }
 

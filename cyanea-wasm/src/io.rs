@@ -413,7 +413,7 @@ r2\t0\tchr1\t3\t60\t8M\t*\t0\t0\tGTACGTAC\t*
         let pileups = v["ok"].as_array().unwrap();
         assert_eq!(pileups.len(), 1);
         assert_eq!(pileups[0]["rname"], "chr1");
-        assert!(pileups[0]["columns"].as_array().unwrap().len() > 0);
+        assert!(!pileups[0]["columns"].as_array().unwrap().is_empty());
     }
 
     #[test]

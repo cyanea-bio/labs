@@ -784,7 +784,7 @@ mod tests {
         let mut m = ContactMatrix::new("chr1", 10000, n);
         for i in 0..n {
             for j in 0..n {
-                let d = if i > j { i - j } else { j - i };
+                let d = i.abs_diff(j);
                 let base = 100.0 / (d as f64 + 1.0);
                 // TAD 1: bins 0-9, TAD 2: bins 10-19
                 let in_same_tad = (i < 10 && j < 10) || (i >= 10 && j >= 10);
@@ -892,7 +892,7 @@ mod tests {
         let mut m = ContactMatrix::new("chr1", 50000, n);
         for i in 0..n {
             for j in 0..n {
-                let d = if i > j { i - j } else { j - i };
+                let d = i.abs_diff(j);
                 let base = 50.0 / (d as f64 + 1.0);
                 // Block compartment: first 10 bins = A, last 10 = B
                 let same_comp = (i < 10 && j < 10) || (i >= 10 && j >= 10);
@@ -919,7 +919,7 @@ mod tests {
         let mut m = ContactMatrix::new("chr1", 50000, n);
         for i in 0..n {
             for j in 0..n {
-                let d = if i > j { i - j } else { j - i };
+                let d = i.abs_diff(j);
                 // First half is A (high contacts among themselves)
                 let same = (i < 5 && j < 5) || (i >= 5 && j >= 5);
                 let v = if same {
@@ -947,7 +947,7 @@ mod tests {
         // Background: distance decay
         for i in 0..n {
             for j in 0..n {
-                let d = if i > j { i - j } else { j - i };
+                let d = i.abs_diff(j);
                 m.set(i, j, 10.0 / (d as f64 + 1.0));
             }
         }

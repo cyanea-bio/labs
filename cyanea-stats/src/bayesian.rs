@@ -460,8 +460,8 @@ mod tests {
     fn gamma_cdf() {
         // Gamma(1, 1) is Exponential(1): CDF(x) = 1 - e^{-x}
         let g = Gamma::new(1.0, 1.0).unwrap();
-        let x = 2.0;
-        let expected = 1.0 - (-x as f64).exp();
+        let x = 2.0_f64;
+        let expected = 1.0 - (-x).exp();
         assert!((g.cdf(x) - expected).abs() < 1e-8);
     }
 

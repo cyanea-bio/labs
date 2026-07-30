@@ -881,7 +881,7 @@ mod tests {
         assert_eq!(result.n_selected(), 1);
         // All scores should be 1.0, 2.0, or 3.0
         for &s in &result.scores {
-            assert!(s >= 1.0 && s <= 3.0);
+            assert!((1.0..=3.0).contains(&s));
         }
         // Selected feature should have rank 1
         for &j in &result.selected {

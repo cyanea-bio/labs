@@ -204,7 +204,7 @@ mod tests {
         let labels = vec![0, 0, 1, 1];
         let samples = silhouette_samples(&refs, &labels).unwrap();
         for &s in &samples {
-            assert!(s >= -1.0 && s <= 1.0, "silhouette {} out of range", s);
+            assert!((-1.0..=1.0).contains(&s), "silhouette {} out of range", s);
         }
     }
 

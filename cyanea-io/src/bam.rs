@@ -426,7 +426,7 @@ mod test_helpers {
         }
 
         // Sequence (4-bit encoded)
-        let seq_bytes = (rec.seq.len() + 1) / 2;
+        let seq_bytes = rec.seq.len().div_ceil(2);
         for i in 0..seq_bytes {
             let high = encode_base(rec.seq.get(i * 2).copied().unwrap_or(0));
             let low = if i * 2 + 1 < rec.seq.len() {
@@ -440,7 +440,7 @@ mod test_helpers {
         // Quality
         if rec.qual.is_empty() {
             // All 0xFF means unavailable
-            data.extend(std::iter::repeat(0xFF).take(rec.seq.len()));
+            data.extend(std::iter::repeat_n(0xFF, rec.seq.len()));
         } else {
             data.extend_from_slice(rec.qual);
         }
@@ -460,6 +460,10 @@ mod test_helpers {
     }
 
     /// Compute BAM bin for a 0-based [beg, end) region.
+    // Each level's bin offset is the SAM-spec formula ((1 << 3k) - 1) / 7; at
+    // the deepest level this is 7 / 7, which clippy's eq_op flags — the form is
+    // kept for consistency with the other levels.
+    #[allow(clippy::eq_op)]
     fn reg2bin(beg: i32, end: i32) -> u16 {
         let beg = beg as u32;
         let end = (end - 1) as u32;

@@ -9,7 +9,7 @@ fn dna_scheme() -> ScoringScheme {
 }
 
 fn random_dna(len: usize) -> Vec<u8> {
-    let bases = [b'A', b'C', b'G', b'T'];
+    let bases = *b"ACGT";
     // Deterministic pseudo-random for reproducibility
     let mut seq = Vec::with_capacity(len);
     let mut state: u64 = 42;
@@ -21,7 +21,7 @@ fn random_dna(len: usize) -> Vec<u8> {
 }
 
 fn mutate_dna(seq: &[u8], rate: f64) -> Vec<u8> {
-    let bases = [b'A', b'C', b'G', b'T'];
+    let bases = *b"ACGT";
     let mut out = seq.to_vec();
     let mut state: u64 = 137;
     for b in out.iter_mut() {
@@ -94,7 +94,7 @@ fn bench_batch(c: &mut Criterion) {
             // Vary slightly per pair for realism
             let adjust = (i % 10) as u64;
             if !t.is_empty() {
-                t[0] = [b'A', b'C', b'G', b'T'][(adjust % 4) as usize];
+                t[0] = b"ACGT"[(adjust % 4) as usize];
             }
             (q, t)
         })
