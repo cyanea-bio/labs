@@ -87,10 +87,34 @@ jobs:
       # Publishes every publishable member in dependency order, waiting for
       # each to reach the index before its dependents. Skips publish = false
       # crates (cyanea-py, cyanea-wasm, benchmarks).
-      - name: Publish workspace
-        run: cargo publish --workspace
+      #
+      # crates.io versions are immutable and `cargo publish` errors (rather than
+      # skipping) if a version already exists. A prior tag run can publish some
+      # members before failing partway, so query crates.io and --exclude any
+      # member already at this version, letting the publish resume from where it
+      # stopped. On a clean release nothing is excluded and the full workspace
+      # publishes.
+      - name: Publish workspace (resume-safe)
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF#refs/tags/v}"
+
+          excludes=()
+          for name in $(cargo metadata --no-deps --format-version 1 \
+              | jq -r '.packages[] | select(.publish != []) | .name'); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              -H 'User-Agent: cyanea-labs-release (ci@cyanea.bio)' \
+              "https://crates.io/api/v1/crates/${name}/${VERSION}")
+            if [ "$code" = "200" ]; then
+              echo "already on crates.io, skipping: ${name}@${VERSION}"
+              excludes+=(--exclude "${name}")
+            fi
+          done
+
+          echo "publishing v${VERSION} ${excludes[*]:-(full workspace)}"
+          cargo publish --workspace ${excludes[@]+"${excludes[@]}"}
 
   release:
     name: Create GitHub Release
