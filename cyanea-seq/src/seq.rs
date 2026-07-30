@@ -191,7 +191,7 @@ mod tests {
     #[test]
     fn deref_to_slice() {
         let seq = DnaSeq::new(b"ACGT").unwrap();
-        let slice: &[u8] = &*seq;
+        let slice: &[u8] = &seq;
         assert_eq!(slice, b"ACGT");
         assert_eq!(seq[0], b'A');
     }

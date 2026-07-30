@@ -159,7 +159,7 @@ mod tests {
         let t1 = tree_from_newick("((A,B),(C,D));");
         let t2 = tree_from_newick("((A,C),(B,D));");
         let nrf = robinson_foulds_normalized(&t1, &t2).unwrap();
-        assert!(nrf >= 0.0 && nrf <= 1.0, "nRF = {}", nrf);
+        assert!((0.0..=1.0).contains(&nrf), "nRF = {}", nrf);
     }
 
     #[test]

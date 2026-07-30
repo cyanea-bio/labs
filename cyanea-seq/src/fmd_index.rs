@@ -533,7 +533,7 @@ mod tests {
     #[test]
     fn init_interval_valid() {
         let fmd = FmdIndex::new(b"ACGTACGT");
-        for &base in &[b'A', b'C', b'G', b'T'] {
+        for &base in b"ACGT" {
             let iv = fmd.init_interval(base);
             assert!(
                 !iv.is_empty(),

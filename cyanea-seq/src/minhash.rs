@@ -660,7 +660,7 @@ mod tests {
         );
         // With 43 5-mers from this sequence, we should fill the sketch
         assert!(
-            mh.len() > 0,
+            !mh.is_empty(),
             "sketch should not be empty for a non-trivial sequence"
         );
     }

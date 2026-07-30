@@ -547,12 +547,12 @@ mod tests {
         let ari = adjusted_rand_index(&a, &b).unwrap();
         // Different partitions should have ARI != perfect
         assert!(ari != 1.0 || ari == 1.0); // Valid float value
-        assert!(ari >= -1.0 && ari <= 1.0);
+        assert!((-1.0..=1.0).contains(&ari));
     }
 
     #[test]
     fn ari_length_mismatch() {
-        let result = adjusted_rand_index(&vec![0, 1], &vec![0, 1, 2]);
+        let result = adjusted_rand_index(&[0, 1], &[0, 1, 2]);
         assert!(result.is_err());
     }
 

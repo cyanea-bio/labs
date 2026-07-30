@@ -78,7 +78,7 @@ fn test_meme_format_roundtrip() {
     let motif = Motif::new("test_motif", pwm);
 
     // Write to MEME format
-    let meme_str = write_meme(&[motif.clone()]);
+    let meme_str = write_meme(std::slice::from_ref(&motif));
     assert!(meme_str.contains("MOTIF"));
     assert!(meme_str.contains("test_motif"));
 
@@ -178,7 +178,7 @@ fn test_motif_enrichment_in_peaks() {
     let (fold_enrichment, p_value) = motif_enrichment(&motif, &peak_seqs, &bg_seqs, -5.0).unwrap();
 
     assert!(fold_enrichment > 0.0);
-    assert!(p_value >= 0.0 && p_value <= 1.0);
+    assert!((0.0..=1.0).contains(&p_value));
 }
 
 #[test]

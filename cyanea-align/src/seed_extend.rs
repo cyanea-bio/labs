@@ -544,7 +544,7 @@ mod tests {
         let result = seed_extend_align(seq, seq, &dna_scheme(), 3, 2, 5).unwrap();
         // CIGAR ops should all have non-zero length.
         for op in &result.cigar {
-            assert!(op.len() > 0, "CIGAR ops should have non-zero length");
+            assert!(!op.is_empty(), "CIGAR ops should have non-zero length");
         }
     }
 
@@ -555,7 +555,7 @@ mod tests {
         let target = b"ACGTAAACGTACGT"; // extra AA inserted
         let result = seed_extend_align(query, target, &dna_scheme(), 3, 2, 5).unwrap();
         // Should still produce a valid alignment.
-        assert!(result.score > 0 || result.score == 0);
+        assert!(result.score >= 0);
     }
 
     #[test]

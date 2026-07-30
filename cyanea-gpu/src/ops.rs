@@ -295,7 +295,7 @@ mod tests {
         let result =
             pairwise_distance_matrix(&b, &data, 2, 2, DistanceMetricGpu::Euclidean).unwrap();
         let mat = b.read_buffer(&result).unwrap();
-        assert!((mat[0 * 2 + 1] - 1.0).abs() < 1e-12);
+        assert!((mat[1] - 1.0).abs() < 1e-12);
     }
 
     #[test]
@@ -319,7 +319,7 @@ mod tests {
         })
         .unwrap();
         let mat = b.read_buffer(&result).unwrap();
-        assert!((mat[0 * 2 + 1] - 4.0).abs() < 1e-12);
+        assert!((mat[1] - 4.0).abs() < 1e-12);
     }
 
     #[test]
@@ -391,8 +391,8 @@ mod tests {
         let tiled =
             tiled_pairwise_distance(&b, &data, 2, 2, DistanceMetricGpu::Euclidean, 100).unwrap();
         let expected = (2.0_f64).sqrt();
-        assert!((tiled[0 * 2 + 1] - expected).abs() < 1e-10);
-        assert!((tiled[1 * 2 + 0] - expected).abs() < 1e-10);
+        assert!((tiled[1] - expected).abs() < 1e-10);
+        assert!((tiled[2] - expected).abs() < 1e-10);
         assert!(tiled[0].abs() < 1e-10);
     }
 
@@ -404,11 +404,11 @@ mod tests {
         let tiled =
             tiled_pairwise_distance(&b, &data, 6, 1, DistanceMetricGpu::Manhattan, 3).unwrap();
         // d(0,5) = 5.0
-        assert!((tiled[0 * 6 + 5] - 5.0).abs() < 1e-10);
+        assert!((tiled[5] - 5.0).abs() < 1e-10);
         // d(2,3) = 1.0
         assert!((tiled[2 * 6 + 3] - 1.0).abs() < 1e-10);
         // symmetric
-        assert!((tiled[5 * 6 + 0] - 5.0).abs() < 1e-10);
+        assert!((tiled[5 * 6] - 5.0).abs() < 1e-10);
     }
 
     #[test]
@@ -419,9 +419,9 @@ mod tests {
         let tiled =
             tiled_pairwise_distance(&b, &data, 5, 1, DistanceMetricGpu::Manhattan, 2).unwrap();
         // d(0,4) = 40.0
-        assert!((tiled[0 * 5 + 4] - 40.0).abs() < 1e-10);
+        assert!((tiled[4] - 40.0).abs() < 1e-10);
         // d(1,3) = 20.0
-        assert!((tiled[1 * 5 + 3] - 20.0).abs() < 1e-10);
+        assert!((tiled[5 + 3] - 20.0).abs() < 1e-10);
         // diagonal = 0
         for i in 0..5 {
             assert!(tiled[i * 5 + i].abs() < 1e-10);

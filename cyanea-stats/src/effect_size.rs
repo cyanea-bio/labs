@@ -207,7 +207,7 @@ mod tests {
         let g1 = [1.0, 2.0, 3.0, 4.0];
         let g2 = [3.0, 4.0, 5.0, 6.0];
         let eta = eta_squared(&[&g1, &g2]).unwrap();
-        assert!(eta >= 0.0 && eta <= 1.0, "eta={}", eta);
+        assert!((0.0..=1.0).contains(&eta), "eta={}", eta);
     }
 
     #[test]

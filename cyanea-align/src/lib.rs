@@ -159,7 +159,7 @@ mod proptests {
             let scoring = ScoringScheme::Simple(ScoringMatrix::dna_default());
             let result = align(&q, &t, AlignmentMode::Global, &scoring).unwrap();
             let id = result.identity();
-            prop_assert!(id >= 0.0 && id <= 1.0, "identity={} out of [0,1]", id);
+            prop_assert!((0.0..=1.0).contains(&id), "identity={} out of [0,1]", id);
         }
 
         #[test]

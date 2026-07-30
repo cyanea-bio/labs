@@ -456,7 +456,7 @@ mod tests {
         let g = triangle_graph();
         let dc = degree_centrality(&g).unwrap();
         // All nodes have degree 2 / (3-1) = 1.0
-        for (_, score) in &dc.scores {
+        for score in dc.scores.values() {
             assert!((score - 1.0).abs() < 1e-10);
         }
     }

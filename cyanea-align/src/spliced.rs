@@ -774,9 +774,7 @@ mod tests {
         reference.extend_from_slice(b"ACGT"); // exon 1
         reference.push(b'G');
         reference.push(b'T'); // donor
-        for _ in 0..30 {
-            reference.push(b'N');
-        }
+        reference.resize(reference.len() + 30, b'N');
         reference.push(b'A');
         reference.push(b'G'); // acceptor
         reference.extend_from_slice(b"ACGT"); // exon 2
@@ -815,9 +813,7 @@ mod tests {
         reference.extend_from_slice(b"ACGT"); // exon 1
         reference.push(b'G');
         reference.push(b'T');
-        for _ in 0..28 {
-            reference.push(b'X');
-        }
+        reference.resize(reference.len() + 28, b'X');
         reference.push(b'A');
         reference.push(b'G');
         reference.extend_from_slice(b"ACGT"); // exon 2
@@ -847,9 +843,7 @@ mod tests {
         let mut reference = Vec::new();
         reference.extend_from_slice(b"ACGT");
         reference.extend_from_slice(b"GT"); // donor
-        for _ in 0..5 {
-            reference.push(b'N');
-        }
+        reference.resize(reference.len() + 5, b'N');
         reference.extend_from_slice(b"AG"); // acceptor
         reference.extend_from_slice(b"ACGT");
         // Intron = 9 bases, less than default min_intron_len=30
@@ -881,9 +875,7 @@ mod tests {
         let mut reference = Vec::new();
         reference.extend_from_slice(b"ACGT"); // 0..4
         reference.extend_from_slice(b"GT"); // 4..6, donor
-        for _ in 0..28 {
-            reference.push(b'N');
-        } // 6..34
+        reference.resize(reference.len() + 28, b'N'); // 6..34
         reference.extend_from_slice(b"AG"); // 34..36, acceptor
         reference.extend_from_slice(b"TGCA"); // 36..40
 

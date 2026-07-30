@@ -254,6 +254,6 @@ mod tests {
         }
 
         let periodic = periodicity(&cov);
-        assert!(periodic >= 0.0 && periodic <= 1.0);
+        assert!((0.0..=1.0).contains(&periodic));
     }
 }

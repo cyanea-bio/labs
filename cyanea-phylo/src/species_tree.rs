@@ -560,7 +560,7 @@ mod tests {
         mapping.insert("b".to_string(), "b".to_string());
 
         let result = reconcile(&gene, &species, &mapping).unwrap();
-        assert!(result.duplications.len() > 0, "should detect duplication");
+        assert!(!result.duplications.is_empty(), "should detect duplication");
     }
 
     #[test]

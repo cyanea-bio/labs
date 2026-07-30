@@ -656,7 +656,7 @@ mod tests {
     fn translate_sequence_full_includes_stops() {
         let code = GeneticCode::standard();
         let protein = code.translate_sequence_full(b"ATGTAAGCG");
-        assert_eq!(protein, &[b'M', b'*', b'A']);
+        assert_eq!(protein, b"M*A");
     }
 
     #[test]

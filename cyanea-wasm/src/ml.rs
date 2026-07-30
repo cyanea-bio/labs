@@ -971,9 +971,9 @@ mod tests {
         let obj = &v["ok"];
         assert_eq!(obj["n_components"], 2);
         assert_eq!(obj["n_features"], 3);
-        assert!(obj["components"].as_array().unwrap().len() > 0);
-        assert!(obj["explained_variance"].as_array().unwrap().len() > 0);
-        assert!(obj["transformed"].as_array().unwrap().len() > 0);
+        assert!(!obj["components"].as_array().unwrap().is_empty());
+        assert!(!obj["explained_variance"].as_array().unwrap().is_empty());
+        assert!(!obj["transformed"].as_array().unwrap().is_empty());
     }
 
     #[test]

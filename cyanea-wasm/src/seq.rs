@@ -1225,7 +1225,7 @@ mod tests {
         assert_eq!(obj["k"], 4);
         assert_eq!(obj["sketch_size"], 10);
         assert!(obj["num_hashes"].as_u64().unwrap() > 0);
-        assert!(obj["hashes"].as_array().unwrap().len() > 0);
+        assert!(!obj["hashes"].as_array().unwrap().is_empty());
     }
 
     #[test]
@@ -1334,8 +1334,8 @@ mod tests {
         // Each read should have name, sequence, quality, and position
         for read in reads {
             assert!(read["name"].is_string());
-            assert!(read["sequence"].as_str().unwrap().len() > 0);
-            assert!(read["quality"].as_str().unwrap().len() > 0);
+            assert!(!read["sequence"].as_str().unwrap().is_empty());
+            assert!(!read["quality"].as_str().unwrap().is_empty());
         }
     }
 

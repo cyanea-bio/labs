@@ -200,7 +200,7 @@ fn test_emission_learning() {
 
         // Probabilities should be in valid range
         for &p in probs {
-            assert!(p >= 0.01 && p <= 0.99);
+            assert!((0.01..=0.99).contains(&p));
         }
     }
 }

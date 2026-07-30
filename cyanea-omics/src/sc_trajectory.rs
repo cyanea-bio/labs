@@ -614,7 +614,7 @@ mod tests {
         )
         .unwrap();
 
-        assert!(result.eigenvalues.len() <= n - 1);
+        assert!(result.eigenvalues.len() < n);
     }
 
     #[test]
@@ -1066,7 +1066,7 @@ mod tests {
             .unwrap();
         assert_eq!(pt.len(), n);
         assert!(pt[0].abs() < 1e-10, "root pseudotime should be 0");
-        assert!(pt.iter().all(|&v| v >= 0.0 && v <= 1.0));
+        assert!(pt.iter().all(|&v| (0.0..=1.0).contains(&v)));
     }
 
     // ── Helper tests ──

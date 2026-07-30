@@ -61,7 +61,7 @@ fn test_spectral_counting_multiple_groups() {
 fn test_tmt_quantification_pipeline() {
     // Create spectra with TMT-like reporter ions
     let reporters = TmtPlex::Tmt6.reporter_mzs();
-    let channel_values = vec![100.0, 200.0, 300.0, 150.0, 250.0, 175.0];
+    let channel_values = [100.0, 200.0, 300.0, 150.0, 250.0, 175.0];
 
     let peaks: Vec<Peak> = reporters
         .iter()

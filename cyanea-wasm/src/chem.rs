@@ -606,7 +606,7 @@ mod tests {
         let json = tanimoto("CCO", "c1ccccc1");
         let v: serde_json::Value = serde_json::from_str(&json).unwrap();
         let sim = v["ok"].as_f64().unwrap();
-        assert!(sim >= 0.0 && sim < 1.0);
+        assert!((0.0..1.0).contains(&sim));
     }
 
     #[test]

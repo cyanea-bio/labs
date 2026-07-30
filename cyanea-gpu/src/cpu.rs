@@ -417,10 +417,10 @@ mod tests {
             .pairwise_distance_matrix(&data, 3, 2, DistanceMetricGpu::Euclidean)
             .unwrap();
         let mat = b.read_buffer(&result).unwrap();
-        assert!((mat[0 * 3 + 1] - 3.0).abs() < 1e-12); // d(0,1) = 3
-        assert!((mat[0 * 3 + 2] - 4.0).abs() < 1e-12); // d(0,2) = 4
-        assert!((mat[1 * 3 + 2] - 5.0).abs() < 1e-12); // d(1,2) = 5
-                                                       // Diagonal is zero
+        assert!((mat[1] - 3.0).abs() < 1e-12); // d(0,1) = 3
+        assert!((mat[2] - 4.0).abs() < 1e-12); // d(0,2) = 4
+        assert!((mat[3 + 2] - 5.0).abs() < 1e-12); // d(1,2) = 5
+                                                   // Diagonal is zero
         assert!((mat[0]).abs() < 1e-12);
     }
 
@@ -432,7 +432,7 @@ mod tests {
             .pairwise_distance_matrix(&data, 2, 2, DistanceMetricGpu::Manhattan)
             .unwrap();
         let mat = b.read_buffer(&result).unwrap();
-        assert!((mat[0 * 2 + 1] - 7.0).abs() < 1e-12); // |3| + |4| = 7
+        assert!((mat[1] - 7.0).abs() < 1e-12); // |3| + |4| = 7
     }
 
     #[test]
@@ -444,7 +444,7 @@ mod tests {
             .pairwise_distance_matrix(&data, 2, 2, DistanceMetricGpu::Cosine)
             .unwrap();
         let mat = b.read_buffer(&result).unwrap();
-        assert!((mat[0 * 2 + 1] - 1.0).abs() < 1e-12);
+        assert!((mat[1] - 1.0).abs() < 1e-12);
     }
 
     #[test]
@@ -484,10 +484,10 @@ mod tests {
             .unwrap();
         let mat = b.read_buffer(&result).unwrap();
         // d(0,1) = |1-3| + |2-4| = 4
-        assert!((mat[0 * 3 + 1] - 4.0).abs() < 1e-12);
+        assert!((mat[1] - 4.0).abs() < 1e-12);
         // d(0,2) = |1-5| + |2-6| = 8
-        assert!((mat[0 * 3 + 2] - 8.0).abs() < 1e-12);
+        assert!((mat[2] - 8.0).abs() < 1e-12);
         // symmetric
-        assert!((mat[1 * 3 + 0] - 4.0).abs() < 1e-12);
+        assert!((mat[3] - 4.0).abs() < 1e-12);
     }
 }
