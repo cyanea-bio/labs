@@ -218,7 +218,7 @@ pub fn fisher_exact(table: &[[usize; 2]; 2]) -> Result<TestResult> {
     // Two-tailed: sum probabilities of tables as or more extreme than observed
     let row1 = a + b;
     let col1 = a + c;
-    let min_a = if row1 + col1 > n { row1 + col1 - n } else { 0 };
+    let min_a = (row1 + col1).saturating_sub(n);
     let max_a = row1.min(col1);
 
     let mut p_value = 0.0;

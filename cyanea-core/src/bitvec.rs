@@ -30,7 +30,7 @@ impl RankSelectBitVec {
     /// Build a bitvector from a slice of booleans.
     pub fn build(bits: &[bool]) -> Self {
         let n = bits.len();
-        let num_blocks = (n + 63) / 64;
+        let num_blocks = n.div_ceil(64);
         let mut blocks = vec![0u64; num_blocks];
 
         for (i, &b) in bits.iter().enumerate() {
@@ -42,7 +42,7 @@ impl RankSelectBitVec {
         // Build superblock index
         // superblocks[i] = cumulative popcount before the i-th superblock group.
         // An extra sentinel entry stores the total count so binary search works.
-        let num_super_groups = (num_blocks + BLOCKS_PER_SUPER - 1) / BLOCKS_PER_SUPER;
+        let num_super_groups = num_blocks.div_ceil(BLOCKS_PER_SUPER);
         let mut superblocks = vec![0usize; num_super_groups + 1];
         let mut cumulative = 0usize;
         for (i, block) in blocks.iter().enumerate() {
@@ -118,7 +118,7 @@ impl RankSelectBitVec {
         let mut lo = 0;
         let mut hi = self.superblocks.len() - 1;
         while lo < hi {
-            let mid = lo + (hi - lo + 1) / 2;
+            let mid = lo + (hi - lo).div_ceil(2);
             if self.superblocks[mid] < k {
                 lo = mid;
             } else {

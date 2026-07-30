@@ -350,14 +350,14 @@ pub fn nussinov(seq: &[u8], min_loop_size: usize) -> Result<NussinovResult> {
         for i in 0..=n - len {
             let j = i + len - 1;
             // i unpaired
-            let mut best = if i + 1 <= j { m[idx(i + 1, j)] } else { 0 };
+            let mut best = if i < j { m[idx(i + 1, j)] } else { 0 };
             // j unpaired
             if j > 0 {
                 best = best.max(m[idx(i, j - 1)]);
             }
             // i,j pair
             if can_pair(seq[i], seq[j]) && j - i > min_loop_size {
-                let inner = if i + 1 <= j.saturating_sub(1) {
+                let inner = if i < j.saturating_sub(1) {
                     m[idx(i + 1, j - 1)]
                 } else {
                     0
@@ -399,14 +399,14 @@ fn nussinov_traceback(
     let val = m[idx(i, j)];
 
     // i unpaired
-    if i + 1 <= j && m[idx(i + 1, j)] == val {
+    if i < j && m[idx(i + 1, j)] == val {
         nussinov_traceback(seq, m, n, min_loop_size, i + 1, j, pairs);
         return;
     }
 
     // i,j pair
     if can_pair(seq[i], seq[j]) && j - i > min_loop_size {
-        let inner = if i + 1 <= j.saturating_sub(1) {
+        let inner = if i < j.saturating_sub(1) {
             m[idx(i + 1, j - 1)]
         } else {
             0
@@ -557,12 +557,12 @@ pub fn zuker_mfe(seq: &[u8]) -> Result<MfeResult> {
                 let mut best_wm = INF;
 
                 // i unpaired
-                if i + 1 <= j && wm[idx(i + 1, j)] < INF / 2.0 {
+                if i < j && wm[idx(i + 1, j)] < INF / 2.0 {
                     best_wm = best_wm.min(wm[idx(i + 1, j)] + ML_C);
                 }
 
                 // j unpaired
-                if j > 0 && i <= j - 1 && wm[idx(i, j - 1)] < INF / 2.0 {
+                if j > 0 && i < j && wm[idx(i, j - 1)] < INF / 2.0 {
                     best_wm = best_wm.min(wm[idx(i, j - 1)] + ML_C);
                 }
 
@@ -586,12 +586,12 @@ pub fn zuker_mfe(seq: &[u8]) -> Result<MfeResult> {
                 let mut best_w: f64 = 0.0; // no structure
 
                 // i unpaired
-                if i + 1 <= j {
+                if i < j {
                     best_w = best_w.min(w[idx(i + 1, j)]);
                 }
 
                 // j unpaired
-                if j > 0 && i <= j - 1 {
+                if j > 0 && i < j {
                     best_w = best_w.min(w[idx(i, j - 1)]);
                 }
 
@@ -654,13 +654,13 @@ fn zuker_traceback_w(
     }
 
     // i unpaired
-    if i + 1 <= j && (w[idx(i + 1, j)] - val).abs() < eps {
+    if i < j && (w[idx(i + 1, j)] - val).abs() < eps {
         zuker_traceback_w(seq, v, w, wm, n, i + 1, j, pairs);
         return;
     }
 
     // j unpaired
-    if j > 0 && i <= j - 1 && (w[idx(i, j - 1)] - val).abs() < eps {
+    if j > 0 && i < j && (w[idx(i, j - 1)] - val).abs() < eps {
         zuker_traceback_w(seq, v, w, wm, n, i, j - 1, pairs);
         return;
     }
@@ -728,10 +728,11 @@ fn zuker_traceback_v(
     }
 
     // Multi-branch loop
-    if j > i + 2 && wm[idx(i + 1, j - 1)] < INF / 2.0 {
-        if (wm[idx(i + 1, j - 1)] + ML_A + ML_B - val).abs() < eps {
-            zuker_traceback_wm(seq, v, w, wm, n, i + 1, j - 1, pairs);
-        }
+    if j > i + 2
+        && wm[idx(i + 1, j - 1)] < INF / 2.0
+        && (wm[idx(i + 1, j - 1)] + ML_A + ML_B - val).abs() < eps
+    {
+        zuker_traceback_wm(seq, v, w, wm, n, i + 1, j - 1, pairs);
     }
 }
 
@@ -765,14 +766,14 @@ fn zuker_traceback_wm(
     }
 
     // i unpaired
-    if i + 1 <= j && wm[idx(i + 1, j)] < INF / 2.0 && (wm[idx(i + 1, j)] + ML_C - val).abs() < eps {
+    if i < j && wm[idx(i + 1, j)] < INF / 2.0 && (wm[idx(i + 1, j)] + ML_C - val).abs() < eps {
         zuker_traceback_wm(seq, v, w, wm, n, i + 1, j, pairs);
         return;
     }
 
     // j unpaired
     if j > 0
-        && i <= j - 1
+        && i < j
         && wm[idx(i, j - 1)] < INF / 2.0
         && (wm[idx(i, j - 1)] + ML_C - val).abs() < eps
     {
@@ -944,12 +945,12 @@ pub fn mccaskill(seq: &[u8], temperature: f64) -> Result<PartitionResult> {
                 let mut qm_val = 0.0;
 
                 // i unpaired
-                if i + 1 <= j {
+                if i < j {
                     qm_val += qm[idx(i + 1, j)] * boltz(ML_C);
                 }
 
                 // j unpaired
-                if j > 0 && i <= j - 1 {
+                if j > 0 && i < j {
                     qm_val += qm[idx(i, j - 1)] * boltz(ML_C);
                 }
 
@@ -1001,7 +1002,7 @@ pub fn mccaskill(seq: &[u8], temperature: f64) -> Result<PartitionResult> {
                 let q_left = if i > 0 { q[idx(0, i - 1)] } else { 1.0 };
                 let q_right = if j < n - 1 { q[idx(j + 1, n - 1)] } else { 1.0 };
                 let p_ij = q_left * qb[idx(i, j)] * q_right / z;
-                let p_ij = p_ij.min(1.0).max(0.0);
+                let p_ij = p_ij.clamp(0.0, 1.0);
                 prob[idx(i, j)] = p_ij;
                 prob[idx(j, i)] = p_ij;
             }

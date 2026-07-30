@@ -118,7 +118,7 @@ pub fn phase_em(genotypes: &[Vec<u8>], max_iter: usize) -> Result<PhasedGenotype
     for _ in 0..max_iter {
         let mut new_freqs = vec![0.0f64; n_haplotypes];
 
-        for (_si, pairs) in compatible.iter().enumerate() {
+        for pairs in compatible.iter() {
             // E-step: weight each compatible pair by product of frequencies.
             let mut weights: Vec<f64> = pairs
                 .iter()

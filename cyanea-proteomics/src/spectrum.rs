@@ -326,7 +326,7 @@ pub fn run_stats(spectra: &[MassSpectrum]) -> Result<RunStats> {
     } else {
         ms2_peaks.sort();
         let mid = ms2_peaks.len() / 2;
-        if ms2_peaks.len() % 2 == 0 {
+        if ms2_peaks.len().is_multiple_of(2) {
             (ms2_peaks[mid - 1] + ms2_peaks[mid]) as f64 / 2.0
         } else {
             ms2_peaks[mid] as f64

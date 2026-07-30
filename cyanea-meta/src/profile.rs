@@ -65,7 +65,7 @@ impl TaxonomicProfile {
             .iter()
             .map(|(&taxid, &(count, abundance))| (taxid, count, abundance))
             .collect();
-        vec.sort_by(|a, b| b.1.cmp(&a.1)); // Sort by count descending
+        vec.sort_by_key(|b| std::cmp::Reverse(b.1)); // Sort by count descending
         vec
     }
 }
@@ -141,7 +141,7 @@ pub fn reestimate_abundance(
 ///
 /// Returns an error if threshold is invalid (NaN or outside `[0,1]`).
 pub fn filter_profile(profile: &TaxonomicProfile, min_abundance: f64) -> Result<TaxonomicProfile> {
-    if min_abundance.is_nan() || min_abundance < 0.0 || min_abundance > 1.0 {
+    if min_abundance.is_nan() || !(0.0..=1.0).contains(&min_abundance) {
         return Err(MetaError::Profile(format!(
             "invalid abundance threshold: {}",
             min_abundance

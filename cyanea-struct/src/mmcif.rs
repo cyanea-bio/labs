@@ -133,8 +133,8 @@ pub fn parse_mmcif_loop(lines: &[&str]) -> Vec<BTreeMap<String, String>> {
 fn extract_data_id(lines: &[&str]) -> String {
     for line in lines {
         let trimmed = line.trim();
-        if trimmed.starts_with("data_") {
-            return trimmed[5..].to_string();
+        if let Some(stripped) = trimmed.strip_prefix("data_") {
+            return stripped.to_string();
         }
     }
     String::from("UNKN")
@@ -251,7 +251,7 @@ fn build_structure_from_records(
         let element = record
             .get("_atom_site.type_symbol")
             .filter(|s| s.as_str() != "." && s.as_str() != "?")
-            .map(|s| s.clone());
+            .cloned();
 
         // Use first character of asym_id as chain ID
         let chain_id = asym_id.chars().next().unwrap_or('A');
@@ -276,10 +276,10 @@ fn build_structure_from_records(
         };
 
         // Check if we need a new chain or a new residue
-        if !chain_residues.contains_key(&chain_id) {
+        chain_residues.entry(chain_id).or_insert_with(|| {
             chain_order.push(chain_id);
-            chain_residues.insert(chain_id, Vec::new());
-        }
+            Vec::new()
+        });
 
         let residues = chain_residues.get_mut(&chain_id).unwrap();
 
@@ -330,7 +330,7 @@ fn get_field_str(record: &BTreeMap<String, String>, field: &str, row: usize) -> 
     record
         .get(field)
         .filter(|s| s.as_str() != "." && s.as_str() != "?")
-        .map(|s| s.clone())
+        .cloned()
         .ok_or_else(|| {
             CyaneaError::Parse(alloc::format!(
                 "missing field {} in _atom_site row {}",

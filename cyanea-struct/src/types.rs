@@ -314,15 +314,15 @@ impl ContentAddressable for Structure {
         let mut hasher = Sha256::new();
         hasher.update(self.id.as_bytes());
         for chain in &self.chains {
-            hasher.update(&[chain.id as u8]);
+            hasher.update([chain.id as u8]);
             for residue in &chain.residues {
                 hasher.update(residue.name.as_bytes());
-                hasher.update(&residue.seq_num.to_le_bytes());
+                hasher.update(residue.seq_num.to_le_bytes());
                 for atom in &residue.atoms {
                     hasher.update(atom.name.as_bytes());
-                    hasher.update(&atom.coords.x.to_le_bytes());
-                    hasher.update(&atom.coords.y.to_le_bytes());
-                    hasher.update(&atom.coords.z.to_le_bytes());
+                    hasher.update(atom.coords.x.to_le_bytes());
+                    hasher.update(atom.coords.y.to_le_bytes());
+                    hasher.update(atom.coords.z.to_le_bytes());
                 }
             }
         }

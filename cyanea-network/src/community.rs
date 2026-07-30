@@ -35,7 +35,7 @@ impl CommunityResult {
             *counts.entry(c).or_insert(0) += 1;
         }
         let mut sizes: Vec<(usize, usize)> = counts.into_iter().collect();
-        sizes.sort_by(|a, b| b.1.cmp(&a.1));
+        sizes.sort_by_key(|b| std::cmp::Reverse(b.1));
         sizes
     }
 }

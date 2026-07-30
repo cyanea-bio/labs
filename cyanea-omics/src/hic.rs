@@ -173,7 +173,7 @@ impl ContactMatrix {
         let mut diag_counts = vec![0usize; n];
         for i in 0..n {
             for j in 0..n {
-                let d = if i > j { i - j } else { j - i };
+                let d = i.abs_diff(j);
                 diag_sums[d] += self.matrix[i][j];
                 diag_counts[d] += 1;
             }
@@ -187,7 +187,7 @@ impl ContactMatrix {
 
         for i in 0..n {
             for j in 0..n {
-                let d = if i > j { i - j } else { j - i };
+                let d = i.abs_diff(j);
                 oe[i][j] = if diag_means[d] > 0.0 {
                     self.matrix[i][j] / diag_means[d]
                 } else {
@@ -315,7 +315,7 @@ pub fn insulation_scores(matrix: &ContactMatrix, window_size: usize) -> Vec<f64>
     let mut scores = vec![0.0; n];
 
     for i in 0..n {
-        let lo = if i >= w { i - w } else { 0 };
+        let lo = i.saturating_sub(w);
         let hi = (i + w).min(n);
         let mut sum = 0.0;
         let mut count = 0;

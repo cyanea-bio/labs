@@ -297,8 +297,8 @@ fn extract_atomic_num(expr: &crate::smarts::AtomExpr) -> Option<u8> {
     use crate::smarts::{AtomExpr, AtomPrimitive};
     match expr {
         AtomExpr::Prim(AtomPrimitive::AtomicNum(n)) => Some(*n),
-        AtomExpr::And(terms) => terms.iter().find_map(|t| extract_atomic_num(t)),
-        AtomExpr::Or(terms) => terms.first().and_then(|t| extract_atomic_num(t)),
+        AtomExpr::And(terms) => terms.iter().find_map(extract_atomic_num),
+        AtomExpr::Or(terms) => terms.first().and_then(extract_atomic_num),
         _ => None,
     }
 }

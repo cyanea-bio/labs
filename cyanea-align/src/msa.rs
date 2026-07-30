@@ -56,7 +56,7 @@ impl MsaResult {
                     && self
                         .aligned
                         .iter()
-                        .all(|s| s[c].to_ascii_uppercase() == first.to_ascii_uppercase())
+                        .all(|s| s[c].eq_ignore_ascii_case(&first))
             })
             .count();
         conserved as f64 / self.n_columns as f64

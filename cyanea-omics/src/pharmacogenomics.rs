@@ -116,6 +116,12 @@ pub struct PgxDatabase {
     pub interactions: Vec<DrugGeneInteraction>,
 }
 
+impl Default for PgxDatabase {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PgxDatabase {
     pub fn new() -> Self {
         Self {

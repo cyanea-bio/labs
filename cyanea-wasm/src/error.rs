@@ -13,7 +13,7 @@ pub fn wasm_ok<T: Serialize>(val: &T) -> String {
     struct Ok<'a, T: Serialize> {
         ok: &'a T,
     }
-    serde_json::to_string(&Ok { ok: val }).unwrap_or_else(|e| wasm_err(e))
+    serde_json::to_string(&Ok { ok: val }).unwrap_or_else(wasm_err)
 }
 
 /// Serialize an error as `{"error": "msg"}`.

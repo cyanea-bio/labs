@@ -161,9 +161,9 @@ pub fn demo_sdf_summary() -> String {
     for mol in fda_approved_drugs() {
         lines.push(format!(">{} <NAME>", mol.name));
         lines.push(mol.name.to_string());
-        lines.push(format!("> <SMILES>"));
+        lines.push("> <SMILES>".to_string());
         lines.push(mol.smiles.to_string());
-        lines.push(format!("> <MW>"));
+        lines.push("> <MW>".to_string());
         lines.push(format!("{:.2}", mol.molecular_weight));
         lines.push("$$$$".to_string());
     }

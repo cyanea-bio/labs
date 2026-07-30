@@ -298,7 +298,7 @@ impl PhyloTree {
         }
 
         // Build new tree: clone all nodes first.
-        let mut nodes: Vec<Node> = self.nodes.iter().cloned().collect();
+        let mut nodes: Vec<Node> = self.nodes.to_vec();
 
         // Create new root node.
         let new_root_id = nodes.len();
@@ -331,9 +331,7 @@ impl PhyloTree {
             nodes[cur_id].parent = Some(prev_id);
             nodes[prev_id].children.push(cur_id);
             // Branch length: cur_id takes the old branch length that prev_id had to cur_id.
-            let old_bl = nodes[cur_id].branch_length;
-            nodes[cur_id].branch_length = prev_old_bl;
-            prev_old_bl = old_bl;
+            std::mem::swap(&mut nodes[cur_id].branch_length, &mut prev_old_bl);
             prev_id = cur_id;
         }
 

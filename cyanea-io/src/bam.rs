@@ -158,7 +158,7 @@ fn parse_bam_record(
     let cigar = decode_cigar(data, pos, n_cigar_op);
 
     // Read sequence (4-bit encoded, 2 bases per byte)
-    let seq_bytes = (seq_len + 1) / 2;
+    let seq_bytes = seq_len.div_ceil(2);
     if *pos + seq_bytes > data.len() {
         return Err(CyaneaError::Parse("BAM sequence truncated".into()));
     }
@@ -264,9 +264,7 @@ fn decode_cigar(data: &[u8], pos: &mut usize, n_ops: usize) -> String {
 }
 
 /// Decode BAM 4-bit encoded sequence to ASCII.
-const SEQ_DECODE: [u8; 16] = [
-    b'=', b'A', b'C', b'M', b'G', b'R', b'S', b'V', b'T', b'W', b'Y', b'H', b'K', b'D', b'N', b'N',
-];
+const SEQ_DECODE: [u8; 16] = *b"=ACMGRSVTWYHKDNN";
 
 fn decode_sequence(data: &[u8], offset: usize, seq_len: usize) -> String {
     if seq_len == 0 {

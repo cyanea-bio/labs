@@ -192,7 +192,7 @@ fn build_consensus_from_bipartitions(
 ) -> Result<PhyloTree> {
     // Sort bipartitions by size (largest first) for nesting.
     let mut sorted_bps: Vec<&SupportedBipartition> = bipartitions.to_vec();
-    sorted_bps.sort_by(|a, b| b.leaves.len().cmp(&a.leaves.len()));
+    sorted_bps.sort_by_key(|b| std::cmp::Reverse(b.leaves.len()));
 
     // Start with a root node.
     let mut nodes: Vec<Node> = Vec::new();

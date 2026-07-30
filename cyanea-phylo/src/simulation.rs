@@ -10,7 +10,7 @@ use crate::subst_model::SubstitutionModel;
 use crate::tree::{Node, NodeId, PhyloTree};
 
 /// Nucleotide bytes indexed by state (A=0, C=1, G=2, T=3).
-const NUCLEOTIDES: [u8; 4] = [b'A', b'C', b'G', b'T'];
+const NUCLEOTIDES: [u8; 4] = *b"ACGT";
 
 /// Result of simulating sequence evolution along a phylogenetic tree.
 #[derive(Debug, Clone)]

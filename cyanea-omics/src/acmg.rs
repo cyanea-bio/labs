@@ -240,6 +240,10 @@ impl AcmgEvidence {
 }
 
 /// Apply the ACMG combining rules from evidence counts.
+// The pathogenic/likely-pathogenic predicates are written out one ACMG/AMP
+// (2015) combining rule per line so they mirror the published criteria table;
+// clippy's factored form would obscure that correspondence.
+#[allow(clippy::nonminimal_bool)]
 fn classify_from_counts(
     pvs: usize,
     ps: usize,
@@ -314,12 +318,11 @@ pub fn auto_evidence(
         variant.variant_type(),
         VariantType::Insertion | VariantType::Deletion
     ) && variant.ref_allele.len() != variant.alt_alleles[0].len()
-        && (variant
+        && !variant
             .ref_allele
             .len()
             .abs_diff(variant.alt_alleles[0].len())
-            % 3
-            != 0);
+            .is_multiple_of(3);
 
     // PVS1: null variant in LOF gene
     if is_null && is_lof_gene {

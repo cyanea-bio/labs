@@ -115,7 +115,7 @@ fn reverse_complement(seq: &[u8]) -> Vec<u8> {
 
 /// Pick a random base that differs from `original`.
 fn substitute_base(rng: &mut Xorshift64, original: u8) -> u8 {
-    const BASES: [u8; 4] = [b'A', b'C', b'G', b'T'];
+    const BASES: [u8; 4] = *b"ACGT";
     loop {
         let b = BASES[(rng.next_u64() % 4) as usize];
         if b != original {
@@ -184,11 +184,7 @@ pub fn simulate_reads(
             };
 
             // Random start position.
-            let max_start = if ref_len > frag_size {
-                ref_len - frag_size
-            } else {
-                0
-            };
+            let max_start = ref_len.saturating_sub(frag_size);
             let start = if max_start > 0 {
                 (rng.next_u64() % max_start as u64) as usize
             } else {

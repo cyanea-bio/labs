@@ -103,16 +103,16 @@ pub fn fitch(tree: &PhyloTree, leaf_states: &[(NodeId, u8)]) -> Result<Ancestral
     for id in tree.iter_preorder() {
         let node = tree.get_node(id).unwrap();
 
-        if node.is_root() || node.parent.is_none() {
-            // Pick the smallest state from the set (deterministic choice)
-            states[id] = *state_sets[id].iter().min().unwrap_or(&0);
-        } else {
-            let parent_state = states[node.parent.unwrap()];
+        if let Some(parent) = node.parent.filter(|_| !node.is_root()) {
+            let parent_state = states[parent];
             if state_sets[id].contains(&parent_state) {
                 states[id] = parent_state;
             } else {
                 states[id] = *state_sets[id].iter().min().unwrap_or(&0);
             }
+        } else {
+            // Pick the smallest state from the set (deterministic choice)
+            states[id] = *state_sets[id].iter().min().unwrap_or(&0);
         }
     }
 
@@ -247,25 +247,25 @@ pub fn sankoff(
             continue;
         }
 
-        if node.is_root() || node.parent.is_none() {
-            // Pick state with minimum cost at root
-            let mut min_cost = inf;
-            let mut min_state = 0;
-            for s in 0..k {
-                if cost_table[id][s] < min_cost {
-                    min_cost = cost_table[id][s];
-                    min_state = s;
-                }
-            }
-            states[id] = min_state;
-        } else {
-            let parent_state = states[node.parent.unwrap()];
+        if let Some(parent) = node.parent.filter(|_| !node.is_root()) {
+            let parent_state = states[parent];
             let mut min_cost = inf;
             let mut min_state = 0;
             for s in 0..k {
                 let c = cost_matrix.cost(parent_state, s) + cost_table[id][s];
                 if c < min_cost {
                     min_cost = c;
+                    min_state = s;
+                }
+            }
+            states[id] = min_state;
+        } else {
+            // Pick state with minimum cost at root
+            let mut min_cost = inf;
+            let mut min_state = 0;
+            for s in 0..k {
+                if cost_table[id][s] < min_cost {
+                    min_cost = cost_table[id][s];
                     min_state = s;
                 }
             }

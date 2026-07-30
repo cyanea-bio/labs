@@ -648,7 +648,7 @@ fn validate_data(data: &[f64], n_features: usize) -> Result<()> {
     if n_features == 0 {
         return Err(CyaneaError::InvalidInput("n_features must be > 0".into()));
     }
-    if data.len() % n_features != 0 {
+    if !data.len().is_multiple_of(n_features) {
         return Err(CyaneaError::InvalidInput(format!(
             "data length {} not divisible by n_features {}",
             data.len(),

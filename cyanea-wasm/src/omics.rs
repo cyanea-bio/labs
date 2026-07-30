@@ -813,7 +813,7 @@ fn build_adata(
     if data.is_empty() || n_features == 0 {
         return Err("data and n_features must be non-empty".to_string());
     }
-    if data.len() % n_features != 0 {
+    if !data.len().is_multiple_of(n_features) {
         return Err(format!(
             "data length ({}) is not divisible by n_features ({})",
             data.len(),

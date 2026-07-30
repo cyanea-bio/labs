@@ -253,8 +253,8 @@ fn sais(text: &[usize], alphabet_size: usize) -> Vec<usize> {
 
     let sorted_lms_indices = if num_names < lms_count {
         // Recurse
-        let sub_sa = sais(&reduced, num_names);
-        sub_sa
+
+        sais(&reduced, num_names)
     } else {
         // Names are unique, directly compute order
         let mut order = vec![0usize; lms_count];
@@ -413,6 +413,11 @@ impl SuffixArray {
     /// Number of entries in the suffix array (text length + 1 for sentinel).
     pub fn len(&self) -> usize {
         self.sa.len()
+    }
+
+    /// Whether the suffix array is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 

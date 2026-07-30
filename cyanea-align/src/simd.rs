@@ -221,7 +221,7 @@ fn banded_align(
         best_i = m;
         best_j = n;
         // Scan last row (i = m)
-        let j_min_last = if m > w { m - w } else { 0 };
+        let j_min_last = m.saturating_sub(w);
         let j_max_last = (m + w).min(n);
         for j in j_min_last..=j_max_last {
             if let Some(bi) = band_idx(m, j) {
@@ -233,7 +233,7 @@ fn banded_align(
             }
         }
         // Scan last column (j = n)
-        let i_min_last = if n > w { n - w } else { 0 };
+        let i_min_last = n.saturating_sub(w);
         let i_max_last = (n + w).min(m);
         for i in i_min_last..=i_max_last {
             if let Some(bi) = band_idx(i, n) {
@@ -281,7 +281,7 @@ fn banded_align(
                 let t = target[cj - 1];
                 aligned_query.push(q);
                 aligned_target.push(t);
-                let op = if q.to_ascii_uppercase() == t.to_ascii_uppercase() {
+                let op = if q.eq_ignore_ascii_case(&t) {
                     CigarOp::Match(1)
                 } else {
                     CigarOp::Mismatch(1)

@@ -489,7 +489,7 @@ fn validate_data(data: &[f64], n_features: usize) -> Result<usize> {
     if n_features == 0 {
         return Err(CyaneaError::InvalidInput("n_features must be > 0".into()));
     }
-    if data.len() % n_features != 0 {
+    if !data.len().is_multiple_of(n_features) {
         return Err(CyaneaError::InvalidInput(format!(
             "data length {} not divisible by n_features {}",
             data.len(),
@@ -1255,11 +1255,7 @@ impl GradientBoostedTrees {
     pub fn n_estimators(&self) -> usize {
         match self.mode {
             Mode::MulticlassClassification => {
-                if self.n_classes == 0 {
-                    0
-                } else {
-                    self.trees.len() / self.n_classes
-                }
+                self.trees.len().checked_div(self.n_classes).unwrap_or(0)
             }
             _ => self.trees.len(),
         }

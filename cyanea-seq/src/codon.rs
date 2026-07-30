@@ -33,7 +33,7 @@ fn codon_index(codon: &[u8]) -> Option<usize> {
 
 /// Convert an index in [0, 64) back to a codon (as DNA: A/C/G/T).
 fn index_to_codon(idx: usize) -> [u8; 3] {
-    const BASES: [u8; 4] = [b'A', b'C', b'G', b'T'];
+    const BASES: [u8; 4] = *b"ACGT";
     [BASES[idx >> 4], BASES[(idx >> 2) & 3], BASES[idx & 3]]
 }
 
@@ -68,12 +68,7 @@ pub enum GeneticCodeId {
 //              TTA, TTC, TTG, TTT
 
 /// Standard genetic code (NCBI Table 1).
-const TABLE1_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S', b'I', b'I', b'M', b'I',
-    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
-    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'*', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
-];
+const TABLE1_AA: [u8; 64] = *b"KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSS*CWCLFLF";
 
 const TABLE1_STARTS: [bool; 64] = {
     let mut s = [false; 64];
@@ -84,12 +79,7 @@ const TABLE1_STARTS: [bool; 64] = {
 
 /// Vertebrate mitochondrial (NCBI Table 2).
 /// UGA=Trp, AGA=Stop, AGG=Stop, AUA=Met
-const TABLE2_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'*', b'S', b'*', b'S', b'M', b'I', b'M', b'I',
-    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
-    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
-];
+const TABLE2_AA: [u8; 64] = *b"KNKNTTTT*S*SMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF";
 
 const TABLE2_STARTS: [bool; 64] = {
     let mut s = [false; 64];
@@ -103,12 +93,7 @@ const TABLE2_STARTS: [bool; 64] = {
 
 /// Yeast mitochondrial (NCBI Table 3).
 /// CUG=Thr (not Leu), UGA=Trp, CUA=Thr (not Leu)
-const TABLE3_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S', b'M', b'I', b'M', b'I',
-    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'T', b'L', b'T', b'L',
-    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
-];
+const TABLE3_AA: [u8; 64] = *b"KNKNTTTTRSRSMIMIQHQHPPPPRRRRTLTLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF";
 
 const TABLE3_STARTS: [bool; 64] = {
     let mut s = [false; 64];
@@ -119,12 +104,7 @@ const TABLE3_STARTS: [bool; 64] = {
 
 /// Mycoplasma/Spiroplasma (NCBI Table 4).
 /// UGA=Trp
-const TABLE4_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S', b'I', b'I', b'M', b'I',
-    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
-    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
-];
+const TABLE4_AA: [u8; 64] = *b"KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF";
 
 const TABLE4_STARTS: [bool; 64] = {
     let mut s = [false; 64];
@@ -136,12 +116,7 @@ const TABLE4_STARTS: [bool; 64] = {
 
 /// Invertebrate mitochondrial (NCBI Table 5).
 /// AGA=Ser, AGG=Ser, UGA=Trp, AUA=Met
-const TABLE5_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'S', b'S', b'S', b'S', b'M', b'I', b'M', b'I',
-    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
-    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'*', b'Y', b'*', b'Y', b'S', b'S', b'S', b'S', b'W', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
-];
+const TABLE5_AA: [u8; 64] = *b"KNKNTTTTSSSSMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF";
 
 const TABLE5_STARTS: [bool; 64] = {
     let mut s = [false; 64];
@@ -153,12 +128,7 @@ const TABLE5_STARTS: [bool; 64] = {
 
 /// Ciliate nuclear (NCBI Table 6).
 /// UAA=Gln, UAG=Gln (not Stop)
-const TABLE6_AA: [u8; 64] = [
-    b'K', b'N', b'K', b'N', b'T', b'T', b'T', b'T', b'R', b'S', b'R', b'S', b'I', b'I', b'M', b'I',
-    b'Q', b'H', b'Q', b'H', b'P', b'P', b'P', b'P', b'R', b'R', b'R', b'R', b'L', b'L', b'L', b'L',
-    b'E', b'D', b'E', b'D', b'A', b'A', b'A', b'A', b'G', b'G', b'G', b'G', b'V', b'V', b'V', b'V',
-    b'Q', b'Y', b'Q', b'Y', b'S', b'S', b'S', b'S', b'*', b'C', b'W', b'C', b'L', b'F', b'L', b'F',
-];
+const TABLE6_AA: [u8; 64] = *b"KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVVQYQYSSSS*CWCLFLF";
 
 const TABLE6_STARTS: [bool; 64] = {
     let mut s = [false; 64];
@@ -305,12 +275,12 @@ impl GeneticCode {
 
     /// Check whether a codon is a start codon in this table.
     pub fn is_start(&self, codon: &[u8]) -> bool {
-        codon_index(codon).map_or(false, |idx| self.starts[idx])
+        codon_index(codon).is_some_and(|idx| self.starts[idx])
     }
 
     /// Check whether a codon is a stop codon in this table.
     pub fn is_stop(&self, codon: &[u8]) -> bool {
-        codon_index(codon).map_or(false, |idx| self.table[idx] == b'*')
+        codon_index(codon).is_some_and(|idx| self.table[idx] == b'*')
     }
 
     /// Return all stop codons for this table (as DNA).
@@ -569,7 +539,7 @@ pub fn classify_substitution(
 pub fn count_syn_nonsyn_sites(seq: &[u8], code: &GeneticCode) -> (f64, f64) {
     let mut syn = 0.0f64;
     let mut nonsyn = 0.0f64;
-    let bases: [u8; 4] = [b'A', b'C', b'G', b'T'];
+    let bases: [u8; 4] = *b"ACGT";
 
     for codon in seq.chunks_exact(3) {
         let idx = match codon_index(codon) {

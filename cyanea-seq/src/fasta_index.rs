@@ -109,7 +109,7 @@ impl FastaIndex {
                 break;
             }
 
-            if line_buf.starts_with('>') {
+            if let Some(stripped) = line_buf.strip_prefix('>') {
                 // Flush previous record.
                 if let Some(name) = current_name.take() {
                     name_to_idx.insert(name.clone(), entries.len());
@@ -122,7 +122,7 @@ impl FastaIndex {
                     });
                 }
 
-                let header = line_buf[1..].trim_end_matches(&['\n', '\r'][..]);
+                let header = stripped.trim_end_matches(&['\n', '\r'][..]);
                 let name = header
                     .split_whitespace()
                     .next()
@@ -191,6 +191,11 @@ impl FastaIndex {
     /// Number of indexed sequences.
     pub fn len(&self) -> usize {
         self.entries.len()
+    }
+
+    /// Whether the index contains no sequences.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 

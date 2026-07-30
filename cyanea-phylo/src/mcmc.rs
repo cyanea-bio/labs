@@ -218,7 +218,7 @@ pub fn mcmc_sample(
         }
 
         // Sample.
-        if gen >= config.burnin && (gen - config.burnin) % config.sample_every == 0 {
+        if gen >= config.burnin && (gen - config.burnin).is_multiple_of(config.sample_every) {
             samples.push(McmcSample {
                 generation: gen,
                 tree: current_tree.clone(),

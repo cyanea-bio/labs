@@ -415,7 +415,7 @@ pub fn cigar_to_alignment(
                     ));
                 }
                 aligned_q.extend_from_slice(&query[qi..qi + n]);
-                aligned_t.extend(core::iter::repeat(b'-').take(*n));
+                aligned_t.extend(std::iter::repeat_n(b'-', *n));
                 qi += n;
             }
             CigarOp::Deletion(n) | CigarOp::Skip(n) => {
@@ -424,7 +424,7 @@ pub fn cigar_to_alignment(
                         "CIGAR deletion/skip consumes more target bases than available".into(),
                     ));
                 }
-                aligned_q.extend(core::iter::repeat(b'-').take(*n));
+                aligned_q.extend(std::iter::repeat_n(b'-', *n));
                 aligned_t.extend_from_slice(&target[ti..ti + n]);
                 ti += n;
             }

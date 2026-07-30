@@ -575,11 +575,7 @@ pub fn merge_cnv_segments(
 
     for seg in sorted.iter().skip(1) {
         let same_chrom = seg.chrom == current.chrom;
-        let gap = if seg.start >= current.end {
-            seg.start - current.end
-        } else {
-            0
-        };
+        let gap = seg.start.saturating_sub(current.end);
         let cn_diff = (seg.copy_number as i64 - current.copy_number as i64).unsigned_abs() as u32;
 
         if same_chrom && gap <= max_gap && cn_diff <= cn_tolerance {

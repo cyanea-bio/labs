@@ -206,7 +206,7 @@ pub fn parse_chain(input: &str) -> Result<ChainFile> {
 
     // Sort chains by score (descending) for each chromosome
     for chains_vec in chains.values_mut() {
-        chains_vec.sort_by(|a, b| b.score.cmp(&a.score));
+        chains_vec.sort_by_key(|b| std::cmp::Reverse(b.score));
     }
 
     Ok(ChainFile { chains })

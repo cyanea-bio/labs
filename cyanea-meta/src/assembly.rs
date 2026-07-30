@@ -54,7 +54,7 @@ pub fn assembly_stats(contigs: &[&[u8]]) -> Result<AssemblyStats> {
     let mean_length = total_length as f64 / n_contigs as f64;
 
     // Median
-    let median_length = if n_contigs % 2 == 0 {
+    let median_length = if n_contigs.is_multiple_of(2) {
         (lengths[n_contigs / 2 - 1] + lengths[n_contigs / 2]) / 2
     } else {
         lengths[n_contigs / 2]

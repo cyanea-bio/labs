@@ -84,7 +84,7 @@ pub fn parse_mzml_text(text: &str) -> Result<Vec<MassSpectrum>> {
                         .unwrap_or(FragmentationMethod::Unknown),
                 });
             } else if line == "PEAKS" {
-                while let Some(peak_line) = lines.next() {
+                for peak_line in lines.by_ref() {
                     let peak_line = peak_line.trim();
                     if peak_line == "END" || peak_line.starts_with("SPECTRUM") {
                         // Put back END — but since we consumed it, just break

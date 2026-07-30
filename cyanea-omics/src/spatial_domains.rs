@@ -122,7 +122,7 @@ pub fn detect_domains(
     let k = params.n_domains.unwrap_or_else(|| {
         // Heuristic: sqrt(n_spots / 2), clamped to [2, 20]
         let est = ((n_spots as f64) / 2.0).sqrt().round() as usize;
-        est.max(2).min(20)
+        est.clamp(2, 20)
     });
 
     // Normalize expression: z-score per gene

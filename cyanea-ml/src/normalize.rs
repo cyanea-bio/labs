@@ -62,7 +62,7 @@ fn validate_matrix(data: &[f64], n_cols: usize) -> Result<()> {
     if data.is_empty() {
         return Err(CyaneaError::InvalidInput("empty data".into()));
     }
-    if data.len() % n_cols != 0 {
+    if !data.len().is_multiple_of(n_cols) {
         return Err(CyaneaError::InvalidInput(format!(
             "data length {} not divisible by n_cols {}",
             data.len(),

@@ -227,7 +227,7 @@ fn simple_median(data: &[f64]) -> f64 {
     let mut sorted = data.to_vec();
     sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     let n = sorted.len();
-    if n % 2 == 0 {
+    if n.is_multiple_of(2) {
         (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0
     } else {
         sorted[n / 2]
@@ -413,9 +413,7 @@ fn invert_small_matrix(m: &[f64], n: usize) -> Option<Vec<f64>> {
         // Swap rows
         if max_row != col {
             for j in 0..2 * n {
-                let tmp = aug[col * 2 * n + j];
-                aug[col * 2 * n + j] = aug[max_row * 2 * n + j];
-                aug[max_row * 2 * n + j] = tmp;
+                aug.swap(col * 2 * n + j, max_row * 2 * n + j);
             }
         }
 

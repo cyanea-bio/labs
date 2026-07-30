@@ -368,7 +368,7 @@ fn tokenize(expr: &str) -> Result<Vec<Token>> {
 }
 
 // Recursive-descent: or -> and -> not -> primary
-fn parse_or<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
+fn parse_or(tokens: &[Token]) -> Result<(FilterExpr, &[Token])> {
     let (mut left, mut rest) = parse_and(tokens)?;
     while !rest.is_empty() && rest[0] == Token::Or {
         let (right, r) = parse_and(&rest[1..])?;
@@ -378,7 +378,7 @@ fn parse_or<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
     Ok((left, rest))
 }
 
-fn parse_and<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
+fn parse_and(tokens: &[Token]) -> Result<(FilterExpr, &[Token])> {
     let (mut left, mut rest) = parse_not(tokens)?;
     while !rest.is_empty() && rest[0] == Token::And {
         let (right, r) = parse_not(&rest[1..])?;
@@ -388,7 +388,7 @@ fn parse_and<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
     Ok((left, rest))
 }
 
-fn parse_not<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
+fn parse_not(tokens: &[Token]) -> Result<(FilterExpr, &[Token])> {
     if !tokens.is_empty() && tokens[0] == Token::Not {
         let (inner, rest) = parse_not(&tokens[1..])?;
         Ok((FilterExpr::Not(Box::new(inner)), rest))
@@ -397,7 +397,7 @@ fn parse_not<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
     }
 }
 
-fn parse_primary<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
+fn parse_primary(tokens: &[Token]) -> Result<(FilterExpr, &[Token])> {
     if tokens.is_empty() {
         return Err(CyaneaError::Parse(
             "unexpected end of filter expression".into(),
@@ -465,12 +465,10 @@ fn parse_primary<'a>(tokens: &'a [Token]) -> Result<(FilterExpr, &'a [Token])> {
                         }
                     }
                 }
-                "FILTER" => {
-                    if op == "==" {
-                        if let Token::Ident(val) = &tokens[2] {
-                            if val == "PASS" {
-                                return Ok((FilterExpr::FilterPass, &tokens[3..]));
-                            }
+                "FILTER" if op == "==" => {
+                    if let Token::Ident(val) = &tokens[2] {
+                        if val == "PASS" {
+                            return Ok((FilterExpr::FilterPass, &tokens[3..]));
                         }
                     }
                 }
@@ -503,7 +501,7 @@ fn variant_key(v: &Variant) -> (String, u64, Vec<u8>, Vec<Vec<u8>>) {
 
 /// Variants present in both `a` and `b` (by position + alleles).
 pub fn variant_intersection(a: &[Variant], b: &[Variant]) -> Vec<Variant> {
-    let b_keys: std::collections::HashSet<_> = b.iter().map(|v| variant_key(v)).collect();
+    let b_keys: std::collections::HashSet<_> = b.iter().map(variant_key).collect();
     a.iter()
         .filter(|v| b_keys.contains(&variant_key(v)))
         .cloned()
@@ -512,7 +510,7 @@ pub fn variant_intersection(a: &[Variant], b: &[Variant]) -> Vec<Variant> {
 
 /// Variants in `a` but not in `b` (by position + alleles).
 pub fn variant_complement(a: &[Variant], b: &[Variant]) -> Vec<Variant> {
-    let b_keys: std::collections::HashSet<_> = b.iter().map(|v| variant_key(v)).collect();
+    let b_keys: std::collections::HashSet<_> = b.iter().map(variant_key).collect();
     a.iter()
         .filter(|v| !b_keys.contains(&variant_key(v)))
         .cloned()
@@ -532,8 +530,8 @@ pub struct ConcordanceStats {
 
 /// Compute concordance between two variant sets.
 pub fn variant_concordance(a: &[Variant], b: &[Variant]) -> ConcordanceStats {
-    let a_keys: std::collections::HashSet<_> = a.iter().map(|v| variant_key(v)).collect();
-    let b_keys: std::collections::HashSet<_> = b.iter().map(|v| variant_key(v)).collect();
+    let a_keys: std::collections::HashSet<_> = a.iter().map(variant_key).collect();
+    let b_keys: std::collections::HashSet<_> = b.iter().map(variant_key).collect();
 
     let shared = a_keys.intersection(&b_keys).count();
     let a_only = a_keys.difference(&b_keys).count();

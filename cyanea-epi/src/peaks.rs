@@ -228,10 +228,8 @@ impl PeakSet {
 
                     let dist = if peak.end <= q_peak.start {
                         q_peak.start - peak.end
-                    } else if q_peak.end <= peak.start {
-                        peak.start - q_peak.end
                     } else {
-                        0
+                        peak.start.saturating_sub(q_peak.end)
                     };
 
                     if dist < best_dist {
@@ -484,7 +482,7 @@ fn poisson_pvalue(observed: f64, expected: f64) -> f64 {
         // Exact Poisson sum (for small lambda)
         let mut p = 0.0;
         for k in (observed.ceil() as u32)..=(observed as u32 + 100) {
-            let logp = (k as f64) * expected.ln() - expected - ln_factorial(k as u32);
+            let logp = (k as f64) * expected.ln() - expected - ln_factorial(k);
             p += logp.exp();
             if logp.exp() < 1e-10 {
                 break;

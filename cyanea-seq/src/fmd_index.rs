@@ -268,7 +268,7 @@ impl FmdIndex {
 
         // Backward step on forward index.
         let (new_lo, new_hi) = lf_step(&self.c_table, &self.occ, lo, hi, ci);
-        let new_size = if new_hi > new_lo { new_hi - new_lo } else { 0 };
+        let new_size = new_hi.saturating_sub(new_lo);
 
         if new_size == 0 {
             return BiInterval {
@@ -319,11 +319,7 @@ impl FmdIndex {
         // Backward step on reverse index.
         let (new_lo_rev, new_hi_rev) =
             lf_step(&self.c_table_rev, &self.occ_rev, lo_rev, hi_rev, ci);
-        let new_size = if new_hi_rev > new_lo_rev {
-            new_hi_rev - new_lo_rev
-        } else {
-            0
-        };
+        let new_size = new_hi_rev.saturating_sub(new_lo_rev);
 
         if new_size == 0 {
             return BiInterval {

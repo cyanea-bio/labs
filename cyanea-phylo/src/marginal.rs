@@ -108,7 +108,7 @@ pub fn marginal_reconstruct(
     let postorder: Vec<NodeId> = tree.iter_postorder().collect();
     let preorder: Vec<NodeId> = tree.iter_preorder().collect();
     let leaf_set: Vec<bool> = (0..n_nodes)
-        .map(|id| tree.get_node(id).map_or(false, |n| n.is_leaf()))
+        .map(|id| tree.get_node(id).is_some_and(|n| n.is_leaf()))
         .collect();
 
     let mut all_posteriors: Vec<Vec<MarginalPosterior>> =
@@ -162,9 +162,7 @@ pub fn marginal_reconstruct(
         }
 
         let root_id = tree.root();
-        for s in 0..NUM_STATES {
-            l_up[root_id][s] = freqs[s];
-        }
+        l_up[root_id][..NUM_STATES].copy_from_slice(&freqs[..NUM_STATES]);
 
         for &id in &preorder {
             if id == root_id {

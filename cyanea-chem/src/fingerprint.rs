@@ -16,7 +16,7 @@ pub struct Fingerprint {
 impl Fingerprint {
     /// Create a new fingerprint of the given size (rounded up to multiple of 64).
     pub fn new(nbits: usize) -> Self {
-        let nwords = (nbits + 63) / 64;
+        let nwords = nbits.div_ceil(64);
         Fingerprint {
             bits: vec![0u64; nwords],
             nbits,

@@ -57,7 +57,7 @@ pub fn faiths_pd(tree: &PhyloTree, taxa: &HashSet<String>) -> Result<f64> {
         .nodes()
         .iter()
         .filter(|n| n.is_leaf())
-        .filter(|n| n.name.as_ref().map_or(false, |name| taxa.contains(name)))
+        .filter(|n| n.name.as_ref().is_some_and(|name| taxa.contains(name)))
         .map(|n| n.id)
         .collect();
 
@@ -122,8 +122,8 @@ pub fn unweighted_unifrac(
         let node = tree.get_node(id).unwrap();
         if node.is_leaf() {
             if let Some(name) = &node.name {
-                in_a[id] = sample_a.get(name).map_or(false, |&v| v > 0.0);
-                in_b[id] = sample_b.get(name).map_or(false, |&v| v > 0.0);
+                in_a[id] = sample_a.get(name).is_some_and(|&v| v > 0.0);
+                in_b[id] = sample_b.get(name).is_some_and(|&v| v > 0.0);
             }
         } else {
             in_a[id] = node.children.iter().any(|&c| in_a[c]);

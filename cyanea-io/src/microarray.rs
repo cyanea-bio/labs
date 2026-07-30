@@ -571,9 +571,9 @@ pub fn parse_idat(data: &[u8]) -> Result<IdatFile> {
                 // Manifest
                 manifest = read_idat_string(data, off);
             }
-            300 => {
+            300
                 // RunInfo: array of (key, value) strings
-                if off + 4 <= data.len() {
+                if off + 4 <= data.len() => {
                     let n_run = u32::from_le_bytes(data[off..off + 4].try_into().unwrap()) as usize;
                     let mut pos = off + 4;
                     for _ in 0..n_run {
@@ -588,7 +588,6 @@ pub fn parse_idat(data: &[u8]) -> Result<IdatFile> {
                         }
                     }
                 }
-            }
             _ => {}
         }
     }

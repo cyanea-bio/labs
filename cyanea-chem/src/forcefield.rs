@@ -871,7 +871,7 @@ fn uff_vdw(mol: &Molecule, conf: &Conformer, types: &[UffAtomType]) -> f64 {
             let d_ij = (p1.d_vdw * p2.d_vdw).sqrt();
 
             let r = conf.distance(i, j);
-            if r < 0.5 || r > 10.0 {
+            if !(0.5..=10.0).contains(&r) {
                 continue; // skip unreasonable distances
             }
 
@@ -903,7 +903,7 @@ fn mmff94_vdw(mol: &Molecule, conf: &Conformer, types: &[Mmff94AtomType]) -> f64
             let eps = (p1.g * p2.g).sqrt() * 0.05;
 
             let r = conf.distance(i, j);
-            if r < 0.5 || r > 10.0 {
+            if !(0.5..=10.0).contains(&r) {
                 continue;
             }
 

@@ -252,20 +252,12 @@ pub fn spliced_align(
             if j >= 2 {
                 let a0 = reference[j - 2].to_ascii_uppercase();
                 let a1 = reference[j - 1].to_ascii_uppercase();
-                let is_acceptor = (a0 == b'A' && a1 == b'G') || (a0 == b'A' && a1 == b'C');
+                let is_acceptor = a0 == b'A' && (a1 == b'G' || a1 == b'C');
 
                 if is_acceptor {
                     // Binary search for donor sites in valid range
-                    let min_donor = if j > params.max_intron_len {
-                        j - params.max_intron_len
-                    } else {
-                        0
-                    };
-                    let max_donor = if j > params.min_intron_len {
-                        j - params.min_intron_len
-                    } else {
-                        0
-                    };
+                    let min_donor = j.saturating_sub(params.max_intron_len);
+                    let max_donor = j.saturating_sub(params.min_intron_len);
 
                     if max_donor > min_donor
                         || (max_donor == min_donor && j >= params.min_intron_len)
@@ -358,9 +350,7 @@ pub fn spliced_align(
         match tb_type[ci][cj] {
             0 => {
                 // Diagonal: match/mismatch
-                let op = if query[ci - 1].to_ascii_uppercase()
-                    == reference[cj - 1].to_ascii_uppercase()
-                {
+                let op = if query[ci - 1].eq_ignore_ascii_case(&reference[cj - 1]) {
                     CigarOp::Match(1)
                 } else {
                     CigarOp::Mismatch(1)

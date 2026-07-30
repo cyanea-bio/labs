@@ -202,7 +202,7 @@ pub fn gasteiger_charges(mol: &Molecule) -> Result<Vec<f64>> {
     let n_iterations = 6;
 
     for iteration in 0..n_iterations {
-        let damping = 0.5_f64.powi(iteration as i32 + 1);
+        let damping = 0.5_f64.powi(iteration + 1);
         let mut delta = vec![0.0_f64; n];
 
         for bond in &mol.bonds {

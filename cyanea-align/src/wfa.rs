@@ -234,7 +234,7 @@ pub fn wfa_align(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> Result
         let oe_i = o + e_i;
         if s as u32 >= oe_i {
             let ps = (s as u32 - oe_i) as usize;
-            if let Some(ref ws) = wf.get(ps).and_then(|w| w.as_ref()) {
+            if let Some(ws) = wf.get(ps).and_then(|w| w.as_ref()) {
                 if let Some(ref mw) = ws.m {
                     for k in lo..=hi {
                         let v = mw.get(k + 1);
@@ -248,7 +248,7 @@ pub fn wfa_align(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> Result
         }
         if s as u32 >= e_i {
             let ps = (s as u32 - e_i) as usize;
-            if let Some(ref ws) = wf.get(ps).and_then(|w| w.as_ref()) {
+            if let Some(ws) = wf.get(ps).and_then(|w| w.as_ref()) {
                 if let Some(ref iw) = ws.i {
                     for k in lo..=hi {
                         let v = iw.get(k + 1);
@@ -267,7 +267,7 @@ pub fn wfa_align(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> Result
         let oe_d = o + e_d;
         if s as u32 >= oe_d {
             let ps = (s as u32 - oe_d) as usize;
-            if let Some(ref ws) = wf.get(ps).and_then(|w| w.as_ref()) {
+            if let Some(ws) = wf.get(ps).and_then(|w| w.as_ref()) {
                 if let Some(ref mw) = ws.m {
                     for k in lo..=hi {
                         let v = mw.get(k - 1);
@@ -284,7 +284,7 @@ pub fn wfa_align(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> Result
         }
         if s as u32 >= e_d {
             let ps = (s as u32 - e_d) as usize;
-            if let Some(ref ws) = wf.get(ps).and_then(|w| w.as_ref()) {
+            if let Some(ws) = wf.get(ps).and_then(|w| w.as_ref()) {
                 if let Some(ref dw) = ws.d {
                     for k in lo..=hi {
                         let v = dw.get(k - 1);
@@ -307,7 +307,7 @@ pub fn wfa_align(query: &[u8], target: &[u8], scoring: &ScoringScheme) -> Result
         // From mismatch
         if s as u32 >= x {
             let ps = (s as u32 - x) as usize;
-            if let Some(ref ws) = wf.get(ps).and_then(|w| w.as_ref()) {
+            if let Some(ws) = wf.get(ps).and_then(|w| w.as_ref()) {
                 if let Some(ref mw) = ws.m {
                     for k in lo..=hi {
                         let v = mw.get(k);
@@ -387,7 +387,7 @@ fn extend_wf(wf: &mut Wavefront, query: &[u8], target: &[u8]) {
             if h >= n || j < 0 || j >= m {
                 break;
             }
-            if query[h as usize].to_ascii_uppercase() != target[j as usize].to_ascii_uppercase() {
+            if !query[h as usize].eq_ignore_ascii_case(&target[j as usize]) {
                 break;
             }
             h += 1;
@@ -419,12 +419,10 @@ fn diag_range_asym(
     let mut hi = i32::MIN;
 
     let expand = |score: usize, lo: &mut i32, hi: &mut i32, delta: i32| {
-        if let Some(ref ws) = wf.get(score).and_then(|w| w.as_ref()) {
-            for wfopt in [&ws.m, &ws.i, &ws.d] {
-                if let Some(ref w) = wfopt {
-                    *lo = (*lo).min(w.lo + delta);
-                    *hi = (*hi).max(w.hi + delta);
-                }
+        if let Some(ws) = wf.get(score).and_then(|w| w.as_ref()) {
+            for w in [&ws.m, &ws.i, &ws.d].into_iter().flatten() {
+                *lo = (*lo).min(w.lo + delta);
+                *hi = (*hi).max(w.hi + delta);
             }
         }
     };
@@ -679,7 +677,7 @@ fn build_result(
 
 /// Get the offset stored in a wavefront.
 fn get_offset(wf: &[Option<WavefrontSet>], s: usize, k: i32, wf_type: WfType) -> i32 {
-    if let Some(ref ws) = wf.get(s).and_then(|w| w.as_ref()) {
+    if let Some(ws) = wf.get(s).and_then(|w| w.as_ref()) {
         match wf_type {
             WfType::M => ws.m.as_ref().map_or(-1, |w| w.get(k)),
             WfType::I => ws.i.as_ref().map_or(-1, |w| w.get(k)),

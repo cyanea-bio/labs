@@ -145,7 +145,7 @@ pub fn call_methylation(
                 methylated_reads: c_counts[i],
                 total_reads: c_counts[i] + t_counts[i],
             });
-        } else if base == b'G' && pos > 0 && reference[pos - 1].to_ascii_uppercase() == b'C' {
+        } else if base == b'G' && pos > 0 && reference[pos - 1].eq_ignore_ascii_case(&b'C') {
             // Reverse-strand CpG (G preceded by C)
             // Skip: this would be captured when the C position itself is queried.
             continue;
@@ -253,7 +253,7 @@ pub fn find_dmrs(
         let mut j = i + 1;
         while j < sig_sites.len()
             && sig_sites[j].chrom == chrom
-            && sig_sites[j].position <= end + config.max_gap - 1
+            && sig_sites[j].position < end + config.max_gap
         {
             end = sig_sites[j].position + 1;
             all_g1_betas.extend_from_slice(&sig_sites[j].g1_betas);
@@ -370,7 +370,7 @@ pub fn find_cpg_islands(
             let b = window[j].to_ascii_uppercase();
             if b == b'C' {
                 n_c += 1;
-                if j + 1 < window.len() && window[j + 1].to_ascii_uppercase() == b'G' {
+                if j + 1 < window.len() && window[j + 1].eq_ignore_ascii_case(&b'G') {
                     n_cpg += 1;
                 }
             } else if b == b'G' {
@@ -433,7 +433,7 @@ pub fn find_cpg_islands(
             let b = region[j].to_ascii_uppercase();
             if b == b'C' {
                 n_c += 1;
-                if j + 1 < region.len() && region[j + 1].to_ascii_uppercase() == b'G' {
+                if j + 1 < region.len() && region[j + 1].eq_ignore_ascii_case(&b'G') {
                     n_cpg += 1;
                 }
             } else if b == b'G' {
