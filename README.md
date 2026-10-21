@@ -1,42 +1,48 @@
-<div align="center">
-
-<h1 align="center">
-  Cyanea Labs
-</h1>
-
 <p align="center">
-  <em>Modular bioinformatics in Rust.</em><br>
-  <em>Sequences, alignments, structures, stats — native, WASM, Python.</em>
-</p>
-
-<p align="center">
-  <a href="https://www.rust-lang.org/">
-    <img alt="Rust" src="https://img.shields.io/badge/Rust-1.93+-000000?logo=rust&logoColor=white&style=for-the-badge">
-  </a>
-  <a href="Cargo.toml">
-    <img alt="License" src="https://img.shields.io/badge/License-Apache--2.0-c6a0f6?style=for-the-badge">
+  <a href="https://cyanea.bio">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/cyanea-bio/.github/main/brand/lockup-colour-dark.svg">
+      <img alt="Cyanea" src="https://raw.githubusercontent.com/cyanea-bio/.github/main/brand/lockup-colour.svg" height="52">
+    </picture>
   </a>
 </p>
 
+<h3 align="center">Cyanea Labs</h3>
+
+<p align="center">The open-source Rust libraries under Cyanea: sequences, alignment, omics, statistics and more, for native code, WebAssembly and Python.</p>
+
 <p align="center">
-  <a href="docs/">Docs</a> &bull;
-  <a href="docs/ARCHITECTURE.md">Architecture</a> &bull;
-  <a href="docs/BUILDING.md">Build Guide</a> &bull;
-  <a href="docs/BINDINGS.md">Bindings</a> &bull;
-  <a href="docs/GUIDE.md">Usage Guide</a> &bull;
-  <a href="https://github.com/cyanea-bio/labs/issues">Issues</a> &bull;
+  <a href="https://cyanea.bio">Website</a> &middot;
+  <a href="https://docs.cyanea.bio">Docs</a> &middot;
+  <a href="https://cyanea.bio/learn">Learn</a> &middot;
+  <a href="https://github.com/cyanea-bio">All repositories</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/cyanea-bio/labs/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/cyanea-bio/labs/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <a href="LICENSE"><img alt="Licence: Apache-2.0" src="https://img.shields.io/badge/licence-Apache--2.0-5B3FD9?style=flat-square"></a>
+  <a href="rust-toolchain.toml"><img alt="Rust 1.93" src="https://img.shields.io/badge/rust-1.93-5B3FD9?style=flat-square&logo=rust&logoColor=white"></a>
+</p>
+
+<p align="center">
+  <a href="docs/">Library docs</a> &middot;
+  <a href="docs/ARCHITECTURE.md">Architecture</a> &middot;
+  <a href="docs/BUILDING.md">Build guide</a> &middot;
+  <a href="docs/BINDINGS.md">Bindings</a> &middot;
+  <a href="docs/GUIDE.md">Usage guide</a> &middot;
+  <a href="https://github.com/cyanea-bio/labs/issues">Issues</a> &middot;
   <a href="https://github.com/cyanea-bio/labs/discussions">Discussions</a>
 </p>
 
-</div>
-
 ---
 
-Cyanea Labs is a Cargo workspace of 18 crates covering the core primitives of computational biology — sequence analysis, alignment, genomic intervals, statistics, machine learning, cheminformatics, structural biology, phylogenetics, metagenomics, epigenomics, proteomics, and network/pathway biology. Everything compiles to native, WebAssembly, and Python (via PyO3), with an Elixir NIF bridge for the Cyanea platform.
+Cyanea Labs is a Cargo workspace of 18 crates covering the core primitives of computational biology: sequence analysis, alignment, genomic intervals, statistics, machine learning, cheminformatics, structural biology, phylogenetics, metagenomics, epigenomics, proteomics, and network and pathway biology. Everything compiles to native code, WebAssembly and Python (via PyO3).
+
+These are the libraries that do the computing inside [Cyanea](https://cyanea.bio), the system of record for computational biology. The [platform](https://github.com/cyanea-bio/cyanea) calls them on the server through an Elixir NIF bridge, and in the browser through WebAssembly, so the same code runs your notebook wherever it executes. You can also use them on their own in any pipeline.
 
 3,700+ tests. Zero `unsafe`. No heavyweight C/C++ dependencies in the core path.
 
-## Quick Start
+## Quickstart
 
 ```bash
 # Check everything compiles
@@ -216,6 +222,12 @@ cargo test --workspace --exclude cyanea-py
 
 **Using Claude Code?** See [`CLAUDE.md`](CLAUDE.md) for project context, architecture, and coding conventions.
 
-## License
+## Licence
 
-Apache-2.0
+Apache-2.0. See [LICENSE](LICENSE).
+
+---
+
+<p align="center">
+  <sub>Part of <a href="https://cyanea.bio">Cyanea</a>, the system of record for computational biology. Named for <i>Cyanea capillata</i>, the lion's mane jellyfish: long reach, lots of threads.</sub>
+</p>
