@@ -25,7 +25,7 @@ cyanea-stats = { path = "../cyanea-stats", version = "0.1.0", optional = true, d
 cyanea-ml = { path = "../cyanea-ml", version = "0.1.0", optional = true, default-features = false }
 serde = { workspace = true, optional = true }
 hdf5 = { workspace = true, optional = true }
-ndarray = { version = "0.15", optional = true }
+ndarray = { workspace = true, optional = true }
 zarrs = { workspace = true, optional = true }
 serde_json = { workspace = true, optional = true }
 

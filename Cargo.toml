@@ -91,7 +91,9 @@ criterion = { version = "0.5", features = ["html_reports"] }
 proptest = "1"
 
 # HDF5
-hdf5 = "0.8"
+# hdf5-metno is the maintained fork of hdf5 (0.8 is unmaintained and cannot
+# parse HDF5 1.14+ versions); it keeps the `hdf5` crate name for imports.
+hdf5 = { package = "hdf5-metno", version = "0.15" }
 
 # Parquet / Arrow
 parquet = { version = "54", default-features = false, features = ["arrow"] }

@@ -316,7 +316,7 @@ dependencies = [
  "itertools 0.14.0",
  "itertools-num",
  "multimap",
- "ndarray 0.16.1",
+ "ndarray",
  "newtype_derive",
  "num-integer",
  "num-traits",
@@ -947,7 +947,7 @@ version = "0.1.1"
 dependencies = [
  "criterion",
  "cyanea-core",
- "ndarray 0.16.1",
+ "ndarray",
  "rayon",
  "serde",
 ]
@@ -969,8 +969,8 @@ dependencies = [
  "cyanea-core",
  "cyanea-ml",
  "cyanea-stats",
- "hdf5",
- "ndarray 0.15.6",
+ "hdf5-metno",
+ "ndarray",
  "serde",
  "serde_json",
  "tempfile",
@@ -1034,7 +1034,7 @@ version = "0.1.1"
 dependencies = [
  "criterion",
  "cyanea-core",
- "ndarray 0.16.1",
+ "ndarray",
  "proptest",
  "rayon",
  "serde",
@@ -1480,42 +1480,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
 
 [[package]]
-name = "hdf5"
-version = "0.8.1"
+name = "hdf5-metno"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdcd9b131fd67bb827b386d0dc63d3e74196a14616ef800acf87ca5fef741a10"
+checksum = "7aff3a4833f1adfd8644b045749c6f5b0fd789673f289ff835fe7196e5800bd2"
 dependencies = [
- "bitflags 1.3.2",
+ "bitflags 2.10.0",
  "cfg-if",
- "hdf5-derive",
- "hdf5-sys",
- "hdf5-types",
- "lazy_static",
+ "hdf5-metno-derive",
+ "hdf5-metno-sys",
+ "hdf5-metno-types",
  "libc",
- "ndarray 0.15.6",
- "parking_lot 0.11.2",
- "paste",
+ "ndarray",
+ "pastey",
 ]
 
 [[package]]
-name = "hdf5-derive"
-version = "0.8.1"
+name = "hdf5-metno-derive"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5a77ac6a41e6880594d506118c0b8bc665ec959fe4636e0c84809756d224820"
+checksum = "2368b6d71ab96708b91912af3a93f7b8be9b1ecfca082f2c0868ce327a1fe926"
 dependencies = [
+ "proc-macro-crate",
  "proc-macro2 1.0.106",
  "quote 1.0.44",
- "syn 1.0.109",
+ "syn 3.0.10",
 ]
 
 [[package]]
-name = "hdf5-sys"
-version = "0.8.1"
+name = "hdf5-metno-sys"
+version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4842d5980dc311a7c8933c7b45534fdae84df5ae7939a0ae8e449a56d4beb3d2"
+checksum = "5c25498a6b2db388939b973be69d09516ab5f198944dbe8487bfaf37def8c371"
 dependencies = [
  "libc",
- "libloading 0.7.4",
+ "libloading 0.8.9",
+ "parking_lot",
  "pkg-config",
  "regex",
  "serde",
@@ -1524,14 +1524,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "hdf5-types"
-version = "0.8.1"
+name = "hdf5-metno-types"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b47268c0dfb499b1ffe5638b6e7694e7a87fe49fb92eca998a4346e5483e428f"
+checksum = "b29041af7e5a0b5698d6607c5c8b67b5dfcab40eb89c2fcfec54bbf0c031b425"
 dependencies = [
  "ascii",
  "cfg-if",
- "hdf5-sys",
+ "hdf5-metno-sys",
  "libc",
 ]
 
@@ -1600,15 +1600,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "79cf5c93f93228cf8efb3ba362535fb11199ac548a09ce117c9b1adc3030d706"
 dependencies = [
  "rustversion",
-]
-
-[[package]]
-name = "instant"
-version = "0.1.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0242819d153cba4b4b05a5a8f2a7e9bbf97b6055b2a002b395c96b5ff3c0222"
-dependencies = [
- "cfg-if",
 ]
 
 [[package]]
@@ -1793,16 +1784,6 @@ checksum = "bcc35a38544a891a5f7c865aca548a982ccb3b8650a5b06d0fd33a10283c56fc"
 
 [[package]]
 name = "libloading"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b67380fd3b2fbe7527a606e18729d21c6f3951633d0500574c4dc22d2d638b9f"
-dependencies = [
- "cfg-if",
- "winapi",
-]
-
-[[package]]
-name = "libloading"
 version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7c4b02199fee7c5d21a5ae7d8cfa79a6ef5bb2fc834d6e9058e89c825efdc55"
@@ -1977,7 +1958,7 @@ dependencies = [
  "crossbeam-epoch",
  "crossbeam-utils",
  "equivalent",
- "parking_lot 0.12.5",
+ "parking_lot",
  "portable-atomic",
  "smallvec",
  "tagptr",
@@ -2052,19 +2033,6 @@ dependencies = [
  "rand_distr",
  "simba",
  "typenum",
-]
-
-[[package]]
-name = "ndarray"
-version = "0.15.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "adb12d4e967ec485a5f71c6311fe28158e9d6f4bc4a447b474184d0f91a8fa32"
-dependencies = [
- "matrixmultiply",
- "num-complex",
- "num-integer",
- "num-traits",
- "rawpointer",
 ]
 
 [[package]]
@@ -2325,7 +2293,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b94caae805f998a07d33af06e6a3891e38556051b8045c615470a71590e13e78"
 dependencies = [
  "libc",
- "ndarray 0.16.1",
+ "ndarray",
  "num-complex",
  "num-integer",
  "num-traits",
@@ -2393,37 +2361,12 @@ dependencies = [
 
 [[package]]
 name = "parking_lot"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d17b78036a60663b797adeaee46f5c9dfebb86948d1255007a1d6be0271ff99"
-dependencies = [
- "instant",
- "lock_api",
- "parking_lot_core 0.8.6",
-]
-
-[[package]]
-name = "parking_lot"
 version = "0.12.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93857453250e3077bd71ff98b6a65ea6621a19bb0f559a85248955ac12c45a1a"
 dependencies = [
  "lock_api",
- "parking_lot_core 0.9.12",
-]
-
-[[package]]
-name = "parking_lot_core"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60a2cfe6f0ad2bfc16aefa463b497d5c7a5ecd44a23efa72aa342d90177356dc"
-dependencies = [
- "cfg-if",
- "instant",
- "libc",
- "redox_syscall 0.2.16",
- "smallvec",
- "winapi",
+ "parking_lot_core",
 ]
 
 [[package]]
@@ -2434,7 +2377,7 @@ checksum = "2621685985a2ebf1c516881c026032ac7deafcda1a2c9b7850dc81e3dfcb64c1"
 dependencies = [
  "cfg-if",
  "libc",
- "redox_syscall 0.5.18",
+ "redox_syscall",
  "smallvec",
  "windows-link",
 ]
@@ -2471,6 +2414,12 @@ name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
+
+[[package]]
+name = "pastey"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
 
 [[package]]
 name = "pathdiff"
@@ -2571,6 +2520,15 @@ name = "presser"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8cf8e6a8aa66ce33f63993ffc4ea4271eb5b0530a9002db8455ea6050c77bfa"
+
+[[package]]
+name = "proc-macro-crate"
+version = "3.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e67ba7e9b2b56446f1d419b1d807906278ffa1a658a8a5d8a39dcb1f5a78614f"
+dependencies = [
+ "toml_edit",
+]
 
 [[package]]
 name = "proc-macro-error-attr2"
@@ -2853,15 +2811,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d09ee01023de07fa073ce14c37cbe0a9e099c6b0b60a29cf4af6d04d9553fed7"
 dependencies = [
  "rayon",
-]
-
-[[package]]
-name = "redox_syscall"
-version = "0.2.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb5a58c1855b4b6819d59012155603f0b22ad30cad752600aadfcb695265519a"
-dependencies = [
- "bitflags 1.3.2",
 ]
 
 [[package]]
@@ -3191,9 +3140,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.109"
+version = "2.0.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
+checksum = "d4d107df263a3013ef9b1879b0df87d706ff80f65a86ea879bd9c31f9b307c2a"
 dependencies = [
  "proc-macro2 1.0.106",
  "quote 1.0.44",
@@ -3202,9 +3151,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.114"
+version = "3.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4d107df263a3013ef9b1879b0df87d706ff80f65a86ea879bd9c31f9b307c2a"
+checksum = "4ae9ccbea3a7b0b09443036490c8f34a8b1b760fd345e5c0dae0aac718faea79"
 dependencies = [
  "proc-macro2 1.0.106",
  "quote 1.0.44",
@@ -3322,6 +3271,36 @@ checksum = "be4d6b5f19ff7664e8c98d03e2139cb510db9b0a60b55f8e8709b689d939b6bc"
 dependencies = [
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "toml_datetime"
+version = "1.1.3+spec-1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "173f25c883cd2176a2d8212155638c0a60d484a9d84546d270866f40f56b6e49"
+dependencies = [
+ "serde_core",
+]
+
+[[package]]
+name = "toml_edit"
+version = "0.25.19+spec-1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd43688c4858d7264ae1cf9a9f874a67c3feb74a883b1cd7bebd6a4ea8307218"
+dependencies = [
+ "indexmap",
+ "toml_datetime",
+ "toml_parser",
+ "winnow",
+]
+
+[[package]]
+name = "toml_parser"
+version = "1.1.5+spec-1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "baa693a8032d7e1cada7d0041e96126df243179ff061456783ac7f12bda4744c"
+dependencies = [
+ "winnow",
 ]
 
 [[package]]
@@ -3542,7 +3521,7 @@ dependencies = [
  "js-sys",
  "log",
  "naga",
- "parking_lot 0.12.5",
+ "parking_lot",
  "profiling",
  "raw-window-handle",
  "smallvec",
@@ -3570,7 +3549,7 @@ dependencies = [
  "log",
  "naga",
  "once_cell",
- "parking_lot 0.12.5",
+ "parking_lot",
  "profiling",
  "raw-window-handle",
  "rustc-hash 1.1.0",
@@ -3611,7 +3590,7 @@ dependencies = [
  "objc",
  "once_cell",
  "ordered-float 4.6.0",
- "parking_lot 0.12.5",
+ "parking_lot",
  "profiling",
  "range-alloc",
  "raw-window-handle",
@@ -3876,13 +3855,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
 
 [[package]]
-name = "winreg"
-version = "0.10.1"
+name = "winnow"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
+checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 dependencies = [
+ "memchr",
+]
+
+[[package]]
+name = "winreg"
+version = "0.56.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d6f32a0ff4a9f6f01231eb2059cc85479330739333e0e58cadf03b6af2cca10"
+dependencies = [
+ "cfg-if",
  "serde",
- "winapi",
+ "windows-sys",
 ]
 
 [[package]]
@@ -3945,7 +3934,7 @@ dependencies = [
  "itertools 0.14.0",
  "libc",
  "page_size",
- "parking_lot 0.12.5",
+ "parking_lot",
  "pathdiff",
  "thiserror 2.0.18",
  "walkdir",
@@ -3978,7 +3967,7 @@ dependencies = [
  "bytes",
  "derive_more 2.1.1",
  "itertools 0.14.0",
- "parking_lot 0.12.5",
+ "parking_lot",
  "thiserror 2.0.18",
  "unsafe_cell_slice",
 ]
