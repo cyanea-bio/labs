@@ -22,7 +22,7 @@ cyanea-seq = { path = "../cyanea-seq", version = "0.1.0", default-features = fal
 cyanea-stats = { path = "../cyanea-stats", version = "0.1.0", default-features = false }
 cyanea-io = { path = "../cyanea-io", version = "0.1.0", default-features = false }
 serde = { workspace = true, optional = true }
-thiserror = { workspace = true }
+thiserror = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
 tempfile = { workspace = true }

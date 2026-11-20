@@ -856,6 +856,7 @@ version = "0.1.1"
 dependencies = [
  "flate2",
  "hex",
+ "libm",
  "memmap2",
  "serde",
  "sha2",
@@ -1046,6 +1047,7 @@ dependencies = [
  "criterion",
  "cyanea-core",
  "hex",
+ "libm",
  "rayon",
  "serde",
  "sha2",

@@ -1,9 +1,14 @@
 //! SHA-256 hashing for content addressing and data integrity.
 
+use alloc::string::String;
+
 use sha2::{Digest, Sha256};
+#[cfg(feature = "io")]
 use std::io::Read;
+#[cfg(feature = "io")]
 use std::path::Path;
 
+#[cfg(feature = "io")]
 use crate::{CyaneaError, Result};
 
 /// Calculate the SHA-256 hash of in-memory data.
@@ -14,6 +19,7 @@ pub fn sha256(data: &[u8]) -> String {
 }
 
 /// Calculate the SHA-256 hash of a file, streaming in 64 KB chunks.
+#[cfg(feature = "io")]
 pub fn sha256_file(path: impl AsRef<Path>) -> Result<String> {
     let path = path.as_ref();
     let file = std::fs::File::open(path).map_err(|e| {
@@ -60,6 +66,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "io")]
     fn test_sha256_file() {
         use std::io::Write;
         let mut file = tempfile::NamedTempFile::new().unwrap();
@@ -74,6 +81,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "io")]
     fn test_sha256_file_not_found() {
         let result = sha256_file("/nonexistent/path/file.txt");
         assert!(result.is_err());

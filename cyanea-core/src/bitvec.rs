@@ -6,6 +6,8 @@
 //! [`WaveletMatrix`] uses a stack of bitvectors to support access, rank, and
 //! select over integer alphabets in O(log σ) time.
 
+use alloc::{format, vec, vec::Vec};
+
 use crate::{CyaneaError, Result};
 
 /// Superblock size in bits (must be a multiple of 64).
@@ -252,7 +254,8 @@ impl WaveletMatrix {
         let num_levels = if sigma <= 1 {
             1
         } else {
-            (sigma as f64).log2().ceil() as usize
+            // ceil(log2(sigma)): bits needed for symbols 0..sigma
+            (usize::BITS - (sigma - 1).leading_zeros()) as usize
         };
 
         let mut levels = Vec::with_capacity(num_levels);

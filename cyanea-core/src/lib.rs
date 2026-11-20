@@ -7,6 +7,14 @@
 //! - **Hashing** — SHA-256 content addressing for data integrity
 //! - **Compression** — zstd and gzip with algorithm auto-detection
 //! - **Memory mapping** — Zero-copy file access (std feature only)
+//!
+//! The `io` feature (part of the default `std`) links the standard library for
+//! [`CyaneaError::Io`] and [`hash::sha256_file`]. With neither feature the crate
+//! is `no_std` and needs only `alloc`.
+
+#![cfg_attr(not(feature = "io"), no_std)]
+
+extern crate alloc;
 
 pub mod bitvec;
 pub mod error;

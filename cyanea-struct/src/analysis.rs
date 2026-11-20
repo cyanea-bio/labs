@@ -3,6 +3,10 @@
 //! Provides per-residue and per-chain B-factor statistics, as well as normalized
 //! flexibility scores (Z-scores) to identify flexible and rigid regions.
 
+// Unused when another crate in the build links std (its f64 methods win).
+#[cfg(not(feature = "std"))]
+#[allow(unused_imports)]
+use crate::float::FloatExt;
 use cyanea_core::{CyaneaError, Result};
 
 use crate::types::Structure;

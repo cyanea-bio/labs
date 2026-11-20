@@ -2,6 +2,8 @@
 //!
 //! These traits define the contracts that domain types implement across crates.
 
+use alloc::{string::String, vec::Vec};
+
 /// A biological sequence (DNA, RNA, protein, etc.).
 pub trait Sequence {
     /// The raw byte representation of the sequence.

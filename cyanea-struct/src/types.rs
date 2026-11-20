@@ -1,5 +1,9 @@
 //! Core types for macromolecular 3D structure representation.
 
+// Unused when another crate in the build links std (its f64 methods win).
+#[cfg(not(feature = "std"))]
+#[allow(unused_imports)]
+use crate::float::FloatExt;
 use cyanea_core::{Annotated, ContentAddressable, Summarizable};
 use sha2::{Digest, Sha256};
 

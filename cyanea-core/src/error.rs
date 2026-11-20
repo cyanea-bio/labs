@@ -1,11 +1,14 @@
 //! Structured error types for the Cyanea ecosystem.
 
+use alloc::string::String;
+
 use thiserror::Error;
 
 /// Unified error type for all Cyanea operations.
 #[derive(Debug, Error)]
 pub enum CyaneaError {
     /// I/O error (file not found, permission denied, etc.)
+    #[cfg(feature = "io")]
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 
@@ -31,4 +34,4 @@ pub enum CyaneaError {
 }
 
 /// Convenience alias used throughout the Cyanea ecosystem.
-pub type Result<T> = std::result::Result<T, CyaneaError>;
+pub type Result<T> = core::result::Result<T, CyaneaError>;

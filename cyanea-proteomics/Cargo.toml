@@ -19,7 +19,7 @@ serde = ["dep:serde", "cyanea-core/serde"]
 [dependencies]
 cyanea-core = { path = "../cyanea-core", version = "0.1.0", default-features = false }
 serde = { workspace = true, optional = true }
-thiserror = { workspace = true }
+thiserror = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
 proptest = { workspace = true }
