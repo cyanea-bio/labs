@@ -83,6 +83,19 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo check -p cyanea-wasm --target wasm32-unknown-unknown --features wasm
 
+  no-std:
+    name: no_std (bare metal)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # cyanea-struct is #![no_std]. Building it for a target that has no std
+      # at all catches any dependency that pulls std back in (#20).
+      # rust-toolchain.toml pins the toolchain, so add the target to that one.
+      - run: rustup target add thumbv7em-none-eabihf
+      - run: cargo build -p cyanea-core -p cyanea-struct --no-default-features --target thumbv7em-none-eabihf
+
   python:
     name: Python bindings
     runs-on: ubuntu-latest

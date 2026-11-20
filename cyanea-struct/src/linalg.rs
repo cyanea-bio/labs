@@ -3,6 +3,10 @@
 //! Implements a Jacobi eigenvalue algorithm and SVD decomposition for 3x3
 //! matrices without requiring an external linear algebra crate.
 
+// Unused when another crate in the build links std (its f64 methods win).
+#[cfg(not(feature = "std"))]
+#[allow(unused_imports)]
+use crate::float::FloatExt;
 use crate::types::Point3D;
 
 /// A 3x3 matrix stored in row-major order.

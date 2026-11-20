@@ -43,15 +43,20 @@ type_complexity = "allow"
 
 [workspace.dependencies]
 # Error handling
-thiserror = "2"
+thiserror = { version = "2", default-features = false }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 # Hashing
-sha2 = "0.10"
-hex = "0.4"
+# Without default features so no_std crates (cyanea-struct) can use them;
+# std crates enable `std` where they declare the dependency.
+sha2 = { version = "0.10", default-features = false }
+hex = { version = "0.4", default-features = false, features = ["alloc"] }
+
+# Float math without std (used by cyanea-core when `std` is off)
+libm = "0.2"
 
 # Compression
 zstd = "0.13"

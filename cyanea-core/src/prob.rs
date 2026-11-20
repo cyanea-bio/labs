@@ -6,6 +6,34 @@
 
 use crate::{CyaneaError, Result};
 
+/// Float functions that need `std` on stable Rust. Without `std` they come from
+/// `libm`; with it, from the standard library, so std results are unchanged.
+mod math {
+    #[cfg(feature = "std")]
+    pub fn ln(x: f64) -> f64 {
+        x.ln()
+    }
+    #[cfg(feature = "std")]
+    pub fn exp(x: f64) -> f64 {
+        x.exp()
+    }
+    #[cfg(feature = "std")]
+    pub fn ln_1p(x: f64) -> f64 {
+        x.ln_1p()
+    }
+    #[cfg(feature = "std")]
+    pub fn log10(x: f64) -> f64 {
+        x.log10()
+    }
+    #[cfg(feature = "std")]
+    pub fn powf(x: f64, y: f64) -> f64 {
+        x.powf(y)
+    }
+
+    #[cfg(not(feature = "std"))]
+    pub use libm::{exp, log as ln, log10, log1p as ln_1p, pow as powf};
+}
+
 /// A probability stored as its natural logarithm: `ln(p)`.
 ///
 /// All values are ≤ 0 (since 0 < p ≤ 1), with 0.0 representing certainty
@@ -25,12 +53,12 @@ impl LogProb {
                 "LogProb::from_prob: p must be in (0, 1]".into(),
             ));
         }
-        Ok(Self(p.ln()))
+        Ok(Self(math::ln(p)))
     }
 
     /// Convert back to a raw probability.
     pub fn to_prob(self) -> f64 {
-        self.0.exp()
+        math::exp(self.0)
     }
 
     /// Log-sum-exp: compute `ln(exp(self) + exp(other))` without overflow.
@@ -48,7 +76,7 @@ impl LogProb {
         } else {
             (other.0, self.0)
         };
-        Self(max + (min - max).exp().ln_1p())
+        Self(max + math::ln_1p(math::exp(min - max)))
     }
 
     /// Multiply two probabilities in log-space (addition of log values).
@@ -102,7 +130,7 @@ impl PhredProb {
                 "PhredProb::from_prob: p must be in (0, 1]".into(),
             ));
         }
-        Ok(Self(-10.0 * p.log10()))
+        Ok(Self(-10.0 * math::log10(p)))
     }
 
     /// The Phred quality score.
@@ -112,7 +140,7 @@ impl PhredProb {
 
     /// Convert to a raw probability: `p = 10^(-Q/10)`.
     pub fn to_prob(self) -> f64 {
-        10.0_f64.powf(-self.0 / 10.0)
+        math::powf(10.0, -self.0 / 10.0)
     }
 }
 

@@ -12,7 +12,11 @@ categories = ["science"]
 
 [features]
 default = ["std"]
-std = ["memmap2", "zstd", "flate2"]
+# Compression and memory mapping, plus everything in `io`.
+std = ["io", "memmap2", "zstd", "flate2"]
+# The standard library: `CyaneaError::Io` and `hash::sha256_file`. Without
+# `io` (and so without `std`) the crate is `no_std` + `alloc`.
+io = ["thiserror/std", "sha2/std", "hex/std"]
 wasm = []
 serde = ["dep:serde"]
 
@@ -20,6 +24,7 @@ serde = ["dep:serde"]
 thiserror = { workspace = true }
 sha2 = { workspace = true }
 hex = { workspace = true }
+libm = { workspace = true }
 serde = { workspace = true, optional = true }
 memmap2 = { workspace = true, optional = true }
 zstd = { workspace = true, optional = true }

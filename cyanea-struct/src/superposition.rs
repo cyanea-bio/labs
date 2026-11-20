@@ -3,6 +3,10 @@
 //! Finds the optimal rigid-body rotation (and translation) that minimizes RMSD
 //! between two sets of corresponding points.
 
+// Unused when another crate in the build links std (its f64 methods win).
+#[cfg(not(feature = "std"))]
+#[allow(unused_imports)]
+use crate::float::FloatExt;
 use cyanea_core::{CyaneaError, Result, Scored};
 
 use crate::geometry::center_of_mass_points;

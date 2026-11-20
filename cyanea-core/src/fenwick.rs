@@ -2,6 +2,7 @@
 //!
 //! Supports point updates and prefix/range sum queries in O(log n) time.
 
+use alloc::{vec, vec::Vec};
 use core::ops::{Add, Sub};
 
 /// A Fenwick tree (Binary Indexed Tree) supporting point updates and

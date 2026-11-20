@@ -40,6 +40,7 @@ extern crate std;
 
 pub mod analysis;
 pub mod contact;
+mod float;
 pub mod geometry;
 mod linalg;
 pub mod mmcif;

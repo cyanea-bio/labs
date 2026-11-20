@@ -12,7 +12,7 @@ categories = ["science"]
 
 [features]
 default = ["std"]
-std = ["needletail/compression"]
+std = ["needletail/compression", "cyanea-core/io"]
 wasm = []
 minhash = []
 serde = ["dep:serde", "cyanea-core/serde"]

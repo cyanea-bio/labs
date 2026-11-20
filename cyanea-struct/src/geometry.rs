@@ -1,5 +1,9 @@
 //! Coordinate geometry: distances, angles, dihedrals, RMSD.
 
+// Unused when another crate in the build links std (its f64 methods win).
+#[cfg(not(feature = "std"))]
+#[allow(unused_imports)]
+use crate::float::FloatExt;
 use cyanea_core::{CyaneaError, Result};
 
 use crate::types::{Atom, Point3D};
